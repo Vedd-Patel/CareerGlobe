@@ -1,0 +1,34 @@
+# secrets
+.env
+.env.*
+!.env.example
+*.pem
+*service-account*.json
+
+# crawler
+crawler/.venv/
+__pycache__/
+.pytest_cache/
+crawler/state/
+failed.csv
+
+# go
+api/bin/
+
+# web
+web/node_modules/
+web/.svelte-kit/
+web/build/
+
+# android / ios
+android/.gradle/
+android/build/
+android/local.properties
+ios/build/
+ios/DerivedData/
+*.xcuserstate
+
+# local data
+*.dump
+uploads/
+.DS_Store
