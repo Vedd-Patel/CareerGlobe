@@ -1,0 +1,21 @@
+# Local development only. The Oracle server runs Postgres natively.
+services:
+  db:
+    # Multi-arch PostGIS build (the official postgis/postgis image is amd64-only).
+    image: imresamu/postgis:16-3.5
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-careerglobe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-careerglobe_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-careerglobe}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
