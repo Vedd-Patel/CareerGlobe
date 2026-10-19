@@ -1,0 +1,126 @@
+[
+  {
+    "id": 144029,
+    "title": "Product Marketing Intern",
+    "description": "<div><strong style=\"color: rgb(0, 0, 0); background-color: transparent;\">Join Wingify's Product Marketing team!</strong></div><div><span style=\"color: rgb(0, 0, 0); background-color: transparent;\">We're looking for a curious, proactive and enthusiastic Product Marketing Intern to join our international team.</span></div>",
+    "departmentIdentifier": "166da3d3-6ba0-47ba-b059-47bcda6c949a",
+    "departmentName": "Marketing",
+    "excerpt": "Join Wingify's Product Marketing team!We're looking for a curious, proactive and enthusiastic Product Marketing Intern to join our international team.You'll be part of a team of 5 Product Marketing ",
+    "jobLocations": [
+      {
+        "id": 25846,
+        "name": "Remote",
+        "city": "Delhi",
+        "state": "DL",
+        "countryCode": "IN",
+        "countryName": "India"
+      }
+    ],
+    "jobType": 2,
+    "experience": "0 - 1 year",
+    "salaryRange": {
+      "currency": "INR",
+      "salaryPeriod": 0,
+      "cultureInfo": "en-IN"
+    },
+    "salaryRangeFormat": "",
+    "publishedOn": "2026-10-09T13:23:58.727Z",
+    "publishedSinceDays": 10,
+    "skillNames": []
+  },
+  {
+    "id": 143899,
+    "title": "Senior Product Manager – Activation & Onboarding, Commerce",
+    "description": "<h2 style=\"margin-top: 0px; margin-bottom: 0px;\">About Wingify</h2><div>Wingify is building an <strong>Agentic Experience Optimization Platform</strong> that brings experimentation, personalization, behavioral insights, commerce optimization, feature management, and customer engagement together on a shared data foundation.</div><div>At the heart of the platform is <strong>Wingz</strong>, our intelligence engine that continuously understands customer behavior, decides what is most relevant, acts in the moment, and learns from the outcome.</div>",
+    "departmentIdentifier": "92bcd9d5-b2c3-4620-94d3-655a6c73f56c",
+    "departmentName": "Product",
+    "excerpt": "About WingifyWingify is building an Agentic Experience Optimization Platform that brings experimentation, personalization, behavioral insights, commerce optimization, feature management, and customer ",
+    "jobLocations": [
+      {
+        "id": 25846,
+        "name": "Remote",
+        "city": "Delhi",
+        "state": "DL",
+        "countryCode": "IN",
+        "countryName": "India"
+      },
+      {
+        "id": 29077,
+        "name": "India",
+        "city": "India",
+        "state": "",
+        "countryCode": "IN",
+        "countryName": ""
+      }
+    ],
+    "jobType": 2,
+    "experience": "4-8 years",
+    "salaryRange": {
+      "currency": "INR",
+      "salaryPeriod": 0,
+      "cultureInfo": "en-IN"
+    },
+    "salaryRangeFormat": "",
+    "publishedOn": "2026-10-09T04:31:35.21Z",
+    "publishedSinceDays": 10,
+    "skillNames": []
+  },
+  {
+    "id": 143827,
+    "title": "Partner Account Manager - US",
+    "description": "<div><strong style=\"color: rgb(0, 0, 0); background-color: transparent;\">Partnerships Manager</strong></div><div><br></div><div><strong style=\"color: rgb(0, 0, 0); background-color: transparent;\">Reports To:</strong><span style=\"color: rgb(0, 0, 0); background-color: transparent;\"> VP Sales, North America</span></div><div><strong style=\"color: rgb(0, 0, 0); background-color: transparent;\">Location:</strong><span style=\"color: rgb(0, 0, 0); background-color: transparent;\"> North America (remote/hybrid)</span></div>",
+    "departmentIdentifier": "f918fe41-b6a4-4900-872b-e283e53d7a4a",
+    "departmentName": "Sales",
+    "excerpt": "Partnerships ManagerReports To: VP Sales, North AmericaLocation: North America (remote/hybrid)Type: Full-time, permanentAbout WingifyFounded in 2009, Wingify was built with a simple mission: to make ",
+    "jobLocations": [
+      {
+        "id": 36557,
+        "name": "NewYork",
+        "city": "New York",
+        "state": "NY",
+        "countryCode": "US",
+        "countryName": "United States"
+      }
+    ],
+    "jobType": 2,
+    "experience": "5+ years",
+    "salaryRange": {
+      "currency": "USD",
+      "salaryPeriod": 0,
+      "cultureInfo": "en-US"
+    },
+    "salaryRangeFormat": "",
+    "publishedOn": "2026-10-07T17:36:47.717Z",
+    "publishedSinceDays": 12,
+    "skillNames": []
+  },
+  {
+    "id": 143142,
+    "title": "Technical Solutions Manager (Spanish fluent)",
+    "description": "<div><strong style=\"background-color: transparent; color: rgb(0, 0, 0);\">Role Overview: </strong><span style=\"background-color: transparent; color: rgb(0, 0, 0);\">You will be the go-to technical partner for our customers, ensuring successful implementation and continuous value from Wingify’s solutions. </span><span style=\"background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);\">This role requires a strong understanding of web technologies and a passion for delivering exceptional customer experiences.</span></div><div><br></div>",
+    "departmentIdentifier": "5dec9153-e2f1-4c7b-b579-36d2c32aae97",
+    "departmentName": "Product Success",
+    "excerpt": "Role Overview: You will be the go-to technical partner for our customers, ensuring successful implementation and continuous value from Wingify’s solutions. This role requires a strong understanding ",
+    "jobLocations": [
+      {
+        "id": 25846,
+        "name": "Remote",
+        "city": "Delhi",
+        "state": "DL",
+        "countryCode": "IN",
+        "countryName": "India"
+      }
+    ],
+    "jobType": 2,
+    "experience": "4 - 8 years",
+    "salaryRange": {
+      "currency": "INR",
+      "salaryPeriod": 0,
+      "cultureInfo": "en-IN"
+    },
+    "salaryRangeFormat": "",
+    "publishedOn": "2026-10-13T11:59:38.43Z",
+    "publishedSinceDays": 6,
+    "skillNames": []
+  }
+]
