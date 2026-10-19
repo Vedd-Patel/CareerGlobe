@@ -1,0 +1,21 @@
+name,website,careers_url,city,state,type,ats,note
+Groww,https://groww.in,https://boards.greenhouse.io/groww,Bengaluru,Karnataka,product,greenhouse,
+Razorpay,https://razorpay.com,https://boards.greenhouse.io/razorpaysoftwareprivatelimited,Bengaluru,Karnataka,product,greenhouse,
+InMobi,https://www.inmobi.com,https://boards.greenhouse.io/inmobi,Bengaluru,Karnataka,product,greenhouse,
+Druva,https://www.druva.com,https://boards.greenhouse.io/druva,Pune,Maharashtra,product,greenhouse,verify: global HQ is in the US; Pune is the main India office
+HackerRank,https://www.hackerrank.com,https://boards.greenhouse.io/hackerrank,Bengaluru,Karnataka,product,greenhouse,verify: global HQ is in the US; Bengaluru is the India office
+HighRadius,https://www.highradius.com,https://boards.greenhouse.io/highradius,Hyderabad,Telangana,product,greenhouse,verify: global HQ is in the US; Hyderabad is the main India office
+Observe.AI,https://www.observe.ai,https://boards.greenhouse.io/observeai,Bengaluru,Karnataka,product,greenhouse,verify: global HQ is in the US; Bengaluru is the India office
+Paytm,https://paytm.com,https://jobs.lever.co/paytm,Noida,Uttar Pradesh,product,lever,
+Meesho,https://www.meesho.com,https://jobs.lever.co/meesho,Bengaluru,Karnataka,product,lever,
+Zeta,https://www.zeta.tech,https://jobs.lever.co/zeta,Bengaluru,Karnataka,product,lever,verify: HQ city (jobs are spread across Hyderabad/Bengaluru/Mumbai)
+MindTickle,https://www.mindtickle.com,https://jobs.lever.co/mindtickle,Pune,Maharashtra,product,lever,verify: HQ city
+FamPay,https://famapp.in,https://jobs.lever.co/fampay,Bengaluru,Karnataka,product,lever,verify: website (rebranded to FamApp?)
+CRED,https://cred.club,https://jobs.lever.co/cred,Bengaluru,Karnataka,product,lever,board also lists jobs for Prefr (a CRED company)
+Wingify,https://wingify.com,https://wingify.keka.com/careers/,Delhi,Delhi,product,keka,
+Toddle,https://www.toddleapp.com,https://toddle.keka.com/careers/,Bengaluru,Karnataka,product,keka,verify: HQ city
+GoKwik,https://www.gokwik.co,https://gokwik.keka.com/careers/,Delhi,Delhi,product,keka,verify: HQ city (New Delhi or Gurugram?)
+Kuku FM,https://kukufm.com,https://kukufm.keka.com/careers/,Mumbai,Maharashtra,product,keka,verify: HQ city; Keka lists the company as "Kuku"
+Snitch,https://www.snitch.com,https://snitch.keka.com/careers/,Bengaluru,Karnataka,product,keka,verify: website and HQ city
+Cars24,https://www.cars24.com,https://cars24.keka.com/careers/,Gurugram,Haryana,product,keka,verify: Keka board has only ~9 jobs; check it is the board cars24.com/careers links to
+Zluri,https://www.zluri.com,https://zluri.keka.com/careers/,Bengaluru,Karnataka,product,keka,verify: HQ city
