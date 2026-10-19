@@ -25,7 +25,8 @@ def parse(data, slug: str) -> list[RawJob]:
         if j.get("id") in (None, "") or not j.get("title") or not j.get("absolute_url"):
             continue
         locations = [(j.get("location") or {}).get("name") or ""]
-        locations += [o.get("location") or o.get("name") or "" for o in j.get("offices") or []]
+        # Office *names* can be teams ("Payments"); only their location field is a place.
+        locations += [o.get("location") or "" for o in j.get("offices") or []]
         content = j.get("content")
         jobs.append(
             RawJob(

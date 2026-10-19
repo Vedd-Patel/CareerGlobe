@@ -38,7 +38,12 @@ _CITY_RE = re.compile(
 NOT_A_CITY = {
     "india", "remote", "multiple", "multiple locations", "pan india", "anywhere", "hybrid",
     "onsite", "on-site", "work from home", "wfh", "registered office", "",
+    # countries and regions
+    "us", "usa", "united states", "uk", "united kingdom", "europe", "eu", "emea", "apac",
+    "global", "globally", "worldwide", "canada", "germany", "france", "uae", "australia",
 }
+# "Hybrid in Santa Clara, CA", "Remote - Bengaluru", "Onsite: Pune"
+_MODE_PREFIX = re.compile(r"^\s*(hybrid|remote|on-?site|in[- ]office|wfh)\s*(in\b|[-–:])\s*", re.IGNORECASE)
 
 
 def cities_from(locations: list[str]) -> list[str]:
@@ -51,8 +56,8 @@ def cities_from(locations: list[str]) -> list[str]:
             continue
         hits = [CITY_ALIASES[m.lower()] for m in _CITY_RE.findall(loc)]
         if not hits:
-            first = re.split(r"[,(]", loc, maxsplit=1)[0].strip()
-            if first.lower() not in NOT_A_CITY:
+            first = re.split(r"[,(]", _MODE_PREFIX.sub("", loc), maxsplit=1)[0].strip()
+            if first.lower() not in NOT_A_CITY and not first.lower().startswith(("remote", "anywhere")):
                 hits = [first]
         for city in hits:
             if city not in found:
@@ -69,9 +74,16 @@ def work_mode_from(texts: list[str]) -> str | None:
     return None
 
 
+# Outside this range an "annual INR" figure is a data-entry error (e.g. a monthly
+# AED salary labelled INR), so it is dropped rather than corrected.
+MIN_ANNUAL_INR = 60_000
+MAX_ANNUAL_INR = 100_000_000
+
+
 def annual_inr(low, high, currency: str | None, period: str | None) -> tuple[int | None, int | None]:
     """Salary as annual INR, only when the posting states it in INR per year or
-    per month. Anything else (other currency, hourly, missing) is left empty."""
+    per month. Anything else (other currency, hourly, missing, implausible) is
+    left empty."""
     if (currency or "").upper() != "INR" or period not in ("year", "month"):
         return None, None
     factor = 12 if period == "month" else 1
@@ -86,6 +98,8 @@ def annual_inr(low, high, currency: str | None, period: str | None) -> tuple[int
     lo, hi = conv(low), conv(high)
     if lo and hi and lo > hi:
         lo, hi = hi, lo
+    if any(v is not None and not MIN_ANNUAL_INR <= v <= MAX_ANNUAL_INR for v in (lo, hi)):
+        return None, None
     return lo, hi
 
 

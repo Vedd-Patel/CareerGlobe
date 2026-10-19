@@ -3,6 +3,7 @@
     python crawl.py --seeds ../seeds/companies.csv   # full run, start to finish
     python crawl.py --only "Groww"                   # one company, for testing
     python crawl.py --resume                         # continue a run that stopped
+    python crawl.py --refresh                        # ignore ETags: re-parse every board
 """
 
 import argparse
@@ -120,6 +121,8 @@ async def main(argv=None) -> int:
     mode = p.add_mutually_exclusive_group()
     mode.add_argument("--only", metavar="NAME", help="crawl one company by name (not recorded in crawl_runs)")
     mode.add_argument("--resume", action="store_true", help="continue the latest unfinished run")
+    p.add_argument("--refresh", action="store_true",
+                   help="ignore saved ETags and re-read every board (after changing an adapter or clean.py)")
     p.add_argument("--seeds", type=Path, default=DEFAULT_SEEDS, help="seed CSV (default: seeds/companies.csv)")
     args = p.parse_args(argv)
 
@@ -158,6 +161,9 @@ async def main(argv=None) -> int:
         deadline = stop_time(run.started_at, settings.stop_at_ist) if run else None
         async with PoliteClient(settings.user_agent, settings.robots_token,
                                 settings.min_gap_seconds, settings.max_gap_seconds) as client:
+            if args.refresh:
+                for src in todo:
+                    src.etag = src.last_modified = None
             tally = await crawl(conn, client, settings, run, todo, deadline)
 
         if tally.not_started:

@@ -18,6 +18,14 @@ from clean import MAX_DESCRIPTION_CHARS, annual_inr, cities_from, clean_html, wo
         (["Indore, MP"], ["Indore"]),
         (["Mysore"], ["Mysuru"]),
         (["New York"], ["New York"]),  # unknown cities pass through
+        # HackerRank's real labels: the work mode is not part of the city
+        (["Hybrid in Santa Clara, CA"], ["Santa Clara"]),
+        (["Hybrid in Bangalore, India"], ["Bengaluru"]),
+        (["Remote - Kolhapur"], ["Kolhapur"]),
+        (["Onsite: Ranchi"], ["Ranchi"]),
+        (["Remote Globally"], []),
+        (["Remote-US"], []),
+        (["Remote, UK"], []),
         (["Bengaluru", "Bangalore, Karnataka"], ["Bengaluru"]),  # no duplicates
         ([""], []),
     ],
@@ -39,7 +47,11 @@ def test_annual_inr():
     assert annual_inr(90_000, 120_000, "USD", "year") == (None, None)  # never convert currencies
     assert annual_inr(500, 800, "INR", None) == (None, None)  # unknown period: don't guess
     assert annual_inr(0, 0, "INR", "year") == (None, None)  # Keka sends zeros when hidden
-    assert annual_inr(900, 600, "INR", "year") == (600, 900)
+    assert annual_inr(900_000, 600_000, "INR", "year") == (600_000, 900_000)
+    # Cars24's real "INR 3,500-4,500 per month" for a Dubai job: implausible, dropped
+    assert annual_inr(3500, 4500, "INR", "month") == (None, None)
+    assert annual_inr(10_000, 15_000, "INR", "month") == (120_000, 180_000)  # an internship stipend is fine
+    assert annual_inr(5_000_000, 2_000_000_000, "INR", "year") == (None, None)
 
 
 def test_clean_html_strips_scripts_styles_and_attributes():

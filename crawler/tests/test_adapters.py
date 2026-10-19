@@ -83,6 +83,13 @@ def test_lever_salary_and_unspecified_workplace():
     assert (j.salary_min, j.salary_max) == (2_000_000, 3_000_000)
 
 
+def test_greenhouse_office_names_are_not_cities():
+    data = {"jobs": [{"id": 1, "title": "Analyst", "absolute_url": "https://x.com/1",
+                      "location": {"name": "Bengaluru"},
+                      "offices": [{"name": "Payments", "location": None}]}]}
+    assert ADAPTERS["greenhouse"].parse(data, "razorpay")[0].cities == ["Bengaluru"]
+
+
 def test_jobs_missing_required_fields_are_skipped():
     assert ADAPTERS["greenhouse"].parse({"jobs": [{"id": 1, "title": "x"}]}, "a") == []
     assert ADAPTERS["lever"].parse([{"id": "x", "text": "y"}], "a") == []
