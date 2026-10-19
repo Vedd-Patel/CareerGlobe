@@ -28,7 +28,7 @@ def parse(data, slug: str) -> list[RawJob]:
         raise ParseError("lever: expected a list of postings")
     jobs = []
     for p in data:
-        if not p.get("id") or not p.get("text") or not p.get("hostedUrl"):
+        if p.get("id") in (None, "") or not p.get("text") or not p.get("hostedUrl"):
             continue
         cats = p.get("categories") or {}
         locations = cats.get("allLocations") or [cats.get("location") or ""]

@@ -22,7 +22,7 @@ def parse(data, slug: str) -> list[RawJob]:
         raise ParseError("greenhouse: expected an object with a 'jobs' list")
     jobs = []
     for j in data["jobs"]:
-        if not j.get("id") or not j.get("title") or not j.get("absolute_url"):
+        if j.get("id") in (None, "") or not j.get("title") or not j.get("absolute_url"):
             continue
         locations = [(j.get("location") or {}).get("name") or ""]
         locations += [o.get("location") or o.get("name") or "" for o in j.get("offices") or []]

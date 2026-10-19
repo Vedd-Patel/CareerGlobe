@@ -25,7 +25,7 @@ def parse(data, slug: str) -> list[RawJob]:
         raise ParseError("keka: expected a list of jobs")
     jobs = []
     for j in data:
-        if not j.get("id") or not j.get("title"):
+        if j.get("id") in (None, "") or not j.get("title"):
             continue
         locs = j.get("jobLocations") or []
         names = [loc.get("name") or "" for loc in locs]
