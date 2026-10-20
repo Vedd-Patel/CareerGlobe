@@ -1,0 +1,107 @@
+{
+ "total": 242,
+ "jobPostings": [
+  {
+   "title": "SWQA Test Developer Engineer",
+   "externalPath": "/job/India-Pune/SWQA-Test-Developer-Engineer_JR2028109",
+   "locationsText": "India, Pune",
+   "postedOn": "Posted Yesterday",
+   "bulletFields": [
+    "JR2028109"
+   ]
+  },
+  {
+   "title": "Senior System Software Engineer - AI SDK Multimedia platform",
+   "externalPath": "/job/India-Pune/Senior-System-Software-Engineer---AI-SDK-Multimedia-platform_JR2027371-1",
+   "locationsText": "2 Locations",
+   "postedOn": "Posted 4 Days Ago",
+   "bulletFields": [
+    "JR2027371"
+   ]
+  },
+  {
+   "title": "Senior System Software Engineer - Local AI",
+   "externalPath": "/job/India-Pune/Senior-System-Software-Engineer---Local-AI_JR2027806",
+   "locationsText": "India, Pune",
+   "postedOn": "Posted Yesterday",
+   "bulletFields": [
+    "JR2027806"
+   ]
+  },
+  {
+   "title": "CAD Engineer",
+   "externalPath": "/job/India-Bengaluru/CAD-Engineer_JR2014480-1",
+   "locationsText": "India, Bengaluru",
+   "postedOn": "Posted 2 Days Ago",
+   "bulletFields": [
+    "JR2014480"
+   ]
+  }
+ ],
+ "facets": [
+  {
+   "facetParameter": "locationMainGroup",
+   "values": [
+    {
+     "facetParameter": "locationHierarchy2",
+     "descriptor": "Location Type",
+     "values": [
+      {
+       "descriptor": "Office",
+       "id": "0c3f5f117e9a0101f6422f0fe79d0000",
+       "count": 242
+      },
+      {
+       "descriptor": "Remote",
+       "id": "0c3f5f117e9a0101f63dc469c3010000",
+       "count": 14
+      }
+     ]
+    },
+    {
+     "facetParameter": "locationHierarchy1",
+     "descriptor": "Locations",
+     "values": [
+      {
+       "descriptor": "United States",
+       "id": "2fcb99c455831013ea52fb338f2932d8",
+       "count": 1464
+      },
+      {
+       "descriptor": "Israel",
+       "id": "2fcb99c455831013ea52bbe14cf9326c",
+       "count": 421
+      },
+      {
+       "descriptor": "India",
+       "id": "2fcb99c455831013ea52b82135ba3266",
+       "count": 242
+      }
+     ]
+    },
+    {
+     "facetParameter": "locations",
+     "descriptor": "Sites",
+     "values": [
+      {
+       "descriptor": "India, Bengaluru",
+       "id": "91336993fab910af6d6fb9748af4c1df",
+       "count": 193
+      },
+      {
+       "descriptor": "India, Pune",
+       "id": "91336993fab910af6d6fb0782884c1cb",
+       "count": 72
+      },
+      {
+       "descriptor": "India, Hyderabad",
+       "id": "91336993fab910af6d6fb2be0974c1d0",
+       "count": 33
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "userAuthenticated": false
+}

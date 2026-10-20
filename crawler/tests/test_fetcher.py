@@ -77,6 +77,25 @@ async def test_robots_server_error_fails_the_fetch():
     assert server.paths() == ["h.com/robots.txt"] * 2
 
 
+async def test_post_json_obeys_robots_and_sends_json():
+    import json
+
+    seen = []
+
+    def handler(request):
+        seen.append((request.method, request.headers["Content-Type"], json.loads(request.content)))
+        return httpx.Response(200, json={"jobPostings": []})
+
+    server = Server(handler, robots="User-agent: *\nDisallow: /refreshFacet/\n")
+    async with client(server) as c:
+        res = await c.post_json("https://t.wd5.myworkdayjobs.com/wday/cxs/t/s/jobs", {"offset": 0})
+        with pytest.raises(RobotsDisallowed):
+            await c.post_json("https://t.wd5.myworkdayjobs.com/refreshFacet/x", {})
+    assert res.json() == {"jobPostings": []}
+    assert seen == [("POST", "application/json", {"offset": 0})]
+    assert server.paths()[0] == "t.wd5.myworkdayjobs.com/robots.txt"
+
+
 async def test_etag_round_trip_and_304():
     def handler(request):
         if request.headers.get("If-None-Match") == 'W/"v1"':

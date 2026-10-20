@@ -57,25 +57,34 @@ async def crawl_source(conn, db_lock: asyncio.Lock, client: PoliteClient, run, s
         reason = f"no adapter for ATS {src.ats_type!r} (custom page: needs Phase 2 sources)"
         return await _fail(conn, db_lock, run, src, reason, tally, t0)
 
+    etag = last_modified = None
     try:
-        res = await client.get(adapter.board_url(src.ats_slug), etag=src.etag, last_modified=src.last_modified)
+        if adapter.fetch:
+            async with db_lock:
+                known = await store.known_job_ids(conn, src.company_id)
+            jobs, not_modified = await adapter.fetch(client, src.ats_slug, known), False
+        else:
+            res = await client.get(adapter.board_url(src.ats_slug), etag=src.etag, last_modified=src.last_modified)
+            etag, last_modified, not_modified = res.etag, res.last_modified, res.not_modified
+            jobs = None if not_modified else adapter.parse(res.json(), src.ats_slug)
     except RobotsDisallowed as e:
         return await _fail(conn, db_lock, run, src, str(e), tally, t0, blocked=True)
     except FetchError as e:
         return await _fail(conn, db_lock, run, src, str(e), tally, t0)
+    except (ParseError, ValueError) as e:
+        return await _fail(conn, db_lock, run, src, f"unexpected response: {e}", tally, t0)
 
-    if res.not_modified:
+    if not_modified:
         compute, count = diff_not_modified, "unchanged (304)"
     else:
-        try:
-            jobs = adapter.parse(res.json(), src.ats_slug)
-        except (ParseError, ValueError) as e:
-            return await _fail(conn, db_lock, run, src, f"unexpected response: {e}", tally, t0)
         fetched = [(job_key(src.company_id, src.ats_type, j.source_job_id, j.apply_url), j) for j in jobs]
         compute, count = (lambda existing: diff(existing, fetched)), f"{len(jobs)} jobs"
 
-    async with db_lock:
-        d = await store.apply_success(conn, run, src, compute, res.etag, res.last_modified)
+    try:
+        async with db_lock:
+            d = await store.apply_success(conn, run, src, compute, etag, last_modified)
+    except ValueError as e:  # rolled back; e.g. a partial job that is not in the DB
+        return await _fail(conn, db_lock, run, src, f"not saved: {e}", tally, t0)
     secs = time.monotonic() - t0
     if d.broken:
         tally.failed += 1

@@ -265,6 +265,36 @@ async def test_company_without_adapter_fails_cleanly(db, env, tmp_path):
     assert t.failed == 1 and "no adapter" in t.failures[0]
 
 
+async def test_workday_details_are_kept_when_only_the_list_is_read(db, env, tmp_path):
+    from test_workday import FakeWorkday
+
+    _, settings, _ = env
+    path = tmp_path / "wd.csv"
+    path.write_text("name,website,careers_url,city,state,type,ats\n"
+                    "NVIDIA,https://www.nvidia.com,https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite,"
+                    "Pune,Maharashtra,product,\n")
+    await seeds.load(db, path)
+    wd = FakeWorkday(n_india=6)
+
+    t = await night(db, settings, wd)
+    assert (t.ok, t.new) == (1, 6) and len(wd.details) == 6
+
+    # Night 2: same list; no detail requests, stored descriptions and cities untouched.
+    wd.details.clear()
+    wd.ids.remove("R0003")
+    t = await night(db, settings, wd)
+    assert (t.ok, t.new, t.closed) == (1, 0, 0) and wd.details == []
+    cur = await db.execute("SELECT description, cities, work_mode FROM jobs WHERE source_job_id = 'R0000'")
+    assert await cur.fetchone() == ("<p>Build</p>", ["Pune", "Bengaluru"], "hybrid")
+    assert (await jobs(db))["R0003"] == ("open", 1, False)
+
+    # Night 3: still gone after two successful crawls -> closed; a new job gets its details.
+    wd.ids.append("R0100")
+    t = await night(db, settings, wd)
+    assert (t.new, t.closed) == (1, 1) and wd.details == ["R0100"]
+    assert (await jobs(db))["R0003"] == ("closed", 2, True)
+
+
 def test_stop_time_is_next_0530_ist():
     from datetime import datetime
 

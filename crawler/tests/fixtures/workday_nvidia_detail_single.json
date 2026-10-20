@@ -1,0 +1,36 @@
+{
+ "jobPostingInfo": {
+  "id": "d78cc46938e010389c173ca8d4940000",
+  "title": "SWQA Test Developer Engineer",
+  "jobDescription": "<p>NVIDIA has advanced computer graphics, PC gaming, and accelerated computing for more than 25 years. We are developing the next era of computing through AI, supported by dedicated people and a diverse, collaborative environment.</p><br /><p>We are seeking a SWQA Test Developer Engineer to join the Mobile QA Group and help deliver high-quality products built on NVIDIA Tegra systems on a chip (SoCs). You will be validating Nvidia Shield TV supporting AI-enhanced upscaling, 4K HDR, GeForce NOW cloud gaming, built in Google Assistant, which also supports Dolby Vision, Dolby Atmos, etc. You will work on AI platforms running Linux, Android, and proprietary operating systems, collaborating with engineers, workstream leads, and release managers.</p><br /><p><b>What you will be doing:</b></p><ul><li>Apply AI-powered tools and agents throughout the test development lifecycle to accelerate test generation, code development, test analysis, coverage improvement, log analysis, regression triage, root-cause analysis, and code reviews.</li><li>Build and use an E2E AI Agentic Workflow with existing and custom agents and skills for every SDLC phase. This will expedite key objectives and important metrics of test and quality engineering.</li><li>Develop AI framework for test strategies, plans, and detailed test cases from customer requirements; regularly implement tests for software features on Tegra-based platforms using AI-powered tools.</li><li>Review product requirements, specifications, and technical designs, and provide feedback to improve testability and coverage.</li><li>Develop applications, test tools, and automated tests using NVIDIA test frameworks for Tegra platforms.</li><li>File clear bug reports, investigate failures, and work with engineers to triage issues and verify fixes.</li><li>Collaborate with project management, hardware, and software teams; analyze priority bugs and share periodic quality metrics and reports with collaborators. Improve testing processes and product quality.</li><li>Partner with development, architecture, product, and release teams to identify quality risks, analyze sophisticated system-level issues, drive defects to resolution, and communicate release readiness and quality metrics.</li></ul><br /><p><b>What we need to see:</b></p><ul><li>B.Tech. or equivalent degree in Computer Science, Computer Engineering, Information Technology, Electronics and Communication Engineering, or Electrical and Electronics Engineering.</li><li>3-5 years of professional experience in software validation, preferably with ARM SoC-based Linux or Android products and end-to-end validation of game console devices.</li><li>Strong Python programming skills with experience building test frameworks, automation infrastructure, utilities, and validation tools from the ground up.</li><li>Hands-on experience bringing to bear AI-assisted development tools and AI-powered workflows for test development, code generation, test analysis, debugging, coverage improvement, or test development workflow optimization.</li><li>Strong proficiency in Linux, including shell scripting, system-level debugging, process/resource analysis, and command-line fixing.</li><li>Ability to implement end-to-end AI agentic testing workflows across all software development lifecycle (SDLC) phases, from requirements analysis and test planning through development, integration, release validation, and post-release monitoring.</li><li>Experience using AI agents to assess streaming quality of service (QoS) and end-user experience, including playback startup time, buffering, latency, audio-video synchronization, visual quality, and playback stability; automate visual validation to minimize manual checks and surface issues for review.</li><li>Ability to validate Android Streaming Devices for multimedia playback, including 4K HDR video, hardware decoding, audio passthrough, format switching, and audio-video synchronization across supported display and audio configurations.</li><li>Experience validating local and cloud gaming on Android Streaming Devices, including controller compatibility, input latency, frame pacing, network sensitivity, and stability during extended gaming sessions.</li><li>Ability to manage work independently, demonstrate leadership, communicate clearly, and collaborate effectively, with a passion for emerging technologies.</li></ul><br /><p><b>Ways to stand out from the crowd:</b></p><ul><li>Experience with Android streaming products, graphics rendering techniques, display parameters, graphics processing, shaders, clusters, streaming apps/games, competitive analysis &amp; benchmarking analysis of different streaming devices.</li><li>Experience working on the development or validation of AI agents, Agentic AI workflows, multimodal AI, or Physical AI applications, including tool calling, orchestration, perception, or spatial understanding.</li><li>Proven track record of applying AI tools or AI-powered test development agents to measurably improve test automation efficiency, coverage, quality, debugging, and regression efficiency.</li></ul><p style=\"text-align:inherit\"></p><p style=\"text-align:inherit\"></p><p style=\"text-align:inherit\"></p><p style=\"text-align:inherit\"></p>",
+  "location": "India, Pune",
+  "postedOn": "Posted Yesterday",
+  "startDate": "2026-10-19",
+  "timeType": "Full time",
+  "jobReqId": "JR2028109",
+  "jobPostingId": "SWQA-Test-Developer-Engineer_JR2028109",
+  "jobPostingSiteId": "NVIDIAExternalCareerSite",
+  "country": {
+   "descriptor": "India",
+   "id": "c4f78be1a8f14da0ab49ce1162348a5e"
+  },
+  "canApply": true,
+  "posted": true,
+  "includeResumeParsing": true,
+  "jobRequisitionLocation": {
+   "descriptor": "India, Pune",
+   "country": {
+    "descriptor": "India",
+    "id": "c4f78be1a8f14da0ab49ce1162348a5e",
+    "alpha2Code": "IN"
+   }
+  },
+  "externalUrl": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/India-Pune/SWQA-Test-Developer-Engineer_JR2028109",
+  "questionnaireId": "2f2764b3a82910064296831695150000"
+ },
+ "hiringOrganization": {
+  "name": "IN02 NVIDIA GraphicsPLtd,Pune",
+  "url": ""
+ },
+ "userAuthenticated": false
+}

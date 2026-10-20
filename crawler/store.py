@@ -76,6 +76,15 @@ async def sources(conn, only: str | None = None, skip_attempted_since: datetime 
     return [Source(*row) for row in await cur.fetchall()]
 
 
+async def known_job_ids(conn, company_id: int) -> set[str]:
+    """Source job IDs already stored for a company (open or closed). Adapters
+    that need one request per job fetch details only for IDs not in here."""
+    cur = await conn.execute(
+        "SELECT source_job_id FROM jobs WHERE company_id = %s AND source_job_id IS NOT NULL", (company_id,)
+    )
+    return {r[0] for r in await cur.fetchall()}
+
+
 async def apply_success(conn, run: Run | None, src: Source, compute, etag, last_modified) -> Diff:
     """One transaction: lock the company, load its jobs, diff, write, record.
     `compute(existing) -> Diff` runs inside the lock, so two writers can never
@@ -140,6 +149,8 @@ def _fields(j: RawJob) -> tuple:
 
 async def _write_jobs(conn, company_id: int, d: Diff) -> None:
     async with conn.cursor() as cur:
+        if any(j.partial for _, j in d.inserts):
+            raise ValueError("a new job needs its details; partial jobs can only update stored ones")
         if d.inserts:
             await cur.executemany(
                 """INSERT INTO jobs (company_id, job_key, source_job_id, title, description, cities, work_mode,
@@ -148,14 +159,24 @@ async def _write_jobs(conn, company_id: int, d: Diff) -> None:
                 [(company_id, key, j.source_job_id, *_fields(j)) for key, j in d.inserts],
             )
         for rows, reopen in ((d.updates, False), (d.reopens, True)):
-            if rows:
+            reopen_sql = ", status = 'open', closed_at = NULL" if reopen else ""
+            full = [(*_fields(j), job_id) for job_id, j in rows if not j.partial]
+            partial = [(j.title, j.apply_url, job_id) for job_id, j in rows if j.partial]
+            if full:
                 await cur.executemany(
                     f"""UPDATE jobs SET title = %s, description = %s, cities = %s, work_mode = %s,
                             salary_min = %s, salary_max = %s, apply_url = %s,
                             posted_at = COALESCE(%s, posted_at), last_seen = now(), missed_runs = 0
-                            {", status = 'open', closed_at = NULL" if reopen else ""}
+                            {reopen_sql}
                         WHERE id = %s""",
-                    [(*_fields(j), job_id) for job_id, j in rows],
+                    full,
+                )
+            if partial:
+                await cur.executemany(
+                    f"""UPDATE jobs SET title = %s, apply_url = %s, last_seen = now(), missed_runs = 0
+                            {reopen_sql}
+                        WHERE id = %s""",
+                    partial,
                 )
         if d.touch:
             await cur.execute("UPDATE jobs SET last_seen = now() WHERE id = ANY(%s)", (d.touch,))

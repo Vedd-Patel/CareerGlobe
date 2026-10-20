@@ -15,6 +15,9 @@ class RawJob:
     salary_min: int | None = None
     salary_max: int | None = None
     posted_at: datetime | None = None
+    # Seen in a list without its detail page (only for jobs already in the DB):
+    # title and link are refreshed, stored details are kept.
+    partial: bool = False
 
 
 class ParseError(Exception):

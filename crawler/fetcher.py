@@ -6,6 +6,7 @@
   Crawl-delay if longer). Many companies share one ATS host, so this is per
   host, not per company.
 - ETag / Last-Modified sent back, so unchanged boards answer 304.
+- POST only for JSON search APIs that are read-only (Workday's job list).
 - Retries only on network errors, 429 and 5xx.
 """
 
@@ -98,18 +99,32 @@ class PoliteClient:
         await self._client.aclose()
 
     async def get(self, url: str, etag: str | None = None, last_modified: str | None = None) -> FetchResult:
-        parts = urlsplit(url)
-        host = self._host(parts.netloc)
-        robots = await self._robots(host, f"{parts.scheme}://{parts.netloc}")
-        if not robots.can_fetch(self._token, url):
-            raise RobotsDisallowed(f"robots.txt disallows {url}")
-
+        host = await self._allowed(url)
         headers = {}
         if etag:
             headers["If-None-Match"] = etag
         if last_modified:
             headers["If-Modified-Since"] = last_modified
-        resp = await self._request(host, url, headers)
+        resp = await self._request(host, "GET", url, headers)
+        return self._result(url, resp, etag, last_modified)
+
+    async def post_json(self, url: str, payload: dict) -> FetchResult:
+        """POST a JSON body to a read-only search API. Same robots.txt check,
+        per-host lock, gap and retries as get(); no conditional headers."""
+        host = await self._allowed(url)
+        resp = await self._request(host, "POST", url, {"Accept": "application/json"}, payload)
+        return self._result(url, resp, None, None)
+
+    async def _allowed(self, url: str) -> _Host:
+        parts = urlsplit(url)
+        host = self._host(parts.netloc)
+        robots = await self._robots(host, f"{parts.scheme}://{parts.netloc}")
+        if not robots.can_fetch(self._token, url):
+            raise RobotsDisallowed(f"robots.txt disallows {url}")
+        return host
+
+    @staticmethod
+    def _result(url: str, resp: httpx.Response, etag: str | None, last_modified: str | None) -> FetchResult:
         if resp.status_code not in (200, 304):
             raise FetchError(f"HTTP {resp.status_code} for {url}", resp.status_code)
         return FetchResult(
@@ -131,7 +146,7 @@ class PoliteClient:
 
     async def _load_robots(self, host: _Host, origin: str) -> Robots:
         try:
-            resp = await self._request(host, f"{origin}/robots.txt", {})
+            resp = await self._request(host, "GET", f"{origin}/robots.txt", {})
         except FetchError as e:
             # Unreachable robots.txt: don't guess, fail this company tonight.
             raise FetchError(f"robots.txt unavailable for {origin}: {e}") from e
@@ -143,7 +158,8 @@ class PoliteClient:
             return Robots.allow_all()  # RFC 9309: missing robots.txt means no rules.
         raise FetchError(f"robots.txt returned HTTP {resp.status_code} for {origin}", resp.status_code)
 
-    async def _request(self, host: _Host, url: str, headers: dict[str, str]) -> httpx.Response:
+    async def _request(self, host: _Host, method: str, url: str, headers: dict[str, str],
+                       payload: dict | None = None) -> httpx.Response:
         try:
             async for attempt in AsyncRetrying(
                 stop=stop_after_attempt(self._max_attempts),
@@ -152,7 +168,7 @@ class PoliteClient:
                 reraise=True,
             ):
                 with attempt:
-                    resp = await self._send(host, url, headers)
+                    resp = await self._send(host, method, url, headers, payload)
                     if resp.status_code == 429 or resp.status_code >= 500:
                         raise _Retryable(resp.status_code)
                     return resp
@@ -162,13 +178,14 @@ class PoliteClient:
             raise FetchError(f"{type(e).__name__} for {url}") from e
         raise AssertionError("unreachable")
 
-    async def _send(self, host: _Host, url: str, headers: dict[str, str]) -> httpx.Response:
+    async def _send(self, host: _Host, method: str, url: str, headers: dict[str, str],
+                    payload: dict | None) -> httpx.Response:
         async with host.lock:
             wait = host.next_allowed - time.monotonic()
             if wait > 0:
                 await asyncio.sleep(wait)
             try:
-                return await self._client.get(url, headers=headers)
+                return await self._client.request(method, url, headers=headers, json=payload)
             finally:
                 host.next_allowed = time.monotonic() + self._gap(host)
 
