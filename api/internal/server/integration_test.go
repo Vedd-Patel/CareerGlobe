@@ -6,7 +6,6 @@ package server
 
 import (
 	"archive/zip"
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -15,20 +14,18 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/Vedd-Patel/CareerGlobe/api/internal/access"
 	"github.com/Vedd-Patel/CareerGlobe/api/internal/auth"
 	"github.com/Vedd-Patel/CareerGlobe/api/internal/resume"
+	"github.com/Vedd-Patel/CareerGlobe/api/internal/testdb"
 )
 
 const testDB = "careerglobe_api_test"
@@ -43,75 +40,16 @@ type env struct {
 }
 
 var tokens = auth.Static{
-	"tok-alice": {UID: "alice", Email: "alice@example.com", Name: "Alice", Provider: "google.com", EmailVerified: true},
-	"tok-bob":   {UID: "bob", Email: "bob@example.com", Name: "Bob", Provider: "google.com", EmailVerified: true},
-	"tok-new":   {UID: "newcomer", Email: "new@example.com", Provider: "google.com", EmailVerified: true},
-	"tok-admin": {UID: "admin-uid", Email: "me@example.com", Provider: "google.com", EmailVerified: true},
+	"tok-alice":      {UID: "alice", Email: "alice@example.com", Name: "Alice", Provider: "google.com", EmailVerified: true},
+	"tok-bob":        {UID: "bob", Email: "bob@example.com", Name: "Bob", Provider: "google.com", EmailVerified: true},
+	"tok-new":        {UID: "newcomer", Email: "new@example.com", Provider: "google.com", EmailVerified: true},
+	"tok-admin":      {UID: "admin-uid", Email: "me@example.com", Provider: "google.com", EmailVerified: true},
 	"tok-unverified": {UID: "unverified", Email: "u@example.com", Provider: "password", EmailVerified: false},
-}
-
-func repoRoot() string {
-	dir, _ := os.Getwd()
-	return filepath.Clean(filepath.Join(dir, "..", "..", ".."))
-}
-
-func baseURL(t *testing.T) string {
-	if u := os.Getenv("DATABASE_URL"); u != "" {
-		return u
-	}
-	f, err := os.Open(filepath.Join(repoRoot(), ".env"))
-	if err != nil {
-		t.Skip("DATABASE_URL not set")
-	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		if v, ok := strings.CutPrefix(strings.TrimSpace(sc.Text()), "DATABASE_URL="); ok {
-			return strings.Trim(v, `"'`)
-		}
-	}
-	t.Skip("DATABASE_URL not set")
-	return ""
 }
 
 func newEnv(t *testing.T) *env {
 	t.Helper()
-	ctx := context.Background()
-	base := baseURL(t)
-	admin, err := pgx.Connect(ctx, base)
-	if err != nil {
-		t.Skip("local Postgres not reachable (docker compose up -d db)")
-	}
-	defer admin.Close(ctx)
-	if _, err := admin.Exec(ctx, "DROP DATABASE IF EXISTS "+testDB+" WITH (FORCE)"); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := admin.Exec(ctx, "CREATE DATABASE "+testDB); err != nil {
-		t.Fatal(err)
-	}
-	cfg, err := pgxpool.ParseConfig(base)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg.ConnConfig.Database = testDB // never the dev database
-	pool, err := pgxpool.NewWithConfig(ctx, cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var current string
-	if err := pool.QueryRow(ctx, "SELECT current_database()").Scan(&current); err != nil || current != testDB {
-		t.Fatalf("connected to %q, want %q", current, testDB)
-	}
-	t.Cleanup(pool.Close)
-	files, _ := filepath.Glob(filepath.Join(repoRoot(), "db", "migrations", "*.sql"))
-	sort.Strings(files)
-	for _, f := range files {
-		raw, _ := os.ReadFile(f)
-		up := strings.SplitN(strings.SplitN(string(raw), "-- +goose Up", 2)[1], "-- +goose Down", 2)[0]
-		if _, err := pool.Exec(ctx, up); err != nil {
-			t.Fatalf("%s: %v", filepath.Base(f), err)
-		}
-	}
+	pool := testdb.New(t, testDB)
 	hasher, _ := access.NewHasher(bytes.Repeat([]byte("k"), 32))
 	acc := access.NewService(pool, hasher)
 	e := &env{t: t, pool: pool, access: acc}

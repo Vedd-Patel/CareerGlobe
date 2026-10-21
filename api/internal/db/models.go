@@ -149,27 +149,29 @@ type InterviewRound struct {
 }
 
 type Job struct {
-	ID            int64
-	CompanyID     int64
-	JobKey        string
-	SourceJobID   *string
-	Title         string
-	Category      *string
-	Category2     *string
-	Seniority     *string
-	Description   *string
-	Cities        []string
-	WorkMode      *string
-	SalaryMin     *int32
-	SalaryMax     *int32
-	ApplyUrl      string
-	PostedAt      *time.Time
-	FirstSeen     time.Time
-	LastSeen      time.Time
-	MissedRuns    int16
-	ClosedAt      *time.Time
-	Status        string
-	SourceUpdated *string
+	ID             int64
+	CompanyID      int64
+	JobKey         string
+	SourceJobID    *string
+	Title          string
+	Category       *string
+	Category2      *string
+	Seniority      *string
+	Description    *string
+	Cities         []string
+	WorkMode       *string
+	SalaryMin      *int32
+	SalaryMax      *int32
+	ApplyUrl       string
+	PostedAt       *time.Time
+	FirstSeen      time.Time
+	LastSeen       time.Time
+	MissedRuns     int16
+	ClosedAt       *time.Time
+	Status         string
+	SourceUpdated  *string
+	Skills         []string
+	ClassifiedHash *string
 }
 
 type Match struct {
@@ -205,6 +207,7 @@ type Preference struct {
 	PushEnabled bool
 	Theme       string
 	UpdatedAt   time.Time
+	LastPushAt  *time.Time
 }
 
 type Profile struct {

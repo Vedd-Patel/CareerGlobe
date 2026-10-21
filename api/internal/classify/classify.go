@@ -42,6 +42,30 @@ var DefaultRules = []Rule{
 	{"supply chain", "Operations", 10}, {"project coordinator", "Operations", 10},
 	{"system administrator", "DevOps & IT", 10}, {"site reliability", "DevOps & IT", 10},
 	{"full stack", "Software Engineering", 10}, {"fp&a", "Finance", 10},
+	{"customer success account manager", "Customer Support", 5}, {"applied scientist", "Data & AI", 10},
+	{"research scientist", "Data & AI", 10}, {"business intelligence", "Data & AI", 10}, {"bie", "Data & AI", 20},
+	{"statistical programming", "Data & AI", 10}, {"qae", "QA & Testing", 20},
+	{"technical lead", "Software Engineering", 25}, {"tech lead", "Software Engineering", 25},
+	{"technical architect", "Software Engineering", 25}, {"application architect", "Software Engineering", 25},
+	{"solution architect", "Software Engineering", 25}, {"technical consultant", "Software Engineering", 25},
+	{"salesforce", "Software Engineering", 45}, {"data center", "DevOps & IT", 20}, {"dco", "DevOps & IT", 20},
+	{"account manager", "Sales", 25}, {"key account", "Sales", 20}, {"partner development", "Sales", 20},
+	{"alliance", "Sales", 45}, {"alliances", "Sales", 45}, {"medical representative", "Sales", 10},
+	{"fashion consultant", "Sales", 10}, {"store manager", "Sales", 20}, {"retail", "Sales", 50},
+	{"f&a", "Finance", 20}, {"accounts payable", "Finance", 20}, {"ap", "Finance", 60}, {"i2c", "Finance", 20},
+	{"r2r", "Finance", 20}, {"o2c", "Finance", 20}, {"p2p", "Finance", 20}, {"credit", "Finance", 45},
+	{"risk", "Finance", 55}, {"collections", "Finance", 45}, {"recovery", "Finance", 55},
+	{"lending", "Finance", 45}, {"internal communications", "Marketing", 20}, {"communications", "Marketing", 50},
+	{"service delivery", "Operations", 30}, {"delivery manager", "Operations", 30}, {"project manager", "Product", 40},
+	{"project management", "Product", 40}, {"production", "Operations", 40}, {"plant", "Operations", 45},
+	{"manufacturing", "Operations", 40}, {"quality", "Operations", 55}, {"safety", "Operations", 45},
+	{"maintenance", "Operations", 45}, {"purchase", "Operations", 40}, {"transportation", "Operations", 40},
+	{"investigation", "Operations", 55}, {"agent", "Customer Support", 60},
+	{"customer service representative", "Customer Support", 10}, {"customer account", "Customer Support", 30},
+	// Engineering outside software: Other, so they reach the admin review queue
+	// instead of being filed as software by the word "engineer".
+	{"mechanical", "Other", 15}, {"civil", "Other", 15}, {"chemical", "Other", 15},
+	{"process engineer", "Other", 15}, {"production engineer", "Operations", 15},
 
 	{"vlsi", "Hardware & Semiconductor", 20}, {"rtl", "Hardware & Semiconductor", 20},
 	{"asic", "Hardware & Semiconductor", 20}, {"fpga", "Hardware & Semiconductor", 20},
@@ -121,19 +145,20 @@ func New(extra []Rule) *Classifier {
 // title. Unknown titles are "Other" (they go to the admin review queue).
 func (c *Classifier) Category(title string) (string, string) {
 	t := " " + strings.ToLower(title) + " "
-	var first, second string
+	var first, second, firstKw string
 	for _, r := range c.rules {
 		if !r.re.MatchString(t) {
 			continue
 		}
 		if first == "" {
-			first = r.Category
-		} else if r.Category != first && second == "" && r.Priority < 90 {
+			first, firstKw = r.Category, strings.ToLower(r.Keyword)
+		} else if r.Category != first && second == "" && r.Priority < 90 &&
+			!strings.Contains(firstKw, strings.ToLower(r.Keyword)) { // part of the phrase that already matched
 			second = r.Category
 			break
 		}
 	}
-	if first == "" {
+	if first == "" || first == "Other" {
 		return "Other", ""
 	}
 	return first, second

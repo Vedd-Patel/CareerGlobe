@@ -22,6 +22,14 @@ func TestCategory(t *testing.T) {
 		{"Corporate Counsel", "Legal", ""},
 		{"Chef de Partie", "Other", ""},
 		{"Detail-oriented Designer", "Design", ""}, // "ai" inside "Detail" must not match
+		{"Applied Scientist II, Buyer Risk Prevention (BRP)", "Data & AI", "Finance"},
+		{"Account Manager / Senior Account Manager", "Sales", ""},
+		{"Specialist - F&A - AP 4B", "Finance", ""},
+		{"Tech Lead - Enterprise Application", "Software Engineering", ""},
+		{"Executive - Production", "Operations", ""},
+		{"DCO Tech 3, HYD-Infinity - DCO", "DevOps & IT", ""},
+		{"Senior Mechanical Design Engineer", "Other", ""},
+		{"QAE II, Amazon Payments", "QA & Testing", ""},
 	}
 	for _, tt := range tests {
 		first, second := c.Category(tt.title)
@@ -40,18 +48,18 @@ func TestAdminRulesWin(t *testing.T) {
 
 func TestSeniority(t *testing.T) {
 	tests := map[string]string{
-		"Software Engineering Intern":     "Intern",
-		"Graduate Engineer Trainee":       "Intern",
-		"Fresher - Customer Support":      "Fresher",
-		"Junior Developer":                "Junior",
-		"SDE 1":                           "Junior",
-		"Software Engineer II":            "Mid",
-		"Backend Engineer":                "Mid",
-		"Senior Software Engineer":        "Senior",
-		"Staff Engineer":                  "Senior",
-		"Principal Engineer":              "Lead+",
-		"Engineering Manager":             "Lead+",
-		"Senior Product Manager":          "Senior",
+		"Software Engineering Intern":      "Intern",
+		"Graduate Engineer Trainee":        "Intern",
+		"Fresher - Customer Support":       "Fresher",
+		"Junior Developer":                 "Junior",
+		"SDE 1":                            "Junior",
+		"Software Engineer II":             "Mid",
+		"Backend Engineer":                 "Mid",
+		"Senior Software Engineer":         "Senior",
+		"Staff Engineer":                   "Senior",
+		"Principal Engineer":               "Lead+",
+		"Engineering Manager":              "Lead+",
+		"Senior Product Manager":           "Senior",
 		"Customer Success Account Manager": "Mid",
 	}
 	for title, want := range tests {

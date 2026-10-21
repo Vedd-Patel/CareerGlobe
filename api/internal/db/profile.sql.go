@@ -39,7 +39,7 @@ func (q *Queries) DeletePushToken(ctx context.Context, arg DeletePushTokenParams
 }
 
 const getPreferences = `-- name: GetPreferences :one
-SELECT user_id, categories, cities, anywhere, remote_ok, seniority, min_salary, push_time, push_enabled, theme, updated_at FROM preferences WHERE user_id = $1
+SELECT user_id, categories, cities, anywhere, remote_ok, seniority, min_salary, push_time, push_enabled, theme, updated_at, last_push_at FROM preferences WHERE user_id = $1
 `
 
 func (q *Queries) GetPreferences(ctx context.Context, userID int64) (Preference, error) {
@@ -57,6 +57,7 @@ func (q *Queries) GetPreferences(ctx context.Context, userID int64) (Preference,
 		&i.PushEnabled,
 		&i.Theme,
 		&i.UpdatedAt,
+		&i.LastPushAt,
 	)
 	return i, err
 }
@@ -206,7 +207,7 @@ ON CONFLICT (user_id) DO UPDATE SET
   categories = EXCLUDED.categories, cities = EXCLUDED.cities, anywhere = EXCLUDED.anywhere,
   remote_ok = EXCLUDED.remote_ok, seniority = EXCLUDED.seniority, min_salary = EXCLUDED.min_salary,
   push_time = EXCLUDED.push_time, push_enabled = EXCLUDED.push_enabled, theme = EXCLUDED.theme, updated_at = now()
-RETURNING user_id, categories, cities, anywhere, remote_ok, seniority, min_salary, push_time, push_enabled, theme, updated_at
+RETURNING user_id, categories, cities, anywhere, remote_ok, seniority, min_salary, push_time, push_enabled, theme, updated_at, last_push_at
 `
 
 type UpsertPreferencesParams struct {
@@ -248,6 +249,7 @@ func (q *Queries) UpsertPreferences(ctx context.Context, arg UpsertPreferencesPa
 		&i.PushEnabled,
 		&i.Theme,
 		&i.UpdatedAt,
+		&i.LastPushAt,
 	)
 	return i, err
 }

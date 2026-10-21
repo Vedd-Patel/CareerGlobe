@@ -104,6 +104,7 @@ var listOnly = map[string]bool{"Go": true, "R": true, "C": true}
 type matcher struct {
 	re        *regexp.Regexp
 	canonical string
+	needle    string // lowercase literal that must appear before the regex runs
 }
 
 // Extractor finds skills in text.
@@ -164,7 +165,9 @@ func New(extra map[string]string) *Extractor {
 		var pat string
 		switch {
 		case listOnly[k]:
-			pat = `(^|[,/|•·;:(]\s*)` + regexp.QuoteMeta(k) + `(\s*[,/|•·;)]|$)`
+			// A list separator on at least one side: "Java, Go" or "use Go, Kafka".
+			q := regexp.QuoteMeta(k)
+			pat = `(?:[,/|•·;:(]\s*` + q + `([^A-Za-z0-9+#]|$)|(^|[^A-Za-z0-9+#.])` + q + `(\s*[,/|•·;)]))`
 		case upperOnly[k]:
 			pat = `(^|[^A-Za-z0-9+#.])` + regexp.QuoteMeta(strings.ToUpper(k)) + `($|[^A-Za-z0-9+#])`
 			if k != strings.ToLower(k) { // mixed-case canonical like "SoC": exact spelling
@@ -173,7 +176,7 @@ func New(extra map[string]string) *Extractor {
 		default:
 			pat = `(?i)(^|[^A-Za-z0-9+#.])` + regexp.QuoteMeta(k) + `($|[^A-Za-z0-9+#])`
 		}
-		e.matchers = append(e.matchers, matcher{regexp.MustCompile(pat), spell[k]})
+		e.matchers = append(e.matchers, matcher{regexp.MustCompile(pat), spell[k], strings.ToLower(k)})
 	}
 	return e
 }
@@ -185,8 +188,9 @@ func (e *Extractor) Extract(text string) []string {
 	}
 	seen := map[string]bool{}
 	var out []string
+	lower := strings.ToLower(text)
 	for _, m := range e.matchers {
-		if m.canonical == "" || seen[m.canonical] {
+		if m.canonical == "" || seen[m.canonical] || !strings.Contains(lower, m.needle) {
 			continue
 		}
 		if m.re.MatchString(text) {
