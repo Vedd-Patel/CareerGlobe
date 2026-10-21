@@ -4,6 +4,7 @@
     python crawl.py --only "Groww"                   # one company, for testing
     python crawl.py --resume                         # continue a run that stopped
     python crawl.py --refresh                        # ignore ETags: re-parse every board
+    python crawl.py --if-triggered                   # run only if the watchdog asked (exit 3: nothing to do)
 """
 
 import argparse
@@ -31,6 +32,7 @@ IST = ZoneInfo("Asia/Kolkata")
 DEFAULT_SEEDS = config.REPO_ROOT / "seeds" / "companies.csv"
 FAILED_CSV = config.REPO_ROOT / "failed.csv"
 MAX_FAILED_RATIO = 0.10  # spec: a night with more failures than this is a bad night
+NOTHING_TO_DO = 3
 
 
 @dataclass
@@ -133,6 +135,8 @@ async def main(argv=None) -> int:
     mode = p.add_mutually_exclusive_group()
     mode.add_argument("--only", metavar="NAME", help="crawl one company by name (not recorded in crawl_runs)")
     mode.add_argument("--resume", action="store_true", help="continue the latest unfinished run")
+    mode.add_argument("--if-triggered", action="store_true",
+                      help="run a full crawl only if the watchdog requested one (exit 3 when there is nothing to do)")
     p.add_argument("--refresh", action="store_true",
                    help="ignore saved ETags and re-read every board (after changing an adapter or clean.py)")
     p.add_argument("--seeds", type=Path, default=DEFAULT_SEEDS, help="seed CSV (default: seeds/companies.csv)")
@@ -147,6 +151,8 @@ async def main(argv=None) -> int:
 
     conn = await store.connect(settings.database_url)
     async with conn:
+        if args.if_triggered and not await store.take_trigger(conn):
+            return NOTHING_TO_DO
         run = None
         if args.resume:
             run = await store.unfinished_run(conn)

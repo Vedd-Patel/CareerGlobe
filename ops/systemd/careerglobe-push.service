@@ -1,0 +1,18 @@
+# Morning push (each user's chosen time) and watchdog-requested crawl re-runs.
+[Unit]
+Description=CareerGlobe push and crawl re-run check
+After=network-online.target postgresql.service
+
+[Service]
+Type=oneshot
+User=careerglobe
+Group=careerglobe
+WorkingDirectory=/opt/careerglobe
+ExecStart=/opt/careerglobe/ops/push.sh
+MemoryMax=6G
+TimeoutStartSec=6h
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/careerglobe /var/lib/careerglobe

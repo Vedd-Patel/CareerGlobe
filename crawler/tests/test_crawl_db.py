@@ -388,3 +388,13 @@ async def test_seed_file_is_the_source_of_truth(db, env, tmp_path):
     opted_out.write_text(SEEDS.replace("Pune,Maharashtra,service,,", "Pune,Maharashtra,service,do-not-crawl,"))
     await seeds.load(db, opted_out)
     assert ("Down Corp", "disabled") in await statuses()
+
+
+async def test_watchdog_trigger_is_taken_once_and_not_during_a_run(db):
+    assert await store.take_trigger(db) is False  # nothing requested
+    await db.execute("INSERT INTO crawl_triggers (reason) VALUES ('watchdog')")
+    run = await store.start_run(db)  # a crawl is running
+    assert await store.take_trigger(db) is False
+    await store.finish_run(db, run)
+    assert await store.take_trigger(db) is True
+    assert await store.take_trigger(db) is False  # already taken

@@ -46,6 +46,25 @@ async def unfinished_run(conn) -> Run | None:
     return Run(row[0], row[1]) if row else None
 
 
+async def take_trigger(conn) -> bool:
+    """Claim the oldest pending watchdog request, unless a crawl is running now
+    (an unfinished run that started in the last 6 hours)."""
+    async with conn.transaction():
+        cur = await conn.execute(
+            """SELECT id FROM crawl_triggers WHERE started_at IS NULL ORDER BY requested_at LIMIT 1 FOR UPDATE SKIP LOCKED"""
+        )
+        row = await cur.fetchone()
+        if row is None:
+            return False
+        cur = await conn.execute(
+            "SELECT 1 FROM crawl_runs WHERE finished_at IS NULL AND started_at > now() - interval '6 hours'"
+        )
+        if await cur.fetchone():
+            return False
+        await conn.execute("UPDATE crawl_triggers SET started_at = now() WHERE id = %s", (row[0],))
+        return True
+
+
 async def finish_run(conn, run: Run) -> dict:
     cur = await conn.execute(
         """UPDATE crawl_runs SET finished_at = now() WHERE id = %s

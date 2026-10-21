@@ -1,0 +1,47 @@
+# Daily watchdog (spec: Zero-cost architecture). At 08:00 IST it checks that the
+# API answers and that last night's crawl finished; if the crawl did not finish
+# it asks the server to run it again (picked up within 15 minutes) and fails, so
+# GitHub emails you. Needs two repository secrets:
+#   API_URL    e.g. https://api.example.com (the Cloudflare Tunnel hostname)
+#   OPS_TOKEN  the same value as OPS_TOKEN in the server's .env
+# Without them (before the server exists) it does nothing.
+name: watchdog
+
+on:
+  schedule:
+    - cron: "30 2 * * *" # 02:30 UTC = 08:00 IST
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      API_URL: ${{ secrets.API_URL }}
+      OPS_TOKEN: ${{ secrets.OPS_TOKEN }}
+    steps:
+      - name: Skip until the server is set up
+        if: env.API_URL == '' || env.OPS_TOKEN == ''
+        run: echo "::notice::API_URL / OPS_TOKEN secrets not set yet; nothing to check."
+
+      - name: API health
+        if: env.API_URL != '' && env.OPS_TOKEN != ''
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$API_URL/healthz")
+          echo "healthz: HTTP $code"
+          test "$code" = "200"
+
+      - name: Last night's crawl finished
+        if: env.API_URL != '' && env.OPS_TOKEN != ''
+        run: |
+          status=$(curl -sf --max-time 20 -H "Authorization: Bearer $OPS_TOKEN" "$API_URL/v1/ops/crawl-status")
+          echo "$status" | jq '{finished_today, last_run}'
+          if [ "$(echo "$status" | jq -r .finished_today)" = "true" ]; then
+            exit 0
+          fi
+          echo "::error::Last night's crawl did not finish; asking the server to run it again."
+          curl -sf --max-time 20 -X POST -H "Authorization: Bearer $OPS_TOKEN" -H "Content-Type: application/json" \
+            -d '{"reason":"github watchdog: no finished crawl in the last 24 hours"}' "$API_URL/v1/ops/crawl-trigger" | jq .
+          exit 1
