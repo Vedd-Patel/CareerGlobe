@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Awaitable, Callable
 from urllib.parse import parse_qs, urlsplit
 
-from adapters import greenhouse, jsonld, keka, lever, successfactors, workday
+from adapters import amazon, greenhouse, jsonld, keka, lever, successfactors, workday
 from adapters.base import ParseError, RawJob
 
 
@@ -32,6 +32,7 @@ ADAPTERS = {
     "workday": Adapter("workday", fetch=workday.fetch),
     "successfactors": Adapter("successfactors", fetch=successfactors.fetch),
     "jsonld": Adapter("jsonld", fetch=jsonld.fetch),
+    "amazon": Adapter("amazon", fetch=amazon.fetch),
 }
 
 _SLUG = r"([A-Za-z0-9][A-Za-z0-9_.-]*)"
@@ -55,6 +56,8 @@ def detect(careers_url: str) -> tuple[str, str] | None:
     m = _KEKA_HOST.match(host)
     if m and m.group(1) not in ("www", "app"):
         return "keka", m.group(1)
+    if host in ("amazon.jobs", "www.amazon.jobs"):
+        return "amazon", "amazon"
     m = _WORKDAY_HOST.match(host)
     if m:
         pm = _WORKDAY_PATH.match(parts.path)
