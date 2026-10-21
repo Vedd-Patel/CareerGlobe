@@ -32,3 +32,5 @@ ios/DerivedData/
 *.dump
 uploads/
 .DS_Store
+# discover.py output, reviewed by hand before rows go into companies.csv
+seeds/discovered.csv

@@ -209,3 +209,10 @@ async def test_site_without_india_filter_fails():
 async def test_site_with_no_jobs_at_all_is_empty():
     async with client(FakeWorkday(n_india=0, facets=False, elsewhere=())) as c:
         assert await workday.fetch(c, SLUG, set()) == []
+
+
+def test_india_facet_falls_back_to_bare_indian_city_names():
+    facets = [{"facetParameter": "locationMainGroup", "values": [{"facetParameter": "locations", "values": [
+        {"descriptor": "Amsterdam", "id": "a"}, {"descriptor": "Bengaluru", "id": "b"},
+        {"descriptor": "Gurgaon", "id": "g"}, {"descriptor": "California", "id": "c"}]}]}]
+    assert workday.india_facets(facets) == {"locations": ["b", "g"]}

@@ -182,3 +182,30 @@ async def test_crawl_delay_longer_than_gap_is_honoured():
         await c.get("https://h.com/b")
     times = [t for t, _ in server.requests]
     assert times[2] - times[1] >= 0.29
+
+
+async def test_retry_after_is_waited_out_before_the_next_request():
+    calls = iter([httpx.Response(429, headers={"Retry-After": "0.3"}), httpx.Response(200)])
+    server = Server(lambda r: next(calls))
+    async with client(server, max_attempts=2) as c:
+        await c.get("https://h.com/jobs")
+    times = [t for t, _ in server.requests]  # robots, 429, 200
+    assert times[2] - times[1] >= 0.29
+
+
+async def test_min_gap_for_a_slow_host():
+    server = Server(lambda r: httpx.Response(200))
+    async with client(server) as c:
+        c.min_gap("h.com", 0.25)
+        await c.get("https://h.com/a")
+        await c.get("https://h.com/b")
+        await c.get("https://other.com/a")
+    times = {f"{r.url.host}{r.url.path}": t for t, r in server.requests}
+    assert times["h.com/b"] - times["h.com/a"] >= 0.24
+
+
+async def test_redirect_loop_becomes_fetch_error():
+    server = Server(lambda r: httpx.Response(302, headers={"Location": "https://h.com/loop"}))
+    async with client(server) as c:
+        with pytest.raises(FetchError, match="TooManyRedirects"):
+            await c.get("https://h.com/loop")

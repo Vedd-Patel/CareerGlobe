@@ -7,7 +7,9 @@
   host, not per company.
 - ETag / Last-Modified sent back, so unchanged boards answer 304.
 - POST only for JSON search APIs that are read-only (Workday's job list).
-- Retries only on network errors, 429 and 5xx.
+- Retries only on network errors, 429 and 5xx; a 429's Retry-After (up to
+  MAX_RETRY_AFTER seconds) is waited out before the next request to that host.
+- An adapter can ask for a longer gap on a host that rate-limits (min_gap).
 """
 
 import asyncio
@@ -23,6 +25,7 @@ from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt,
 from robots import Robots
 
 log = logging.getLogger(__name__)
+MAX_RETRY_AFTER = 120.0
 
 
 class FetchError(Exception):
@@ -67,6 +70,7 @@ class _Host:
     robots_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     next_allowed: float = 0.0
     robots: Robots | None = None
+    min_gap: float = 0.0
 
 
 class PoliteClient:
@@ -114,6 +118,12 @@ class PoliteClient:
         host = await self._allowed(url)
         resp = await self._request(host, "POST", url, {"Accept": "application/json"}, payload)
         return self._result(url, resp, None, None)
+
+    def min_gap(self, host: str, seconds: float) -> None:
+        """At least `seconds` between requests to `host` (for hosts that answer
+        429 at the normal pace)."""
+        h = self._host(host)
+        h.min_gap = max(h.min_gap, seconds)
 
     async def sitemaps(self, url: str) -> list[str]:
         """Sitemap URLs listed in the robots.txt of `url`'s host."""
@@ -182,6 +192,8 @@ class PoliteClient:
             raise FetchError(f"HTTP {e.status} for {url} after {self._max_attempts} attempts", e.status) from e
         except httpx.TransportError as e:
             raise FetchError(f"{type(e).__name__} for {url}") from e
+        except httpx.RequestError as e:  # redirect loops, bad URLs, broken encodings: not retried
+            raise FetchError(f"{type(e).__name__} for {url}") from e
         raise AssertionError("unreachable")
 
     async def _send(self, host: _Host, method: str, url: str, headers: dict[str, str],
@@ -190,12 +202,24 @@ class PoliteClient:
             wait = host.next_allowed - time.monotonic()
             if wait > 0:
                 await asyncio.sleep(wait)
+            resp = None
             try:
-                return await self._client.request(method, url, headers=headers, json=payload)
+                resp = await self._client.request(method, url, headers=headers, json=payload)
+                return resp
             finally:
-                host.next_allowed = time.monotonic() + self._gap(host)
+                host.next_allowed = time.monotonic() + max(self._gap(host), _retry_after(resp))
 
     def _gap(self, host: _Host) -> float:
         gap = random.uniform(self._min_gap, self._max_gap)
         delay = host.robots.crawl_delay(self._token) if host.robots else None
-        return max(gap, delay or 0.0)
+        return max(gap, delay or 0.0, host.min_gap)
+
+
+def _retry_after(resp: httpx.Response | None) -> float:
+    """Seconds a 429/503 asks us to wait (numeric form only), capped."""
+    if resp is None or resp.status_code not in (429, 503):
+        return 0.0
+    try:
+        return min(max(float(resp.headers.get("Retry-After", "0")), 0.0), MAX_RETRY_AFTER)
+    except ValueError:
+        return 0.0

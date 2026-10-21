@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Awaitable, Callable
 from urllib.parse import parse_qs, urlsplit
 
-from adapters import amazon, greenhouse, jsonld, keka, lever, successfactors, workday
+from adapters import amazon, eightfold, greenhouse, jsonld, keka, lever, oracle, successfactors, workday
 from adapters.base import ParseError, RawJob
 
 
@@ -33,6 +33,8 @@ ADAPTERS = {
     "successfactors": Adapter("successfactors", fetch=successfactors.fetch),
     "jsonld": Adapter("jsonld", fetch=jsonld.fetch),
     "amazon": Adapter("amazon", fetch=amazon.fetch),
+    "eightfold": Adapter("eightfold", fetch=eightfold.fetch),
+    "oracle": Adapter("oracle", fetch=oracle.fetch),
 }
 
 _SLUG = r"([A-Za-z0-9][A-Za-z0-9_.-]*)"
@@ -58,6 +60,14 @@ def detect(careers_url: str) -> tuple[str, str] | None:
         return "keka", m.group(1)
     if host in ("amazon.jobs", "www.amazon.jobs"):
         return "amazon", "amazon"
+    if host in ("apply.careers.microsoft.com", "jobs.careers.microsoft.com"):
+        return "eightfold", "apply.careers.microsoft.com|microsoft.com"
+    if host.endswith(".oraclecloud.com"):
+        m = re.match(r"^/hcmUI/CandidateExperience/[a-zA-Z_-]+/sites/([A-Za-z0-9_-]+)", parts.path)
+        return ("oracle", f"{host}|{m.group(1)}") if m else None
+    if host.endswith(".eightfold.ai"):
+        domain = parse_qs(parts.query).get("domain", [""])[0].lower()
+        return ("eightfold", f"{host}|{domain}") if domain else None
     m = _WORKDAY_HOST.match(host)
     if m:
         pm = _WORKDAY_PATH.match(parts.path)

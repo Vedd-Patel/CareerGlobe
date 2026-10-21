@@ -10,7 +10,8 @@ internal sites, never /wday/cxs/. Seed slug: "{tenant}.{wdN}/{site}".
 
 - Only jobs in India: the first page's facets are searched for an "India"
   country value (the same ID on every tenant), else for every `locations`
-  value naming India. No India filter at all fails the company instead of
+  value naming India, else for `locations` values that are known Indian city
+  names. No India filter at all fails the company instead of
   crawling the whole world (or closing anything).
 - The list has no descriptions; one detail request per job is made only for
   jobs not yet in the DB, at most MAX_NEW_DETAILS per night. The rest wait for
@@ -24,7 +25,7 @@ import re
 from datetime import datetime, timezone
 
 from adapters.base import ParseError, RawJob
-from clean import cities_from, clean_html, work_mode_from
+from clean import CITY_RE, cities_from, clean_html, work_mode_from
 from fetcher import FetchError
 
 log = logging.getLogger(__name__)
@@ -78,6 +79,9 @@ def india_facets(facets) -> dict[str, list[str]]:
         if (v.get("descriptor") or "").strip().lower() == "india":
             return {param: [v["id"]]}
     ids = [v["id"] for param, v in leaves if param == "locations" and _INDIA.search(v.get("descriptor") or "")]
+    if not ids:
+        # Some sites list bare city names ("Bengaluru", "Gurgaon"): known Indian cities only.
+        ids = [v["id"] for param, v in leaves if param == "locations" and CITY_RE.search(v.get("descriptor") or "")]
     return {"locations": ids} if ids else {}
 
 

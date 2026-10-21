@@ -165,3 +165,16 @@ async def test_job_pages_without_json_ld_fail_on_first_crawl():
     async with client(site) as c:
         with pytest.raises(ParseError, match="none of 2 sitemap pages"):
             await jsonld.fetch(c, CAREERS, {})
+
+
+@pytest.mark.anyio
+async def test_one_job_url_listed_per_city_becomes_one_job():
+    site = FakeSite()
+    one = ('{"@type": "JobPosting", "title": "Account Manager", "url": "https://acme.example/careers/job/am",'
+           ' "jobLocation": {"address": {"addressLocality": "%s", "addressCountry": "IN"}}}')
+    site.listing = ('<script type="application/ld+json">[' + ",".join(one % c for c in ("Noida", "Kolkata", "Noida"))
+                    + "]</script>")
+    site.robots = "User-agent: *\nAllow: /\n"
+    async with client(site) as c:
+        jobs = await jsonld.fetch(c, CAREERS, {})
+    assert [(j.title, j.cities) for j in jobs] == [("Account Manager", ["Noida", "Kolkata"])]

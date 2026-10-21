@@ -30,7 +30,7 @@ CITY_ALIASES = {
     "visakhapatnam": "Visakhapatnam", "vizag": "Visakhapatnam", "goa": "Goa",
 }
 # Longest first, so "new delhi" wins over "delhi" and "navi mumbai" over "mumbai".
-_CITY_RE = re.compile(
+CITY_RE = _CITY_RE = re.compile(
     r"\b(" + "|".join(re.escape(a) for a in sorted(CITY_ALIASES, key=len, reverse=True)) + r")\b",
     re.IGNORECASE,
 )

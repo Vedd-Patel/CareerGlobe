@@ -1,0 +1,252 @@
+# Company websites for discover.py (one "Name,website" per line).
+# Run: crawler/.venv/bin/python crawler/discover.py --websites seeds/websites.txt
+# then check seeds/discovered.csv and copy good rows into seeds/companies.csv.
+
+# Consumer internet and e-commerce
+Flipkart,https://www.flipkart.com
+Myntra,https://www.myntra.com
+Swiggy,https://www.swiggy.com
+Zomato,https://www.zomato.com
+Zepto,https://www.zeptonow.com
+BigBasket,https://www.bigbasket.com
+Nykaa,https://www.nykaa.com
+Lenskart,https://www.lenskart.com
+Urban Company,https://www.urbancompany.com
+Ola,https://www.olacabs.com
+Ola Electric,https://www.olaelectric.com
+Rapido,https://www.rapido.bike
+MakeMyTrip,https://www.makemytrip.com
+ixigo,https://www.ixigo.com
+OYO,https://www.oyorooms.com
+Dream11,https://www.dream11.com
+MPL,https://www.mpl.live
+Games24x7,https://www.games24x7.com
+Nazara Technologies,https://www.nazara.com
+ShareChat,https://sharechat.com
+Dailyhunt,https://www.dailyhunt.in
+InMobi Glance,https://glance.com
+PhysicsWallah,https://www.pw.live
+upGrad,https://www.upgrad.com
+Unacademy,https://unacademy.com
+BYJU'S,https://byjus.com
+Vedantu,https://www.vedantu.com
+Eruditus,https://eruditus.com
+Scaler,https://www.scaler.com
+Practo,https://www.practo.com
+PharmEasy,https://pharmeasy.in
+Tata 1mg,https://www.1mg.com
+Cult.fit,https://www.cult.fit
+HealthifyMe,https://www.healthifyme.com
+Spinny,https://www.spinny.com
+CarDekho,https://www.cardekho.com
+Delhivery,https://www.delhivery.com
+Shiprocket,https://www.shiprocket.in
+Rivigo,https://rivigo.com
+BlackBuck,https://blackbuck.com
+Porter,https://porter.in
+Udaan,https://udaan.com
+Licious,https://www.licious.in
+boAt,https://www.boat-lifestyle.com
+Mamaearth,https://mamaearth.in
+FirstCry,https://www.firstcry.com
+Pepperfry,https://www.pepperfry.com
+Livspace,https://www.livspace.com
+NoBroker,https://www.nobroker.in
+Housing.com,https://housing.com
+Info Edge,https://www.infoedge.in
+JustDial,https://www.justdial.com
+PolicyBazaar,https://www.policybazaar.com
+Acko,https://www.acko.com
+Digit Insurance,https://www.godigit.com
+InsuranceDekho,https://www.insurancedekho.com
+
+# Fintech
+PhonePe,https://www.phonepe.com
+Pine Labs,https://www.pinelabs.com
+BharatPe,https://bharatpe.com
+MobiKwik,https://www.mobikwik.com
+Cashfree Payments,https://www.cashfree.com
+PayU India,https://payu.in
+Juspay,https://juspay.io
+Zerodha,https://zerodha.com
+Upstox,https://upstox.com
+Angel One,https://www.angelone.in
+Paisabazaar,https://www.paisabazaar.com
+Slice,https://www.sliceit.com
+Jupiter,https://jupiter.money
+Fi Money,https://fi.money
+Navi,https://navi.com
+KreditBee,https://www.kreditbee.in
+Lendingkart,https://www.lendingkart.com
+Perfios,https://www.perfios.com
+M2P Fintech,https://m2pfintech.com
+Open Financial,https://open.money
+Smallcase,https://www.smallcase.com
+INDmoney,https://www.indmoney.com
+Groww Pay,https://groww.in
+Khatabook,https://khatabook.com
+OkCredit,https://okcredit.in
+Rupeek,https://rupeek.com
+CoinDCX,https://coindcx.com
+CoinSwitch,https://coinswitch.co
+
+# SaaS and developer tools
+Freshworks,https://www.freshworks.com
+Zoho,https://www.zoho.com
+Postman,https://www.postman.com
+BrowserStack,https://www.browserstack.com
+Chargebee,https://www.chargebee.com
+Darwinbox,https://darwinbox.com
+Whatfix,https://whatfix.com
+Clevertap,https://clevertap.com
+MoEngage,https://www.moengage.com
+WebEngage,https://webengage.com
+LeadSquared,https://www.leadsquared.com
+Icertis,https://www.icertis.com
+Innovaccer,https://innovaccer.com
+Sprinklr,https://www.sprinklr.com
+Hasura,https://hasura.io
+Druva,https://www.druva.com
+Mindtickle,https://www.mindtickle.com
+Uniphore,https://www.uniphore.com
+Yellow.ai,https://yellow.ai
+Gupshup,https://www.gupshup.io
+Haptik,https://www.haptik.ai
+Exotel,https://exotel.com
+Kaleyra,https://www.kaleyra.com
+Capillary Technologies,https://www.capillarytech.com
+Zeta,https://www.zeta.tech
+Ather Energy,https://www.atherenergy.com
+SigTuple,https://sigtuple.com
+Fractal Analytics,https://fractal.ai
+Tiger Analytics,https://www.tigeranalytics.com
+Mu Sigma,https://www.mu-sigma.com
+LatentView Analytics,https://www.latentview.com
+Sarvam AI,https://www.sarvam.ai
+Krutrim,https://www.olakrutrim.com
+Atlan,https://atlan.com
+Rocketlane,https://www.rocketlane.com
+Zluri,https://www.zluri.com
+Spyne,https://www.spyne.ai
+Signzy,https://www.signzy.com
+HyperVerge,https://hyperverge.co
+Leena AI,https://leena.ai
+Skit.ai,https://skit.ai
+Observe.AI,https://www.observe.ai
+Simplilearn,https://www.simplilearn.com
+Nium,https://www.nium.com
+Ninjacart,https://www.ninjacart.com
+DeHaat,https://agrevolution.in
+Meesho,https://www.meesho.com
+CRED,https://cred.club
+
+# IT services and engineering
+Tata Consultancy Services,https://www.tcs.com
+Infosys,https://www.infosys.com
+Wipro,https://www.wipro.com
+HCLTech,https://www.hcltech.com
+Tech Mahindra,https://www.techmahindra.com
+LTIMindtree,https://www.ltimindtree.com
+Mphasis,https://www.mphasis.com
+Persistent Systems,https://www.persistent.com
+Coforge,https://www.coforge.com
+Hexaware,https://hexaware.com
+Cyient,https://www.cyient.com
+KPIT Technologies,https://www.kpit.com
+Tata Elxsi,https://www.tataelxsi.com
+L&T Technology Services,https://www.ltts.com
+Zensar Technologies,https://www.zensar.com
+Birlasoft,https://www.birlasoft.com
+Sonata Software,https://www.sonata-software.com
+Mastek,https://www.mastek.com
+NIIT Technologies,https://www.niit.com
+Happiest Minds,https://www.happiestminds.com
+Infoedge Naukri,https://www.naukri.com
+Thoughtworks India,https://www.thoughtworks.com
+Genpact,https://www.genpact.com
+Firstsource,https://www.firstsource.com
+Startek India,https://www.startek.com
+Quess Corp,https://www.quesscorp.com
+Teamlease,https://www.teamlease.com
+Tata Communications,https://www.tatacommunications.com
+Tata Technologies,https://www.tatatechnologies.com
+Sasken,https://www.sasken.com
+Ramco Systems,https://www.ramco.com
+Newgen Software,https://newgensoft.com
+Intellect Design Arena,https://www.intellectdesign.com
+Nucleus Software,https://www.nucleussoftware.com
+Subex,https://www.subex.com
+Tanla Platforms,https://www.tanla.com
+Route Mobile,https://www.routemobile.com
+Affle,https://www.affle.com
+
+# Banking and financial services
+HDFC Bank,https://www.hdfcbank.com
+ICICI Bank,https://www.icicibank.com
+Axis Bank,https://www.axisbank.com
+Kotak Mahindra Bank,https://www.kotak.com
+IndusInd Bank,https://www.indusind.com
+Yes Bank,https://www.yesbank.in
+IDFC First Bank,https://www.idfcfirstbank.com
+Bajaj Finserv,https://www.bajajfinserv.in
+Bajaj Finance,https://www.bajajfinance.in
+Muthoot Finance,https://www.muthootfinance.com
+HDFC Life,https://www.hdfclife.com
+ICICI Lombard,https://www.icicilombard.com
+SBI Card,https://www.sbicard.com
+Paytm Money,https://www.paytmmoney.com
+NSE,https://www.nseindia.com
+BSE,https://www.bseindia.com
+CRISIL,https://www.crisil.com
+Mahindra Finance,https://www.mahindrafinance.com
+Aditya Birla Capital,https://www.adityabirlacapital.com
+Edelweiss,https://www.edelweissfin.com
+
+# Manufacturing, auto, pharma, consumer, conglomerates
+Reliance Industries,https://www.ril.com
+Jio Platforms,https://www.jio.com
+Bharti Airtel,https://www.airtel.in
+Mahindra & Mahindra,https://www.mahindra.com
+Maruti Suzuki,https://www.marutisuzuki.com
+Hero MotoCorp,https://www.heromotocorp.com
+TVS Motor,https://www.tvsmotor.com
+Eicher Motors,https://www.eicher.in
+Ashok Leyland,https://www.ashokleyland.com
+Bharat Forge,https://www.bharatforge.com
+Larsen & Toubro,https://www.larsentoubro.com
+Tata Steel,https://www.tatasteel.com
+JSW Steel,https://www.jsw.in
+Hindalco,https://www.hindalco.com
+UltraTech Cement,https://www.ultratechcement.com
+Adani Group,https://www.adani.com
+Tata Power,https://www.tatapower.com
+NTPC,https://www.ntpc.co.in
+Godrej Consumer Products,https://www.godrejcp.com
+Hindustan Unilever,https://www.hul.co.in
+ITC,https://www.itcportal.com
+Dabur,https://www.dabur.com
+Marico,https://marico.com
+Britannia,https://www.britannia.co.in
+Nestle India,https://www.nestle.in
+Titan Company,https://www.titancompany.in
+Pidilite,https://www.pidilite.com
+Havells,https://www.havells.com
+Voltas,https://www.voltas.com
+Dr. Reddy's,https://www.drreddys.com
+Cipla,https://www.cipla.com
+Biocon,https://www.biocon.com
+Glenmark,https://www.glenmarkpharma.com
+Zydus Lifesciences,https://www.zyduslife.com
+Torrent Pharma,https://www.torrentpharma.com
+Apollo Hospitals,https://www.apollohospitals.com
+Max Healthcare,https://www.maxhealthcare.in
+Fortis Healthcare,https://www.fortishealthcare.com
+InterGlobe Aviation (IndiGo),https://www.goindigo.in
+Air India,https://www.airindia.com
+DMart,https://www.dmartindia.com
+Trent,https://trentlimited.com
+Reliance Retail,https://www.relianceretail.com
+Asian Paints Home,https://www.beautifulhomes.asianpaints.com
+Vedanta,https://www.vedantalimited.com
+Siemens India,https://www.siemens.co.in
+Bosch India,https://www.bosch.in

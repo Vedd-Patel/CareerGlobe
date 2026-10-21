@@ -338,3 +338,53 @@ def test_stop_time_is_next_0530_ist():
     assert crawl.stop_time(start, "05:30") == datetime(2026, 10, 20, 5, 30, tzinfo=crawl.IST)
     later = datetime(2026, 10, 20, 14, 0, tzinfo=crawl.IST)
     assert crawl.stop_time(later, "05:30") == datetime(2026, 10, 21, 5, 30, tzinfo=crawl.IST)
+
+
+async def test_locations_get_city_centre_pins(db, env):
+    import geocode
+
+    path, _, _ = env
+    await seeds.load(db, path)
+    pinned, missing = await geocode.pin_locations(db)
+    assert (pinned, missing) == (2, [])  # Bengaluru, Pune
+    cur = await db.execute("""SELECT city, round(ST_Y(geo::geometry)::numeric, 1), geo_approximate
+                              FROM company_locations ORDER BY city""")
+    assert await cur.fetchall() == [("Bengaluru", 13.0, True), ("Pune", 18.5, True)]
+    assert await geocode.pin_locations(db) == (0, [])  # already pinned
+
+
+def test_geocode_aliases():
+    import geocode
+
+    coords = geocode.load()
+    assert geocode.lookup(coords, "Bangalore") == geocode.lookup(coords, "Bengaluru")
+    assert geocode.lookup(coords, "Gurgaon") is not None and geocode.lookup(coords, "Noida") is not None
+    assert geocode.lookup(coords, "Atlantis") is None
+
+
+async def test_seed_file_is_the_source_of_truth(db, env, tmp_path):
+    path, _, _ = env
+    await seeds.load(db, path)
+
+    async def statuses():
+        cur = await db.execute("""SELECT c.name, s.status FROM careers_sources s
+                                  JOIN companies c ON c.id = s.company_id ORDER BY c.name""")
+        return await cur.fetchall()
+
+    # Down Corp removed from the file -> no longer crawled; an admin company is untouched.
+    await db.execute("INSERT INTO companies (name, slug, origin) VALUES ('Admin Co', 'admin-co', 'admin')")
+    await db.execute("""INSERT INTO careers_sources (company_id, careers_url)
+                        SELECT id, 'https://admin.example/careers' FROM companies WHERE slug = 'admin-co'""")
+    only_acme = tmp_path / "acme.csv"
+    only_acme.write_text(SEEDS.splitlines()[0] + "\n" + SEEDS.splitlines()[1] + "\n")
+    await seeds.load(db, only_acme)
+    assert await statuses() == [("Acme", "active"), ("Admin Co", "active"), ("Down Corp", "disabled")]
+    assert [s.company for s in await store.sources(db)] == ["Acme", "Admin Co"]
+
+    # Back in the file -> crawled again. Opted out -> disabled.
+    await seeds.load(db, path)
+    assert ("Down Corp", "active") in await statuses()
+    opted_out = tmp_path / "optout.csv"
+    opted_out.write_text(SEEDS.replace("Pune,Maharashtra,service,,", "Pune,Maharashtra,service,do-not-crawl,"))
+    await seeds.load(db, opted_out)
+    assert ("Down Corp", "disabled") in await statuses()

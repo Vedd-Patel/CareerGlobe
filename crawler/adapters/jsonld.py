@@ -189,7 +189,7 @@ async def fetch(client, careers_url: str, known) -> list[RawJob]:
     jobs: dict[str, RawJob] = {}
     for p in postings(res.content.decode("utf-8", "replace")):
         if job := to_job(p, careers_url):
-            jobs.setdefault(job.source_job_id, job)
+            _add(jobs, job)
 
     candidates = await sitemap_pages(client, careers_url)
     if not jobs and not candidates:
@@ -228,6 +228,13 @@ async def fetch(client, careers_url: str, known) -> list[RawJob]:
     if deferred:
         log.info("jsonld %s: %d pages left for the next night (cap %d)", careers_url, deferred, MAX_NEW_DETAILS)
     return list(jobs.values())
+
+
+def _add(jobs: dict[str, RawJob], job: RawJob) -> None:
+    """A listing can repeat one job URL once per city: keep one job with every city."""
+    first = jobs.setdefault(job.source_job_id, job)
+    if first is not job:
+        first.cities += [c for c in job.cities if c not in first.cities]
 
 
 def _bare(host: str | None) -> str:

@@ -1,0 +1,170 @@
+{
+ "status": 200,
+ "error": {
+  "message": "",
+  "body": ""
+ },
+ "data": {
+  "id": 1970393557040609,
+  "displayJobId": "200061852",
+  "name": "Customer Success Account Manager",
+  "locations": [
+   "India, Multiple Locations, Multiple Locations"
+  ],
+  "standardizedLocations": [
+   "IN"
+  ],
+  "postedTs": 1791963855,
+  "stars": 0,
+  "department": "Customer Success Account Mgmt",
+  "creationTs": 1791960644,
+  "jobDescription": "<b>Overview</b><br><div><p>The CSAM is an early-in-career Customer Success Account Manager who delivers standardized customer success outcomes spanning executive partnership, solution health, cloud adoption, and AI acceleration activities. These CSAMs act within a pod model.\u00a0</p></div><div><p>Working under the direction of CSAMs and a M1 Manager, the CSAM operates within a defined pod covering a shared portfolio of accounts. The role contributes to portfolio-level intelligence, execution orchestration, and reactive signal aggregation \u2013 reducing context-switching for senior CSAMs and accelerating customer outcomes.\u00a0</p></div><div><p>This is a talent-engine role: CSAMs are AI-first, customer-facing from month three, and grow through structured cohorts and community.\u00a0</p></div><br><br><b>Responsibilities</b><br><div><div><p><strong>Executive partnership and execution\u00a0</strong></p></div><div><ul style=\"list-style-type: disc;\"><li><p>Execute standardized executive partnership, solution health, cloud adoption, and AI acceleration tasks under direct guidance from senior CSAMs or CSU leaders.\u00a0</p></li></ul></div><div><ul style=\"list-style-type: disc;\"><li><p>Support agent and Copilot adoption motions across assigned pod accounts.\u00a0</p></li></ul></div><div><ul style=\"list-style-type: disc;\"><li><p>Complete assigned activities accurately and on time; escalate exceptions rather than independently diagnose them.\u00a0</p></li></ul></div><div><p><strong>Portfolio-level intelligence and preparat",
+  "location": "India, Multiple Locations, Multiple Locations",
+  "isHot": 0,
+  "workLocationOption": "onsite",
+  "locationFlexibility": null,
+  "atsJobId": "200061852",
+  "positionUrl": "/careers/job/1970393557040609",
+  "publicUrl": "https://apply.careers.microsoft.com/careers/job/1970393557040609",
+  "efcustomTextWorkSite": [
+   "3 days / week in-office"
+  ],
+  "efcustomTextRequiredTravel": [
+   "Less than 25%"
+  ],
+  "efcustomTextCurrentProfession": [
+   "Customer Success"
+  ],
+  "efcustomTextTaDisciplineName": [
+   "Customer Success Account Mgmt"
+  ],
+  "efcustomTextRoletype": [
+   "Individual Contributor"
+  ],
+  "efcustomTextEmploymentType": [
+   "Full-Time"
+  ],
+  "jdHighlight": [],
+  "positionExtraDetails": {
+   "videos": [
+    {
+     "url": "https://www.youtube-nocookie.com/embed/3zVUrcGVTrw",
+     "title": "Our mission",
+     "description": "220,000 employees empowering 8,000,000,000 people on the planet. To make every small business more productive and every large business more competitiv..."
+    },
+    {
+     "url": "https://www.youtube-nocookie.com/embed/DddJhta9kJU",
+     "title": "100% Empowered by Employees",
+     "description": "Behind the technology, you\u2019ll find leaders and innovators, and movers and shakers. This is Microsoft. Move your career into the future with us: https:..."
+    },
+    {
+     "url": "https://www.youtube-nocookie.com/embed/UTLflQWya8w",
+     "title": "One Day, One Microsoft",
+     "description": "This short film, created entirely of user generated content, celebrates the hopes, challenges and dreams of the individuals that make up Microsoft, an..."
+    }
+   ],
+   "blogs": [
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/10/12/microsoft-to-expand-azure-maia-system-to-multi-gigawatt-deployments/",
+     "title": "Microsoft to expand Azure Maia system to multi-gigawatt deployments",
+     "description": "Azure Maia 200 now in production; Azure Maia 300 coming in 2027 As we move into the era of Super Intelligence, Microsoft is entering a new phase of infrastructure. We will scale our Azure Maia family to multi-gigawatt deployments starting in 2027, making Maia the primary inference system for Microsoft products and services. The multigenerational... The post  Microsoft to expand Azure Maia system to multi-gigawatt deployments  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/10/OMB-Maia-300-Hero_10_9_26-1024x576.png"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/10/01/microsoft-365-and-linkedin-leadership-update/",
+     "title": "Microsoft 365 and LinkedIn leadership update",
+     "description": "Satya Nadella, Chairman and CEO, and Ryan Roslansky, Executive Vice President of LinkedIn and Microsoft 365, shared the below communications with Microsoft and LinkedIn employees this morning. SATYA NADELLA MESSAGE After nearly 18 years at LinkedIn and Microsoft, Ryan Roslansky has decided to leave Microsoft and embark on his next chapter. As Ryan and I... The post  Microsoft 365 and LinkedIn leadership update  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/03/MicrosoftLogo_social-1024x576.png"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/09/28/new-microsoft-data-innovations-unlock-what-only-your-business-knows/",
+     "title": "New Microsoft data innovations unlock what only your business knows",
+     "description": "Every organization has knowledge that is uniquely its own: the way its business operates, the data it has built over time, the expertise of its people and the context behind thousands of everyday decisions. As powerful AI models become more widely available, that unique business intelligence matters more than ever. The difference will come from... The post  New Microsoft data innovations unlock what only your business knows  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/09/OMB-FabCon-26-Final-Hero-9_24-1024x683.jpg"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/09/25/introducing-the-new-copilot-with-home-code-and-autopilot/",
+     "title": "Introducing the new Copilot with Home, Code and Autopilot",
+     "description": "We\u2019re reimagining Microsoft Copilot to enable work as it evolves and to help expand what every individual and every organization can accomplish in the flow of human ambition. Today we\u2019re introducing the new Copilot to connect the tools people rely on with the next generation of capabilities they\u2019ll need to build, customize and scale AI... The post  Introducing the new Copilot with Home, Code and Autopilot  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/09/OMB-Copilot-9-25-Hero-9_22_26-1024x576.png"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/09/17/what-weve-learned-from-microsofts-own-ai-transformation/",
+     "title": "What we\u2019ve learned from Microsoft\u2019s own AI transformation",
+     "description": "AI is reshaping work faster than any organization has fully mastered. Across industries, the conversation has shifted from what AI can do to how companies can use AI to create business value and expand what people are able to achieve. At Microsoft, we believe the organizations that succeed will be what we call Frontier Firms:... The post  What we\u2019ve learned from Microsoft\u2019s own AI transformation  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/09/OMB-Hero-FINAL-9_17-1024x683.jpg"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/09/16/microsofts-commitment-for-ai-in-education/",
+     "title": "Microsoft\u2019s commitment for AI in education: Protecting students, strengthening learning",
+     "description": "Microsoft has been in the business of education for five decades. Since the earliest days of this company, we have worked alongside educators, students, families and educational leaders through each new wave of technology \u2014 and we have learned what helps learning and what gets in the way. That commitment continues today, in a technological... The post  Microsoft\u2019s commitment for AI in education: Protecting students, strengthening learning  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/09/OMB-Hero-Education-FINAL-1024x683.jpg"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/09/01/the-yield-imperative-turning-ai-infrastructure-into-useful-intelligence/",
+     "title": "The yield imperative: Turning AI infrastructure into useful intelligence",
+     "description": "As we enter the next era, what will be the defining measure of our progress? Every industry has a word that shapes how it thinks. For pilots, it\u2019s safety. For insurers, it\u2019s risk. For the semiconductor industry, it\u2019s yield. Yield does not ask how elegant the solution is, how many years it took or what... The post  The yield imperative: Turning AI infrastructure into useful intelligence  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/09/OMB-SEMICON-Hero.png"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/07/28/looking-back-on-microsofts-fy26-from-ai-experimentation-to-frontier-transformation/",
+     "title": "Looking back on Microsoft\u2019s FY26: From AI experimentation to Frontier Transformation",
+     "description": "Throughout this past fiscal year, customers across every industry and segment moved from AI experimentation to deploying AI for real-world business outcomes. They unlocked innovation and created new opportunities for growth. We saw the emergence of Frontier Firms as they moved beyond efficiency gains to focus on human ambition and embed AI at the core... The post  Looking back on Microsoft\u2019s FY26: From AI experimentation to Frontier Transformation  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/07/OMB-Q426-Hero-Final-7_27-1024x579.png"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/07/27/rethinking-security-for-the-age-of-ai/",
+     "title": "Rethinking security for the age of AI",
+     "description": "Editor\u2019s note: Updates with additional details on the model\u2019s crash score. Why security needs a new cyber stack \u2014 Introducing Project Perception The physics of cybersecurity are changing. Autonomous systems can now reason, adapt and operate continuously. At the same time, the cost of offense is falling, while the volume, velocity and complexity of what... The post  Rethinking security for the age of AI  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/07/OMB-Project-Perception-Final-Hero-7_27-1024x576.png"
+    },
+    {
+     "url": "https://blogs.microsoft.com/blog/2026/07/22/powering-americas-genesis-mission-microsofts-commitment-to-scientific-discovery/",
+     "title": "Powering America\u2019s Genesis Mission: Microsoft\u2019s commitment to scientific discovery",
+     "description": "Today, we\u2019re excited to share a long-term commitment to the Department of Energy\u2019s (DOE) Genesis Mission, backed by a $60 million investment designed to accelerate AI for science and the breakthroughs it can deliver for the country. This deepened commitment includes Microsoft\u2019s new Scientific Partnership Advancing Research &amp; Knowledge coordination hub and program office, otherwise... The post  Powering America\u2019s Genesis Mission: Microsoft\u2019s commitment to scientific discovery  appeared first on  The Official Microsoft Blog .",
+     "image": "https://blogs.microsoft.com/wp-content/uploads/2026/07/GettyImages-1413606459-1024x540.jpg"
+    }
+   ],
+   "perks": [
+    {
+     "title": "Flexibility",
+     "description": "Balance what matters\u2014your work, your life, and your team\u2014through trust, autonomy, and shared accountability",
+     "image": "https://static.vscdn.net/images/careers/demo/microsoft/1761075555::flexibility+perk",
+     "imageAlt": null,
+     "icon": null,
+     "isFavicon": null
+    },
+    {
+     "title": "Growth",
+     "description": "Stretch your skills, expand your impact, and grow with support that meets you where you are",
+     "image": "https://static.vscdn.net/images/careers/demo/microsoft/1761075637::growth+perk",
+     "imageAlt": null,
+     "icon": "mdiLaptop",
+     "isFavicon": null
+    },
+    {
+     "title": "Wellbeing",
+     "description": "Support for your body, mind, and financial future\u2014so you can stay energized and do your best work",
+     "image": "https://static.vscdn.net/images/careers/demo/microsoft/1761075686::wellbeing+perk",
+     "imageAlt": null,
+     "icon": null,
+     "isFavicon": null
+    },
+    {
+     "title": "Community PCS",
+     "description": "Find your people, build your network, and feel supported every step of the way",
+     "image": "https://static.vscdn.net/images/careers/demo/microsoft/1761075742::community+perk",
+     "imageAlt": null,
+     "icon": null,
+     "isFavicon": null
+    }
+   ],
+   "pymww": {
+    "people": [],
+    "count": 0
+   },
+   "customContent": []
+  }
+ },
+ "metadata": null
+}

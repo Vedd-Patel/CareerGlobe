@@ -17,8 +17,10 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import config
+import geocode
 import seeds
 import store
+from heartbeat import Heartbeat
 from adapters import ADAPTERS, ParseError
 from fetcher import FetchError, PoliteClient, RobotsDisallowed
 from jobdiff import diff, diff_not_modified
@@ -28,6 +30,7 @@ log = logging.getLogger("crawl")
 IST = ZoneInfo("Asia/Kolkata")
 DEFAULT_SEEDS = config.REPO_ROOT / "seeds" / "companies.csv"
 FAILED_CSV = config.REPO_ROOT / "failed.csv"
+MAX_FAILED_RATIO = 0.10  # spec: a night with more failures than this is a bad night
 
 
 @dataclass
@@ -154,7 +157,8 @@ async def main(argv=None) -> int:
             log.info("resuming run %d from %s: %d companies left", run.id, run.started_at.astimezone(IST), len(todo))
         else:
             n = await seeds.load(conn, args.seeds)
-            log.info("loaded %d companies from %s", n, args.seeds)
+            pinned, _ = await geocode.pin_locations(conn)
+            log.info("loaded %d companies from %s (%d new map pins)", n, args.seeds, pinned)
             if args.only:
                 todo = await store.sources(conn, only=args.only)
                 if not todo:
@@ -168,12 +172,21 @@ async def main(argv=None) -> int:
                 todo = await store.sources(conn)
 
         deadline = stop_time(run.started_at, settings.stop_at_ist) if run else None
-        async with PoliteClient(settings.user_agent, settings.robots_token,
-                                settings.min_gap_seconds, settings.max_gap_seconds) as client:
-            if args.refresh:
-                for src in todo:
-                    src.etag = src.last_modified = None
-            tally = await crawl(conn, client, settings, run, todo, deadline)
+        # Full and resumed runs report to the heartbeat monitor; --only runs do not.
+        beat = Heartbeat("HEALTHCHECK_CRAWL_URL", settings.user_agent) if run else None
+        if beat:
+            await beat.start()
+        try:
+            async with PoliteClient(settings.user_agent, settings.robots_token,
+                                    settings.min_gap_seconds, settings.max_gap_seconds) as client:
+                if args.refresh:
+                    for src in todo:
+                        src.etag = src.last_modified = None
+                tally = await crawl(conn, client, settings, run, todo, deadline)
+        except BaseException as e:
+            if beat:
+                await beat.fail(f"crawl crashed: {type(e).__name__}")
+            raise
 
         if tally.not_started:
             log.warning("run budget reached at %s IST: %d companies not started; run is left open for --resume",
@@ -184,11 +197,25 @@ async def main(argv=None) -> int:
             n_failed = await store.write_failed_csv(conn, run.started_at, FAILED_CSV)
             log.info("failed.csv: %d rows -> %s", n_failed, FAILED_CSV)
 
-    log.info("SUMMARY companies ok %d, failed %d | jobs new %d, reopened %d, closed %d",
-             tally.ok, tally.failed, tally.new, tally.reopened, tally.closed)
+    summary = summarize(tally)
+    log.info("%s", summary.splitlines()[0])
     for line in tally.failures:
         log.info("  failed: %s", line)
+    if beat:
+        await (beat.fail(summary) if bad_night(tally) else beat.success(summary))
     return 0
+
+
+def summarize(tally: Tally) -> str:
+    lines = [f"SUMMARY companies ok {tally.ok}, failed {tally.failed}, not started {tally.not_started} | "
+             f"jobs new {tally.new}, reopened {tally.reopened}, closed {tally.closed}"]
+    return "\n".join(lines + [f"failed: {f}" for f in tally.failures])
+
+
+def bad_night(tally: Tally) -> bool:
+    """More than 10% of attempted companies failed, or the time budget cut the run short."""
+    attempted = tally.ok + tally.failed
+    return tally.not_started > 0 or (attempted > 0 and tally.failed / attempted > MAX_FAILED_RATIO)
 
 
 if __name__ == "__main__":
