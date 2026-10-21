@@ -1,0 +1,22 @@
+# Nightly crawl (then matching and the morning push, from Phase 4).
+# Install: see ops/server/README.md. Runs as the unprivileged careerglobe user.
+[Unit]
+Description=CareerGlobe nightly crawl and matching
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=careerglobe
+Group=careerglobe
+WorkingDirectory=/opt/careerglobe
+ExecStart=/opt/careerglobe/ops/nightly.sh
+# Spec: a runaway headless browser must never starve PostgreSQL or the API.
+MemoryMax=6G
+CPUWeight=50
+TimeoutStartSec=6h
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/careerglobe /var/lib/careerglobe
