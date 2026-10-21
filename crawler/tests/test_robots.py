@@ -65,3 +65,9 @@ def test_disallow_all_and_robots_txt_itself():
     r = Robots.disallow_all()
     assert not r.can_fetch(TOKEN, "https://x.com/jobs")
     assert r.can_fetch(TOKEN, "https://x.com/robots.txt")
+
+
+def test_sitemap_lines_are_kept():
+    r = Robots.parse("Sitemap: https://a.com/s1.xml\nUser-agent: *\nDisallow: /x\nsitemap: https://a.com/s2.xml\n")
+    assert r.sitemaps == ["https://a.com/s1.xml", "https://a.com/s2.xml"]
+    assert not r.can_fetch("Bot", "https://a.com/x")

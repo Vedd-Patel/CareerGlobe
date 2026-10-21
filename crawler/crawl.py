@@ -54,14 +54,14 @@ async def crawl_source(conn, db_lock: asyncio.Lock, client: PoliteClient, run, s
     t0 = time.monotonic()
     adapter = ADAPTERS.get(src.ats_type or "")
     if adapter is None or not src.ats_slug:
-        reason = f"no adapter for ATS {src.ats_type!r} (custom page: needs Phase 2 sources)"
+        reason = f"no adapter for ATS {src.ats_type!r} yet"
         return await _fail(conn, db_lock, run, src, reason, tally, t0)
 
     etag = last_modified = None
     try:
         if adapter.fetch:
             async with db_lock:
-                known = await store.known_job_ids(conn, src.company_id)
+                known = await store.known_jobs(conn, src.company_id)
             jobs, not_modified = await adapter.fetch(client, src.ats_slug, known), False
         else:
             res = await client.get(adapter.board_url(src.ats_slug), etag=src.etag, last_modified=src.last_modified)

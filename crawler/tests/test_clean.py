@@ -84,3 +84,13 @@ def test_clean_html_empty():
     assert clean_html(None) is None
     assert clean_html("") is None
     assert clean_html("<script>x</script>") is None
+
+
+def test_clean_html_wrapper_divs_do_not_nest_paragraphs():
+    raw = "<div><div><h2>Role</h2></div><div><p>Intro</p></div><div>plain <b>text</b></div><div>more<br></div></div>"
+    assert clean_html(raw) == "<h2>Role</h2><p>Intro</p><p>plain <b>text</b></p><p>more</p>"
+
+
+def test_cities_country_code_and_underscores():
+    assert cities_from(["IN"]) == []
+    assert cities_from(["Pune_RD, MH, IN"]) == ["Pune"]

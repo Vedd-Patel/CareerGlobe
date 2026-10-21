@@ -256,13 +256,18 @@ async def test_robots_block_marks_source_blocked(db, env):
     assert status == "blocked" and "robots.txt disallows" in error
 
 
-async def test_company_without_adapter_fails_cleanly(db, env, tmp_path):
+async def test_custom_page_without_job_data_and_unknown_ats_fail_cleanly(db, env, tmp_path):
     _, settings, ats = env
     path = tmp_path / "custom.csv"
-    path.write_text("name,website,careers_url,city,state,type,ats\nZoho,https://www.zoho.com,https://careers.zohocorp.com,Chennai,Tamil Nadu,product,\n")
+    path.write_text("name,website,careers_url,city,state,type,ats\n"
+                    "Zoho,https://www.zoho.com,https://careers.zohocorp.com,Chennai,Tamil Nadu,product,\n"
+                    "Unacademy,https://unacademy.com,https://unacademy.darwinbox.in/ms/candidate/careers,"
+                    "Bengaluru,Karnataka,product,darwinbox\n")
     await seeds.load(db, path)
     t = await night(db, settings, ats, only="Zoho")
-    assert t.failed == 1 and "no adapter" in t.failures[0]
+    assert t.failed == 1 and "no JobPosting on the careers page" in t.failures[0]
+    t = await night(db, settings, ats, only="Unacademy")
+    assert t.failed == 1 and "no adapter for ATS 'darwinbox'" in t.failures[0]
 
 
 async def test_workday_details_are_kept_when_only_the_list_is_read(db, env, tmp_path):
@@ -293,6 +298,37 @@ async def test_workday_details_are_kept_when_only_the_list_is_read(db, env, tmp_
     t = await night(db, settings, wd)
     assert (t.new, t.closed) == (1, 1) and wd.details == ["R0100"]
     assert (await jobs(db))["R0003"] == ("closed", 2, True)
+
+
+async def test_jsonld_sitemap_jobs_across_nights(db, env, tmp_path):
+    from test_jsonld import FakeSite
+
+    _, settings, _ = env
+    path = tmp_path / "custom.csv"
+    path.write_text("name,website,careers_url,city,state,type,ats\nAcme,https://acme.example,"
+                    "https://acme.example/careers,Bengaluru,Karnataka,product,\n")
+    await seeds.load(db, path)
+    site = FakeSite()
+
+    async def titles():
+        cur = await db.execute("SELECT title, source_updated, status FROM jobs ORDER BY title")
+        return await cur.fetchall()
+
+    t = await night(db, settings, site)
+    assert (t.ok, t.new) == (1, 2)
+    assert await titles() == [("Backend Engineer", "2026-10-01", "open"), ("SRE", "2026-10-02", "open")]
+
+    # Night 2: sitemap unchanged -> no job page fetched, titles kept (sitemap entries have none).
+    site.fetched.clear()
+    t = await night(db, settings, site)
+    assert t.ok == 1 and not [f for f in site.fetched if "/jobs/" in f]
+    assert [r[0] for r in await titles()] == ["Backend Engineer", "SRE"]
+
+    # Night 3: SRE page changed (new lastmod and title) -> fetched and updated.
+    site.sitemap = site.sitemap.replace("2026-10-02", "2026-10-15")
+    site.job_pages["/careers/jobs/sre-5"] = site.job_pages["/careers/jobs/sre-5"].replace("SRE", "Senior SRE")
+    t = await night(db, settings, site)
+    assert ("Senior SRE", "2026-10-15", "open") in await titles()
 
 
 def test_stop_time_is_next_0530_ist():

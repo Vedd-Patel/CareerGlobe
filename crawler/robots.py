@@ -19,8 +19,9 @@ class _Group:
 
 
 class Robots:
-    def __init__(self, groups: list[_Group]):
+    def __init__(self, groups: list[_Group], sitemaps: list[str] | None = None):
         self._groups = groups
+        self.sitemaps = sitemaps or []  # Sitemap: lines (not tied to any group)
 
     @classmethod
     def allow_all(cls) -> "Robots":
@@ -33,6 +34,7 @@ class Robots:
     @classmethod
     def parse(cls, text: str) -> "Robots":
         groups: list[_Group] = []
+        sitemaps: list[str] = []
         current: _Group | None = None
         last_was_agent = False
         for raw in text.splitlines():
@@ -41,6 +43,10 @@ class Robots:
                 continue
             key, value = (s.strip() for s in line.split(":", 1))
             key = key.lower()
+            if key == "sitemap":
+                if value:
+                    sitemaps.append(value)
+                continue
             if key == "user-agent":
                 if current is None or not last_was_agent:
                     current = _Group()
@@ -58,7 +64,7 @@ class Robots:
                     current.crawl_delay = float(value)
                 except ValueError:
                     pass
-        return cls(groups)
+        return cls(groups, sitemaps)
 
     def _groups_for(self, token: str) -> list[_Group]:
         token = token.lower()

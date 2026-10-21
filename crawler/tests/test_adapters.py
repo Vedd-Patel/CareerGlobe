@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from adapters import ADAPTERS, ParseError, detect
+from adapters import ADAPTERS, ParseError, detect, source_for
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -145,3 +145,15 @@ def test_board_urls_match_the_endpoints_checked_by_hand():
     assert ADAPTERS["lever"].board_url("cred") == "https://api.lever.co/v0/postings/cred?mode=json"
     assert ADAPTERS["lever_eu"].board_url("x") == "https://api.eu.lever.co/v0/postings/x?mode=json"
     assert ADAPTERS["keka"].board_url("wingify") == "https://wingify.keka.com/careers/api/jobs/default/active"
+
+
+@pytest.mark.parametrize("url, ats, want", [
+    ("https://jobs.lever.co/cred", "", ("lever", "cred")),
+    ("https://jobs.lever.co/cred", "greenhouse", ("lever", "cred")),  # the URL wins
+    ("https://careers.tatamotors.com/", "successfactors", ("successfactors", "careers.tatamotors.com")),
+    ("https://acme.example/careers", "", ("jsonld", "https://acme.example/careers")),
+    ("https://acme.example/careers", "jsonld", ("jsonld", "https://acme.example/careers")),
+    ("https://unacademy.darwinbox.in/ms/candidate/careers", "darwinbox", ("darwinbox", None)),
+])
+def test_source_for(url, ats, want):
+    assert source_for(url, ats or None) == want

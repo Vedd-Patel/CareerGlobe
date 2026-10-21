@@ -76,13 +76,15 @@ async def sources(conn, only: str | None = None, skip_attempted_since: datetime 
     return [Source(*row) for row in await cur.fetchall()]
 
 
-async def known_job_ids(conn, company_id: int) -> set[str]:
-    """Source job IDs already stored for a company (open or closed). Adapters
-    that need one request per job fetch details only for IDs not in here."""
+async def known_jobs(conn, company_id: int) -> dict[str, str | None]:
+    """Source job ID -> stored source_updated, for a company's jobs (open or
+    closed). Adapters that need one request per job fetch details only for IDs
+    not in here (or whose source says they changed)."""
     cur = await conn.execute(
-        "SELECT source_job_id FROM jobs WHERE company_id = %s AND source_job_id IS NOT NULL", (company_id,)
+        "SELECT source_job_id, source_updated FROM jobs WHERE company_id = %s AND source_job_id IS NOT NULL",
+        (company_id,),
     )
-    return {r[0] for r in await cur.fetchall()}
+    return {r[0]: r[1] for r in await cur.fetchall()}
 
 
 async def apply_success(conn, run: Run | None, src: Source, compute, etag, last_modified) -> Diff:
@@ -144,7 +146,8 @@ async def _count(conn, run: Run | None, ok: bool, new: int = 0, closed: int = 0)
 
 
 def _fields(j: RawJob) -> tuple:
-    return (j.title, j.description, j.cities, j.work_mode, j.salary_min, j.salary_max, j.apply_url, j.posted_at)
+    return (j.title, j.description, j.cities, j.work_mode, j.salary_min, j.salary_max, j.apply_url, j.posted_at,
+            j.source_updated)
 
 
 async def _write_jobs(conn, company_id: int, d: Diff) -> None:
@@ -154,26 +157,29 @@ async def _write_jobs(conn, company_id: int, d: Diff) -> None:
         if d.inserts:
             await cur.executemany(
                 """INSERT INTO jobs (company_id, job_key, source_job_id, title, description, cities, work_mode,
-                                     salary_min, salary_max, apply_url, posted_at)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                                     salary_min, salary_max, apply_url, posted_at, source_updated)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                 [(company_id, key, j.source_job_id, *_fields(j)) for key, j in d.inserts],
             )
         for rows, reopen in ((d.updates, False), (d.reopens, True)):
             reopen_sql = ", status = 'open', closed_at = NULL" if reopen else ""
             full = [(*_fields(j), job_id) for job_id, j in rows if not j.partial]
-            partial = [(j.title, j.apply_url, job_id) for job_id, j in rows if j.partial]
+            partial = [(j.title, j.apply_url, j.posted_at, job_id) for job_id, j in rows if j.partial]
             if full:
                 await cur.executemany(
                     f"""UPDATE jobs SET title = %s, description = %s, cities = %s, work_mode = %s,
                             salary_min = %s, salary_max = %s, apply_url = %s,
-                            posted_at = COALESCE(%s, posted_at), last_seen = now(), missed_runs = 0
+                            posted_at = COALESCE(%s, posted_at), source_updated = %s,
+                            last_seen = now(), missed_runs = 0
                             {reopen_sql}
                         WHERE id = %s""",
                     full,
                 )
             if partial:
                 await cur.executemany(
-                    f"""UPDATE jobs SET title = %s, apply_url = %s, last_seen = now(), missed_runs = 0
+                    # A sitemap entry has no title: an empty one keeps the stored title.
+                    f"""UPDATE jobs SET title = COALESCE(NULLIF(%s, ''), title), apply_url = %s,
+                            posted_at = COALESCE(%s, posted_at), last_seen = now(), missed_runs = 0
                             {reopen_sql}
                         WHERE id = %s""",
                     partial,

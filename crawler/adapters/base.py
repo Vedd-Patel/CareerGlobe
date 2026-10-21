@@ -16,8 +16,11 @@ class RawJob:
     salary_max: int | None = None
     posted_at: datetime | None = None
     # Seen in a list without its detail page (only for jobs already in the DB):
-    # title and link are refreshed, stored details are kept.
+    # title, link and (if given) posted_at are refreshed; stored details are kept.
     partial: bool = False
+    # The source's own change stamp (sitemap <lastmod>); a job page is fetched
+    # again only when it changes.
+    source_updated: str | None = None
 
 
 class ParseError(Exception):

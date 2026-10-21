@@ -115,6 +115,12 @@ class PoliteClient:
         resp = await self._request(host, "POST", url, {"Accept": "application/json"}, payload)
         return self._result(url, resp, None, None)
 
+    async def sitemaps(self, url: str) -> list[str]:
+        """Sitemap URLs listed in the robots.txt of `url`'s host."""
+        parts = urlsplit(url)
+        robots = await self._robots(self._host(parts.netloc), f"{parts.scheme}://{parts.netloc}")
+        return list(robots.sitemaps)
+
     async def _allowed(self, url: str) -> _Host:
         parts = urlsplit(url)
         host = self._host(parts.netloc)

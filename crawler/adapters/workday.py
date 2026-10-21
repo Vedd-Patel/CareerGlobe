@@ -105,7 +105,7 @@ def parse_detail(data, slug: str, external_path: str) -> RawJob:
     )
 
 
-async def fetch(client, slug: str, known: set[str]) -> list[RawJob]:
+async def fetch(client, slug: str, known) -> list[RawJob]:
     base = api_base(slug)
     body = {"appliedFacets": {}, "limit": PAGE_SIZE, "offset": 0, "searchText": ""}
     first = _page(await client.post_json(f"{base}/jobs", body))

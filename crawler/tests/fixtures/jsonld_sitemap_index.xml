@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hand-made sitemap index -->
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap><loc>https://acme.example/sitemap-pages.xml</loc></sitemap>
+  <sitemap><loc>https://acme.example/sitemap-jobs.xml</loc><lastmod>2026-10-20</lastmod></sitemap>
+  <sitemap><loc>https://other.example/sitemap-jobs.xml</loc></sitemap>
+</sitemapindex>

@@ -36,7 +36,7 @@ _CITY_RE = re.compile(
 )
 # Location strings that are not a city.
 NOT_A_CITY = {
-    "india", "remote", "multiple", "multiple locations", "pan india", "anywhere", "hybrid",
+    "india", "in", "ind", "remote", "multiple", "multiple locations", "pan india", "anywhere", "hybrid",
     "onsite", "on-site", "work from home", "wfh", "registered office", "",
     # countries and regions
     "us", "usa", "united states", "uk", "united kingdom", "europe", "eu", "emea", "apac",
@@ -54,6 +54,7 @@ def cities_from(locations: list[str]) -> list[str]:
     for loc in locations:
         if not loc:
             continue
+        loc = loc.replace("_", " ")  # "Pune_RD, MH, IN"
         hits = [CITY_ALIASES[m.lower()] for m in _CITY_RE.findall(loc)]
         if not hits:
             first = re.split(r"[,(]", _MODE_PREFIX.sub("", loc), maxsplit=1)[0].strip()
@@ -105,7 +106,11 @@ def annual_inr(low, high, currency: str | None, period: str | None) -> tuple[int
 
 _ALLOWED = {"p", "br", "ul", "ol", "li", "strong", "b", "em", "i", "u",
             "h1", "h2", "h3", "h4", "h5", "h6", "a", "blockquote"}
-_RENAME = {"div": "p"}
+_RENAME: dict[str, str] = {}
+# A div holding only inline content becomes <p>; one wrapping paragraphs,
+# headings or lists gets no tag (renaming it too would nest <p><p>).
+_WRAPPERS = {"div", "section", "article"}
+_HAS_BLOCK = re.compile(r"<(p|h[1-6]|ul|ol|li|blockquote)>")
 _DROP_WITH_CONTENT = {"script", "style", "iframe", "noscript", "svg", "object", "embed", "template"}
 _VOID = {"br"}
 
@@ -115,12 +120,16 @@ class _Sanitizer(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.out: list[str] = []
         self._skip = 0
+        self._wrappers: list[int] = []  # len(out) where each open div started
 
     def handle_starttag(self, tag, attrs):
         if tag in _DROP_WITH_CONTENT:
             self._skip += 1
             return
         if self._skip:
+            return
+        if tag in _WRAPPERS:
+            self._wrappers.append(len(self.out))
             return
         tag = _RENAME.get(tag, tag)
         if tag not in _ALLOWED:
@@ -144,6 +153,13 @@ class _Sanitizer(HTMLParser):
             return
         if self._skip:
             return
+        if tag in _WRAPPERS:
+            if self._wrappers:
+                start = self._wrappers.pop()
+                inner = "".join(self.out[start:])
+                if inner.strip() and not _HAS_BLOCK.search(inner):
+                    self.out[start:] = ["<p>", inner, "</p>"]
+            return
         tag = _RENAME.get(tag, tag)
         if tag in _ALLOWED and tag not in _VOID:
             self.out.append(f"</{tag}>")
@@ -162,6 +178,9 @@ def clean_html(raw: str | None) -> str | None:
     s.close()
     out = "".join(s.out)
     out = re.sub(r"<p>(\s|&nbsp;|<br>)*</p>", "", out)
+    out = re.sub(r"(<br>\s*){3,}", "<br><br>", out)
+    out = re.sub(r"^(\s|<br>)+|(\s|<br>)+$", "", out)
+    out = re.sub(r"(<br>\s*)+</p>", "</p>", out)
     out = re.sub(r"\n{3,}", "\n\n", out).strip()
     if len(out) > MAX_DESCRIPTION_CHARS:
         cut = out[:MAX_DESCRIPTION_CHARS]

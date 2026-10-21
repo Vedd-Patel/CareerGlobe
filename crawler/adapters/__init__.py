@@ -2,8 +2,9 @@
 
 Two kinds of adapter:
 - one request: board_url(slug) and parse(data, slug) -> list[RawJob]; ETags apply.
-- several requests (pages, per-job details): async fetch(client, slug, known_ids)
-  -> list[RawJob], where known_ids are the source job IDs already in the DB.
+- several requests (pages, per-job details): async fetch(client, slug, known)
+  -> list[RawJob], where `known` maps source job IDs already in the DB to their
+  stored source_updated stamp.
 """
 
 import re
@@ -11,7 +12,7 @@ from dataclasses import dataclass
 from typing import Awaitable, Callable
 from urllib.parse import parse_qs, urlsplit
 
-from adapters import greenhouse, keka, lever, workday
+from adapters import greenhouse, jsonld, keka, lever, successfactors, workday
 from adapters.base import ParseError, RawJob
 
 
@@ -20,7 +21,7 @@ class Adapter:
     name: str
     board_url: Callable[[str], str] | None = None
     parse: Callable[[object, str], list[RawJob]] | None = None
-    fetch: Callable[[object, str, set[str]], Awaitable[list[RawJob]]] | None = None
+    fetch: Callable[[object, str, dict[str, str | None]], Awaitable[list[RawJob]]] | None = None
 
 
 ADAPTERS = {
@@ -29,6 +30,8 @@ ADAPTERS = {
     "lever_eu": Adapter("lever_eu", lever.board_url_eu, lever.parse),
     "keka": Adapter("keka", keka.board_url, keka.parse),
     "workday": Adapter("workday", fetch=workday.fetch),
+    "successfactors": Adapter("successfactors", fetch=successfactors.fetch),
+    "jsonld": Adapter("jsonld", fetch=jsonld.fetch),
 }
 
 _SLUG = r"([A-Za-z0-9][A-Za-z0-9_.-]*)"
@@ -69,4 +72,18 @@ def detect(careers_url: str) -> tuple[str, str] | None:
     return None
 
 
-__all__ = ["ADAPTERS", "Adapter", "ParseError", "RawJob", "detect"]
+def source_for(careers_url: str, ats: str | None) -> tuple[str | None, str | None]:
+    """(ats_type, ats_slug) for a seed row: detected from the URL when it is an
+    ATS board; else from the seed's `ats` column (successfactors -> the host);
+    a custom page with no `ats` is read by the JSON-LD + sitemap reader."""
+    detected = detect(careers_url)
+    if detected:
+        return detected
+    if ats == "successfactors":
+        return ats, (urlsplit(careers_url.strip()).hostname or "").lower() or None
+    if ats in (None, "", "jsonld"):
+        return "jsonld", careers_url.strip()
+    return ats, None  # an ATS we have no adapter for yet: fails with a clear reason
+
+
+__all__ = ["ADAPTERS", "Adapter", "ParseError", "RawJob", "detect", "source_for"]

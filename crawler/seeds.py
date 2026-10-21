@@ -1,8 +1,8 @@
 """Load seeds/companies.csv into Postgres (companies, locations, careers sources).
 
 Columns: name,website,careers_url,city,state,type,ats[,note]
-In Phase 1 careers_url must be the ATS board itself (e.g. https://jobs.lever.co/cred);
-discover.py (Phase 2) will handle custom careers pages that link to an ATS.
+careers_url is an ATS board (detected from the URL), a SuccessFactors site
+(ats=successfactors), or any other careers page, read for JSON-LD JobPostings.
 """
 
 import csv
@@ -13,7 +13,7 @@ from pathlib import Path
 
 import psycopg
 
-from adapters import detect
+from adapters import detect, source_for
 
 log = logging.getLogger(__name__)
 TYPES = {"product", "service", "both"}
@@ -56,13 +56,11 @@ def read(path: Path) -> list[SeedRow]:
                 log.warning("seeds line %d: type %r is not product/service/both; left empty", n, ctype)
                 ctype = None
 
+            given = (r.get("ats") or "").strip().lower() or None
             detected = detect(url)
-            ats = (r.get("ats") or "").strip().lower() or None
-            ats_slug = None
-            if detected:
-                if ats and ats != detected[0]:
-                    log.warning("seeds line %d: ats %r but URL is %s; using %s", n, ats, detected[0], detected[0])
-                ats, ats_slug = detected
+            if detected and given and given != detected[0]:
+                log.warning("seeds line %d: ats %r but URL is %s; using %s", n, given, detected[0], detected[0])
+            ats, ats_slug = source_for(url, given)
 
             rows.append(SeedRow(
                 name=name, slug=slug, website=(r.get("website") or "").strip() or None,
@@ -95,8 +93,7 @@ async def load(conn: psycopg.AsyncConnection, path: Path) -> int:
                 """INSERT INTO careers_sources (company_id, careers_url, ats_type, ats_slug)
                    VALUES (%s, %s, %s, %s)
                    ON CONFLICT (company_id, careers_url) DO UPDATE
-                   SET ats_type = COALESCE(EXCLUDED.ats_type, careers_sources.ats_type),
-                       ats_slug = COALESCE(EXCLUDED.ats_slug, careers_sources.ats_slug)""",
+                   SET ats_type = EXCLUDED.ats_type, ats_slug = EXCLUDED.ats_slug""",
                 (company_id, s.careers_url, s.ats, s.ats_slug),
             )
     return len(rows)
