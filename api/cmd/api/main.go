@@ -13,6 +13,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/Vedd-Patel/CareerGlobe/api/internal/access"
+	"github.com/Vedd-Patel/CareerGlobe/api/internal/auth"
+	"github.com/Vedd-Patel/CareerGlobe/api/internal/config"
+	"github.com/Vedd-Patel/CareerGlobe/api/internal/resume"
 	"github.com/Vedd-Patel/CareerGlobe/api/internal/server"
 )
 
@@ -27,34 +31,58 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// The server uses its own restricted DB user; local dev falls back to DATABASE_URL.
-	dsn := os.Getenv("API_DATABASE_URL")
-	if dsn == "" {
-		dsn = os.Getenv("DATABASE_URL")
+	cfg, err := config.Load()
+	if err != nil {
+		return err
 	}
-	if dsn == "" {
-		return errors.New("API_DATABASE_URL or DATABASE_URL must be set")
-	}
-	port := os.Getenv("API_PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	pool, err := pgxpool.New(ctx, dsn)
+	pool, err := pgxpool.New(ctx, cfg.DatabaseURL)
 	if err != nil {
 		// pgx errors can echo the connection string; never log the DSN itself.
 		return errors.New("invalid database configuration")
 	}
 	defer pool.Close()
 
+	hasher, err := access.NewHasher(cfg.Pepper)
+	if err != nil {
+		return err
+	}
+
+	// Until Firebase is set up, every signed-in endpoint answers 401; /healthz still works.
+	var verifier auth.Verifier = auth.Static{}
+	if cfg.FirebaseProject != "" {
+		fb, err := auth.NewFirebase(ctx, cfg.FirebaseProject)
+		if err != nil {
+			return err
+		}
+		verifier = fb
+	} else {
+		slog.Warn("FIREBASE_PROJECT_ID is not set: sign-in is off")
+	}
+
+	var resumes *resume.Service
+	if cfg.ResumeKey != nil {
+		vault, err := resume.NewVault(cfg.ResumeDir, cfg.ResumeKey)
+		if err != nil {
+			return err
+		}
+		resumes = resume.NewService(pool, vault)
+	} else {
+		slog.Warn("RESUME_ENCRYPTION_KEY is not set: resume upload is off")
+	}
+
 	srv := &http.Server{
 		// Local only: the Cloudflare Tunnel connects to it on the server.
-		Addr:              "127.0.0.1:" + port,
-		Handler:           server.New(pool),
+		Addr: "127.0.0.1:" + cfg.Port,
+		Handler: server.New(server.Config{
+			DB: pool, Pool: pool, Access: access.NewService(pool, hasher), Verifier: verifier, Resumes: resumes,
+			Admins: cfg.AdminUIDs, OpsToken: cfg.OpsToken, Origins: cfg.WebOrigins, IPHeader: cfg.TrustProxyHeader,
+			PolicyVersion: cfg.PolicyVersion,
+		}),
 		ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout:       15 * time.Second,
+		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
 		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    64 << 10,
 	}
 
 	errc := make(chan error, 1)

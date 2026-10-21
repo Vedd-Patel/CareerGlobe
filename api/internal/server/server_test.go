@@ -26,7 +26,7 @@ func TestHealthz(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
-			New(tt.db).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/healthz", nil))
+			New(Config{DB: tt.db}).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/healthz", nil))
 
 			if rec.Code != tt.wantStatus {
 				t.Errorf("status = %d, want %d", rec.Code, tt.wantStatus)
@@ -40,16 +40,22 @@ func TestHealthz(t *testing.T) {
 
 func TestHealthzRejectsOtherMethods(t *testing.T) {
 	rec := httptest.NewRecorder()
-	New(fakeDB{}).ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/healthz", nil))
+	New(Config{DB: fakeDB{}}).ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/healthz", nil))
 	if rec.Code != http.StatusMethodNotAllowed {
 		t.Errorf("status = %d, want %d", rec.Code, http.StatusMethodNotAllowed)
 	}
 }
 
-func TestUnknownPathIs404(t *testing.T) {
-	rec := httptest.NewRecorder()
-	New(fakeDB{}).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/jobs", nil))
-	if rec.Code != http.StatusNotFound {
-		t.Errorf("status = %d, want %d", rec.Code, http.StatusNotFound)
+func TestExcerpt(t *testing.T) {
+	desc := "<p>Build <b>APIs</b> &amp; services.</p><ul><li>Go</li><li>Postgres</li></ul>"
+	if got := Excerpt(&desc, 100); got != "Build APIs & services.\nGo\nPostgres" {
+		t.Fatalf("Excerpt = %q", got)
+	}
+	long := "<p>" + strings.Repeat("word ", 400) + "</p>"
+	if got := Excerpt(&long, 50); len([]rune(got)) > 52 || !strings.HasSuffix(got, "…") {
+		t.Fatalf("long excerpt = %q", got)
+	}
+	if Excerpt(nil, 10) != "" {
+		t.Fatal("nil")
 	}
 }
