@@ -216,3 +216,23 @@ def test_india_facet_falls_back_to_bare_indian_city_names():
         {"descriptor": "Amsterdam", "id": "a"}, {"descriptor": "Bengaluru", "id": "b"},
         {"descriptor": "Gurgaon", "id": "g"}, {"descriptor": "California", "id": "c"}]}]}]
     assert workday.india_facets(facets) == {"locations": ["b", "g"]}
+
+
+@pytest.mark.anyio
+async def test_one_unreadable_detail_is_skipped_but_many_fail_the_company():
+    server = FakeWorkday(n_india=10)
+
+    def flaky(bad):
+        def handler(request):
+            if "/job/" in request.url.path and request.url.path.rsplit("_", 1)[-1] in bad:
+                return httpx.Response(200, text="<html>maintenance</html>")
+            return server(request)
+        return handler
+
+    async with client(flaky({"R0003"})) as c:
+        jobs = await workday.fetch(c, SLUG, set())
+    assert len(jobs) == 9 and "R0003" not in {j.source_job_id for j in jobs}
+
+    async with client(flaky({f"R{i:04d}" for i in range(5)})) as c:
+        with pytest.raises(ParseError, match="unreadable"):
+            await workday.fetch(c, SLUG, set())

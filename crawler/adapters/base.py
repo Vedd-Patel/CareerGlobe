@@ -1,5 +1,8 @@
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -28,3 +31,23 @@ class RawJob:
 
 class ParseError(Exception):
     """The response did not have the shape the adapter expects (format change)."""
+
+
+class DetailReads:
+    """Per-job detail pages: a few unreadable ones are skipped (the job is tried
+    again the next night); many mean the format changed, and the company fails."""
+
+    MIN_BAD, MAX_SHARE = 3, 0.2
+
+    def __init__(self, source: str):
+        self.source, self.read, self.bad = source, 0, 0
+
+    def ok(self) -> None:
+        self.read += 1
+
+    def skip(self, what: str, err: Exception) -> None:
+        self.read += 1
+        self.bad += 1
+        log.warning("%s: skipped unreadable detail %s (%s)", self.source, what, type(err).__name__)
+        if self.bad >= self.MIN_BAD and self.bad / self.read > self.MAX_SHARE:
+            raise ParseError(f"{self.source}: {self.bad} of {self.read} detail pages unreadable (last: {what}: {err})")

@@ -24,7 +24,7 @@ import logging
 import re
 from datetime import datetime, timezone
 
-from adapters.base import ParseError, RawJob
+from adapters.base import DetailReads, ParseError, RawJob
 from clean import CITY_RE, cities_from, clean_html, work_mode_from
 from fetcher import FetchError
 
@@ -135,6 +135,7 @@ async def fetch(client, slug: str, known) -> list[RawJob]:
         offset += PAGE_SIZE
 
     jobs, seen, fetched, deferred = [], set(), 0, 0
+    reads = DetailReads(f"workday {slug}")
     for p in postings:
         path = p.get("externalPath")
         if not path or posting_id(path) in seen:
@@ -156,8 +157,9 @@ async def fetch(client, slug: str, known) -> list[RawJob]:
             raise
         try:
             jobs.append(parse_detail(res.json(), slug, path))
-        except ValueError as e:
-            raise ParseError(f"workday: bad detail JSON for {path}: {e}") from e
+            reads.ok()
+        except (ValueError, ParseError) as e:
+            reads.skip(path, e)
     if deferred:
         log.info("workday %s: %d new jobs left for the next night (cap %d)", slug, deferred, MAX_NEW_DETAILS)
     return jobs

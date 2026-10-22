@@ -24,7 +24,7 @@ from urllib.parse import urljoin
 
 from selectolax.lexbor import LexborHTMLParser
 
-from adapters.base import ParseError, RawJob
+from adapters.base import DetailReads, ParseError, RawJob
 from clean import cities_from, clean_html, work_mode_from
 from fetcher import FetchError
 
@@ -119,6 +119,7 @@ async def fetch(client, host: str, known) -> list[RawJob]:
         raise ParseError(f"successfactors: more than {MAX_PAGES} pages; list may be cut off")
 
     out, fetched, deferred = [], 0, 0
+    reads = DetailReads(f"successfactors {host}")
     for job_id, job in listed.items():
         if job_id in known:
             out.append(job)
@@ -133,7 +134,11 @@ async def fetch(client, host: str, known) -> list[RawJob]:
             if e.status in (404, 410):
                 continue
             raise
-        out.append(parse_job(res.content.decode("utf-8", "replace"), job))
+        try:
+            out.append(parse_job(res.content.decode("utf-8", "replace"), job))
+            reads.ok()
+        except ParseError as e:
+            reads.skip(job.apply_url, e)
     if deferred:
         log.info("successfactors %s: %d new jobs left for the next night (cap %d)", host, deferred, MAX_NEW_DETAILS)
     return out

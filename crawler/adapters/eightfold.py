@@ -20,7 +20,7 @@ import re
 from datetime import datetime, timezone
 from urllib.parse import quote
 
-from adapters.base import ParseError, RawJob
+from adapters.base import DetailReads, ParseError, RawJob
 from clean import cities_from, clean_html
 from fetcher import FetchError
 
@@ -117,6 +117,7 @@ async def fetch(client, slug: str, known) -> list[RawJob]:
         raise ParseError(f"eightfold: more than {MAX_PAGES} pages; list may be cut off")
 
     out, fetched, deferred = [], 0, 0
+    reads = DetailReads(f"eightfold {slug}")
     for job_id, job in listed.items():
         if job_id in known:
             out.append(job)
@@ -133,8 +134,9 @@ async def fetch(client, slug: str, known) -> list[RawJob]:
             raise
         try:
             out.append(parse_detail(res.json(), job))
-        except ValueError as e:
-            raise ParseError(f"eightfold: bad detail JSON for {job_id}: {e}") from e
+            reads.ok()
+        except (ValueError, ParseError) as e:
+            reads.skip(job_id, e)
     if deferred:
         log.info("eightfold %s: %d new jobs left for the next night (cap %d)", slug, deferred, MAX_NEW_DETAILS)
     return out

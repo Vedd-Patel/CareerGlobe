@@ -1,0 +1,595 @@
+# Second batch of Indian companies to probe by name (see names.txt).
+
+# SaaS and B2B software
+Freshworks India
+Zoho Books
+Chargebee India
+Kapture
+Kissflow
+Zenoti
+Mindtickle
+Capillary
+Whatfix
+Unbxd
+Vymo
+Sprinto
+Scrut Automation
+Zluri
+SpotDraft
+Leegality
+Signdesk
+Digio
+Karza Technologies
+Perfios
+FinBox
+Setu
+Hyperface
+Fyle
+Zoho Payroll
+Keka HR
+greytHR
+Darwinbox HR
+HROne
+Zimyo
+sumHR
+Springworks
+EngageWith
+Vantage Circle
+Xoxoday
+Plum Benefits
+Kredily
+Pocket HRMS
+Synergita
+Mettl
+HackerEarth
+Interview Kickstart
+Coding Ninjas
+GeeksforGeeks
+Codeforces
+TestGorilla India
+iMocha
+Hirequotient
+Skillate
+TurboHire
+Talview
+CodeSignal India
+Recruit CRM
+Zoho Recruit
+Exotel Techcom
+MyOperator
+Knowlarity
+Servetel
+Plivo
+Kaleyra India
+Netcore
+Pepipost
+Moengage India
+CleverTap India
+Webengage
+Zinghr
+Instamojo India
+Razorpay Capital
+Open Money
+ClearTax
+Clear
+Zoho Invoice
+Tally Solutions
+Busy Infotech
+Marg ERP
+Vyapar App
+Khatabook Business
+Bijak
+Jumbotail
+Arzooo
+Udaan Express
+ElasticRun
+Shopkirana
+Superk
+Apna Mart
+Kirana Club
+Dukaan
+Shiprocket India
+Shopify India
+Bikayi
+Zepto Business
+Swiggy Genie
+Magicpin
+Nearbuy
+Thrillophilia
+Headout India
+Holidify
+Treebo
+FabHotels
+Zostel
+Hosteller
+TravClan
+Scapia
+Atlys
+Niyo Global
+BookMyShow
+Paytm Insider
+Townscript
+Konfhub
+Dineout
+EazyDiner
+Thrive
+Petpooja
+Posist
+Restroworks
+UrbanPiper
+Limetray
+Swiggy Dineout
+
+# Fintech, insurance, wealth
+Jupiter Money
+Fi Money
+Kotak 811
+Freecharge
+Airtel Payments Bank
+Paytm Payments Bank
+Fino Payments Bank
+Spice Money
+PayNearby
+Eko India Financial Services
+Roinet
+Mswipe
+Ezetap
+Innoviti
+Paysharp
+Juspay Technologies
+Zwitch
+Cashfree
+Easebuzz
+PhiCommerce
+Aeropay
+Volopay
+EnKash
+Happay
+Zaggle Prepaid
+Fyle Technologies
+Credflow
+Recur Club
+Klub
+GetVantage
+Velocity
+N+1 Capital
+Lendingkart Technologies
+FlexiLoans
+NeoGrowth
+UGRO Capital
+Kinara Capital
+Ummeed Housing Finance
+Aavas
+Vastu Housing
+Avanse
+InCred
+Credila
+Propelld
+Leap Finance
+Prodigy Finance India
+Eduvanz
+GrayQuest
+Kuvera India
+Groww Mutual Fund
+Paytm Money
+Zerodha Varsity
+Sensibull
+Streak
+Tickertape
+Univest
+Liquide
+Sahi
+Kristal.ai
+Vested Finance
+Winvesta
+Wint Wealth
+Grip Invest
+Jiraaf
+Altifi
+Tap Invest
+Yubi
+CredAvenue
+Vivriti Capital
+Northern Arc
+Ascend Capital
+Riskcovry
+Symbo
+Toffee Insurance
+Go Digit
+Bajaj Allianz
+Navi Insurance
+Ditto Insurance
+Beshak
+
+# Health, pharma services, biotech
+Practo Technologies
+Medikabazaar
+Zeno Health
+Medlife
+Apollo 24|7
+Tata Health
+HealthKart
+Cure.fit
+Fitpass
+Sukino
+Portea Medical
+Care24
+CallHealth
+Cloudnine
+Motherhood Hospitals
+Even
+Zyla Health
+Wysa
+YourDOST
+InnerHour
+Amaha
+MindPeers
+Lissun
+Dozee
+Sensa Core
+Cardiotrack
+Ayu Health
+Pristyn
+Glamyo Health
+HexaHealth
+Medulance
+Redcliffe Labs
+Healthians
+Orange Health
+Thyrocare
+Metropolis Healthcare
+Dr Lal PathLabs
+Neuberg Diagnostics
+Bugworks
+Strand Life Sciences
+MedGenome
+Mapmygenome
+Bione
+String Bio
+Pandorum Technologies
+Biocon Biologics
+Syngene
+Jubilant Biosys
+Aragen Life Sciences
+Sai Life Sciences
+Piramal Pharma
+Divi's Laboratories
+Granules India
+Laurus Labs
+Alkem Laboratories
+Mankind Pharma
+Intas Pharmaceuticals
+Emcure Pharmaceuticals
+Wockhardt
+Ajanta Pharma
+
+# AI, data, cloud, cybersecurity
+Mad Street Den Systems
+Vue.ai
+Arya.ai
+Gupshup India
+Uniphore Technologies
+Observe AI India
+Sarvam
+Krutrim SI Designs
+Ola Krutrim AI
+Saarthi.ai
+Reverie Language Technologies
+Gnani
+Bhashini
+Haptik AI
+Senseforth
+Active.ai
+Avaamo
+Engati
+Verloop.io
+Kore.ai India
+Wysa AI
+SigTuple Technologies
+Qure
+Detect Technologies
+Wobot.ai
+Staqu
+Intello Labs
+Fasal
+CropIn
+SatSure
+Blue Sky Analytics
+Ambee
+GalaxEye
+Digantara
+EtherealX
+Astrogate Labs
+Sarla Aviation
+ePlane Company
+The ePlane Company
+Vecros
+Johnnette Technologies
+Sedemac Mechatronics
+Tork Motors
+Matter Motors
+Ather Energy India
+Altigreen
+Kinetic Green
+Yulu Bikes
+Statiq
+ChargeZone
+Tata Power EZ Charge
+Kazam
+Log9
+Lohum
+Attero
+Recykal
+Namo eWaste
+Kabadiwalla Connect
+Banyan Nation
+Saahas Zero Waste
+Zerodha Rainmatter
+Seclore
+Sequretek
+Instasafe
+CloudSEK
+Appknox
+Safe Security
+Lucideus
+Innefu Labs
+Quick Heal
+K7 Computing
+Arcon
+miniOrange
+Securden
+Accops
+Zoho Vault
+Ezeiatech
+CyberSRC
+Kratikal
+Cyble
+Bugcrowd India
+Beagle Security
+
+# Developer tools and infrastructure
+Hasura India
+Appsmith India
+ToolJet India
+Novu India
+Plane
+Chatwoot India
+Frappe Technologies
+Zerodha Tech
+Juspay Hyperswitch
+Hyperswitch
+Supertokens
+Dyte
+100ms
+Stream India
+Videosdk
+Gumlet
+ImageKit
+Middleware.io
+Last9
+Kloudmate
+Signoz India
+Coralogix India
+Harness India
+Nirmata
+Ozone
+Opsverse
+Facets
+Devtron
+KubeSlice
+Atlan Technologies
+Hevo
+Sprinkle Data
+Datazip
+Draup
+Tracxn
+Inc42
+YourStory
+The Ken
+Entrackr
+Economic Times
+Moneycontrol
+Network18
+Times Internet
+Times of India
+Hindustan Times Digital
+NDTV
+India Today
+Zee5
+SonyLIV
+JioCinema
+JioStar
+Hotstar
+MX Player
+Eros Now
+Gaana
+JioSaavn
+Wynk
+Hungama
+Pocket FM India
+Kuku
+Stage OTT
+Chaupal
+Aha
+Hoichoi
+ALTBalaji
+
+# Manufacturing, industrials, energy, auto
+Tata Motors Passenger Vehicles
+Mahindra Electric
+Hero Electric
+Bajaj Auto Technology
+TVS Motor Company
+Royal Enfield
+Eicher Trucks
+Ashok Leyland Technical Centre
+Force Motors
+Escorts Kubota
+Sonalika
+Mahindra Last Mile Mobility
+Minda Industries
+Uno Minda
+Sona Comstar
+Motherson
+Samvardhana Motherson
+Bharat Forge Kalyani
+Sundram Fasteners
+Endurance Technologies
+Lumax Industries
+Varroc Engineering
+Tata AutoComp
+Bosch Limited
+Schaeffler India
+SKF India
+Timken India
+Cummins India
+Thermax
+Kirloskar Brothers
+Kirloskar Oil Engines
+Kalpataru Projects
+KEC International
+L&T Construction
+Tata Projects
+Shapoorji Pallonji
+Afcons
+GMR Group
+Adani Ports
+Adani Green Energy
+ReNew Power
+Greenko
+Azure Power
+Tata Power Renewable Energy
+Suzlon
+Inox Wind
+Waaree Energies
+Vikram Solar
+Premier Energies
+Amara Raja
+Exide Industries
+Havells India
+Polycab
+KEI Industries
+Finolex Cables
+V-Guard
+Crompton Greaves Consumer
+Bajaj Electricals
+Orient Electric
+Dixon Technologies
+Amber Enterprises
+Kaynes Technology
+Syrma SGS
+Centum Electronics
+Bharat Electronics
+HAL
+BEML
+Data Patterns
+Paras Defence
+Astra Microwave
+MTAR Technologies
+Zen Technologies
+Solar Industries
+Tata Advanced Systems
+Adani Defence
+L&T Defence
+
+# Consumer brands, retail, food
+Tata Consumer
+Tata Starbucks
+Titan
+Tanishq
+CaratLane
+BlueStone
+Malabar Gold
+Kalyan Jewellers
+Reliance Retail
+Trent Westside
+Zudio
+Shoppers Stop
+Lifestyle
+Max Fashion
+Aditya Birla Fashion
+Pantaloons
+Raymond
+Arvind Fashions
+Myntra Designs
+FabIndia
+Biba
+W for Woman
+Libas
+Souled Store
+Bewakoof Brands
+Fynd
+Nykaa Fashion
+Ajio
+Tata CLiQ
+Meesho Supply
+Snapdeal
+ShopClues
+Pepperfry Furniture
+Wakefit Innovations
+Duroflex
+SleepyCat
+Sunday Mattress
+Livspace Design
+HomeLane
+Design Cafe
+Bonito Designs
+Asian Paints Beautiful Homes
+Berger Paints
+Kansai Nerolac
+Pidilite Industries
+Marico Limited
+Dabur India
+Emami
+Jyothy Labs
+Godrej Consumer
+Hindustan Unilever Limited
+Nestle India Limited
+Britannia Industries
+ITC Limited
+Parle Agro
+Haldiram's
+Bikanervala
+Balaji Wafers
+Paper Boat
+Hector Beverages
+Raw Pressery
+Epigamia
+Akshayakalpa
+Milky Mist
+Heritage Foods
+Amul
+Mother Dairy
+iD Fresh Food
+Licious Foods
+Zappfresh
+TenderCuts
+Wingreens
+Slurrp Farm
+Open Secret
+Too Yumm
+Veeba
+Wow Skin Science
+Plum Goodness
+mCaffeine
+The Derma Co
+Minimalist
+Foxtale
+Pilgrim
+Re'equil
+Bombay Shaving
+Beardo
+The Man Company
+Ustraa
+Boat Lifestyle
+Noise India
+Fire-Boltt
+pTron
+Portronics
+Zebronics
+Lava International
+Micromax
+Atomberg
+Kent RO
+Livpure
+Wipro Consumer Lighting
