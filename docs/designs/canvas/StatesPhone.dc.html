@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Screen states · phone</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}} board" style="width: 2626px; height: 990px">
+
+  <div>
+    <p class="phone-label">LOADING · MATCHES SKELETON</p>
+    <div class="phone">
+      <div class="topbar"><span class="sk" style="width: 140px; height: 28px"></span></div>
+      <div class="screen" style="gap: 12px">
+        <sc-for list="{{four}}" as="n" hint-placeholder-count="4">
+          <div class="card" style="gap: 12px"><span class="sk" style="width: 44px; height: 44px; border-radius: 50%"></span><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><span class="sk" style="height: 16px; width: 72%"></span><span class="sk" style="height: 12px; width: 48%"></span><span class="sk" style="height: 12px; width: 88%"></span></div></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">EMPTY · NO MATCHES YET</p>
+    <div class="phone">
+      <div class="topbar"><h1 class="t-title">Matches</h1></div>
+      <div class="screen" style="align-items: center; justify-content: center; text-align: center; gap: 14px">
+        <div style="width: 88px; height: 88px; border-radius: 28px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.sparkles}}"/></svg></div>
+        <h2 class="t-title">No matches yet</h2>
+        <p class="t-body t-2">Upload your resume to turn on matching, or widen your cities and categories.</p>
+        <button class="btn btn-primary">Upload resume</button>
+        <button class="btn btn-text">Edit preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">EMPTY · TRACKER</p>
+    <div class="phone">
+      <div class="topbar"><h1 class="t-title">Tracker</h1></div>
+      <div class="screen" style="align-items: center; justify-content: center; text-align: center; gap: 14px">
+        <div style="width: 88px; height: 88px; border-radius: 28px; background: var(--applied-soft); color: var(--applied); display: flex; align-items: center; justify-content: center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.kanban}}"/></svg></div>
+        <h2 class="t-title">Nothing tracked yet</h2>
+        <p class="t-body t-2">Save a job or tell us you applied, and it shows up here with every next step.</p>
+        <button class="btn btn-primary">Browse matches</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">EMPTY · NOTHING SAVED</p>
+    <div class="phone">
+      <div class="topbar"><h1 class="t-title">Saved</h1></div>
+      <div class="screen" style="align-items: center; justify-content: center; text-align: center; gap: 14px">
+        <div style="width: 88px; height: 88px; border-radius: 28px; background: var(--saved-soft); color: var(--saved); display: flex; align-items: center; justify-content: center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.bookmark}}"/></svg></div>
+        <h2 class="t-title">Nothing saved</h2>
+        <p class="t-body t-2">Tap the bookmark on a job or company. Saved companies tell you when they post a role for you.</p>
+        <button class="btn btn-secondary">Open the globe</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">ERROR · OFFLINE</p>
+    <div class="phone">
+      <div class="topbar"><h1 class="t-title">Matches</h1></div>
+      <div class="screen" style="gap: 14px">
+        <div class="banner b-off"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.wifiOff}}"/></svg><span class="txt">You're offline. Showing what was saved at 8:02 AM.</span></div>
+        <div class="card" style="gap: 12px; opacity: .7"><div class="ring sm band-hi" style="--p: 87%"><span>87</span></div><div><p class="t-heading" style="font-size: 15px">Senior Backend Engineer</p><p class="t-caption t-2">Razorpay · Bengaluru</p></div></div>
+        <div class="card" style="flex-direction: column; align-items: center; text-align: center; gap: 10px; margin-top: 30px; box-shadow: none">
+          <div style="color: var(--rejected)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.alert}}"/></svg></div>
+          <p class="t-heading">Couldn't load new matches</p>
+          <p class="t-body t-2">Check your connection and try again.</p>
+          <button class="btn btn-secondary">Retry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">FIRST-TIME HINTS · GLOBE</p>
+    <div class="phone">
+      <div class="space" style="flex: 1; position: relative">
+        <div class="globe" style="width: 640px; height: 640px; left: -125px; top: 110px"></div>
+        <div class="landmass" style="width: 210px; height: 270px; left: 100px; top: 250px; transform: rotate(18deg)"></div>
+        <span class="cluster c-l" style="left: 185px; top: 460px">312</span>
+        <div style="position: absolute; inset: 0; background: rgba(5,8,19,.55)"></div>
+        <div class="glass" style="position: absolute; left: 40px; right: 40px; top: 210px; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; text-align: center">
+          <p class="t-heading">Pinch to zoom, drag to spin</p>
+          <p class="t-body" style="color: #A6B0C9">Glowing teal pins have jobs that match you. Tap a pin to see the company.</p>
+          <button class="btn btn-primary">Got it</button>
+        </div>
+        <span class="pin sel" style="left: 185px; top: 460px"></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":2626,"height":990}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light',
+      four: [1, 2, 3, 4],
+      i: {
+        sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z', kanban: 'M6 5v11M12 5v6M18 5v14',
+        bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z',
+        wifiOff: 'M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 4.2-2.8M10.7 5.1A15 15 0 0 1 22 8.8M5 12.9a10 10 0 0 1 5.2-2.8M12 20h.01',
+        alert: 'M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

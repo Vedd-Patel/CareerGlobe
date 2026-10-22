@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>F · Saved, inbox, profile · phone</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}} board" style="width: 1816px; height: 990px">
+
+  <div>
+    <p class="phone-label">S26 · SAVED</p>
+    <div class="phone">
+      <div class="topbar"><h1 class="t-title">Saved</h1></div>
+      <div style="padding: 0 20px 12px"><div class="segs"><span class="seg">Jobs 4</span><span class="seg on">Companies 3</span></div></div>
+      <div class="screen" style="gap: 10px">
+        <div class="card" style="align-items: center"><span class="logo l5">T</span><div style="flex: 1"><p class="t-heading" style="font-size: 16px">Tata Motors</p><p class="t-caption t-3">144 open · alerts on</p></div><span class="toggle" role="img" aria-label="Alerts on"></span></div>
+        <div class="card" style="align-items: center"><span class="logo l4">N</span><div style="flex: 1"><p class="t-heading" style="font-size: 16px">NVIDIA</p><p class="t-caption t-3">240 open · alerts on</p></div><span class="toggle" role="img" aria-label="Alerts on"></span></div>
+        <div class="card" style="align-items: center"><span class="logo l2">Z</span><div style="flex: 1"><p class="t-heading" style="font-size: 16px">Zerodha</p><p class="t-caption t-3">6 open · alerts off</p></div><span class="toggle off" role="img" aria-label="Alerts off"></span></div>
+        <p class="t-caption t-3">You'll get a notification when a saved company posts a job that matches your categories.</p>
+      </div>
+      <div class="tabbar">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls3}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S27 · NOTIFICATIONS INBOX</p>
+    <div class="phone">
+      <div class="topbar" style="justify-content: space-between"><h1 class="t-title">Inbox</h1><a class="btn btn-text" href="#read">Mark all read</a></div>
+      <div class="screen" style="gap: 0">
+        <div class="list-row"><span class="icon-btn" aria-hidden="true" style="background: var(--accent-soft); color: var(--accent); border: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="{{i.sparkles}}"/></svg></span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">14 new matches this morning</p><p class="t-caption t-3">Today, 8:00 AM</p></div><span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent)"></span></div>
+        <div class="list-row"><span class="logo sm l5">T</span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Tata Motors posted 2 new jobs</p><p class="t-caption t-3">A company you saved is hiring · today</p></div><span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent)"></span></div>
+        <div class="list-row"><span class="icon-btn" aria-hidden="true" style="background: var(--interview-soft); color: var(--interview); border: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="{{i.calendar}}"/></svg></span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">HR call tomorrow</p><p class="t-caption t-3">SRE at Zerodha · yesterday</p></div></div>
+        <div class="list-row"><span class="icon-btn" aria-hidden="true" style="background: var(--accent-soft); color: var(--accent); border: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="{{i.sparkles}}"/></svg></span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">6 new matches this morning</p><p class="t-caption t-3">Mon, 8:00 AM</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S28 · PROFILE</p>
+    <div class="phone">
+      <div class="topbar" style="justify-content: space-between"><h1 class="t-title">Profile</h1><button class="icon-btn" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.cog}}"/></svg></button></div>
+      <div class="screen" style="gap: 14px">
+        <div class="card" style="align-items: center"><span class="icon-btn" aria-hidden="true" style="background: var(--accent-soft); color: var(--accent); border: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="{{i.file}}"/></svg></span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">priya_sharma_resume.pdf</p><p class="t-caption t-3">Uploaded 12 Oct · encrypted</p></div><button class="btn btn-secondary" style="min-height: 40px; padding: 0 14px">Replace</button></div>
+        <div style="display: flex; justify-content: space-between"><p class="t-caption t-2">SKILLS</p><a class="t-caption" href="#edit">Edit</a></div>
+        <div class="chips"><span class="skill edit">Java</span><span class="skill edit">Spring Boot</span><span class="skill edit">Kafka</span><span class="skill edit">PostgreSQL</span><span class="skill edit">Kubernetes</span><span class="skill edit">AWS</span><span class="skill edit">+5</span></div>
+        <div style="display: flex; justify-content: space-between"><p class="t-caption t-2">TITLES</p><a class="t-caption" href="#edit">Edit</a></div>
+        <div class="chips"><span class="skill edit">Senior Software Engineer</span></div>
+        <p class="t-caption t-2">PREFERENCES</p>
+        <div class="list-row" style="padding: 10px 0"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Roles</p><p class="t-caption t-3">Software · Hardware · Data &amp; AI</p></div><span class="t-3">›</span></div>
+        <div class="list-row" style="padding: 10px 0"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Locations</p><p class="t-caption t-3">Pune, Bengaluru · remote OK</p></div><span class="t-3">›</span></div>
+        <div class="list-row" style="padding: 10px 0"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Level and pay</p><p class="t-caption t-3">Senior, Lead+ · ₹30 LPA+</p></div><span class="t-3">›</span></div>
+      </div>
+      <div class="tabbar">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls4}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S29 · SETTINGS</p>
+    <div class="phone">
+      <div class="topbar"><button class="icon-btn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.back}}"/></svg></button><h1 class="t-heading">Settings</h1></div>
+      <div class="screen" style="gap: 0">
+        <p class="t-caption t-2" style="padding: 8px 0">NOTIFICATIONS</p>
+        <div class="list-row"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Morning matches</p><p class="t-caption t-3">At 8:00 AM, only when there's something new</p></div><span class="toggle" role="img" aria-label="On"></span></div>
+        <div class="list-row"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Time</p></div><span class="t-body t-2">08:00 ›</span></div>
+        <p class="t-caption t-2" style="padding: 14px 0 8px">APPEARANCE</p>
+        <div class="segs"><span class="seg on">System</span><span class="seg">Light</span><span class="seg">Dark</span></div>
+        <p class="t-caption t-2" style="padding: 14px 0 8px">PRIVACY</p>
+        <div class="list-row"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">What we store and why</p><p class="t-caption t-3">You consented on 12 Oct 2026 (policy 2026-10-01)</p></div><span class="t-3">›</span></div>
+        <div class="list-row"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">About and data sources</p></div><span class="t-3">›</span></div>
+        <div class="list-row"><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Terms · Privacy Policy</p><p class="t-caption t-3">Data requests: [YOUR CONTACT EMAIL]</p></div><span class="t-3">›</span></div>
+        <div class="list-row"><p class="t-heading" style="font-size: 15px; color: var(--rejected)">Delete my account and data</p></div>
+        <button class="btn btn-secondary btn-block" style="margin-top: 16px">Log out</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1816,"height":990}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const i = {
+      globe: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z',
+      sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z', kanban: 'M6 5v11M12 5v6M18 5v14',
+      bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z', user: 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8a4 4 0 1 0 0 8z',
+      back: 'M15 18l-6-6 6-6', calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+      file: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6',
+      cog: 'M12 15a3 3 0 1 0 0-6a3 3 0 1 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+    };
+    const tabs = [['Globe', i.globe], ['Matches', i.sparkles], ['Tracker', i.kanban], ['Saved', i.bookmark], ['Profile', i.user]];
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light', i,
+      tabs: tabs.map(([label, d], n) => ({ label, d, cls3: n === 3 ? 'tab on' : 'tab', cls4: n === 4 ? 'tab on' : 'tab' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

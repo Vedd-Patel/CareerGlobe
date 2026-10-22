@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>C · Globe · phone</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}} board" style="width: 1816px; height: 990px">
+
+  <div>
+    <p class="phone-label">S14 · GLOBE HOME</p>
+    <div class="phone">
+      <div class="space" style="flex: 1; position: relative">
+        <div class="globe" style="width: 640px; height: 640px; left: -125px; top: 70px"></div>
+        <div class="landmass" style="width: 210px; height: 270px; left: 100px; top: 210px; transform: rotate(18deg)"></div>
+        <span class="cluster c-l" style="left: 185px; top: 420px">312</span>
+        <span class="cluster c-m" style="left: 170px; top: 300px">48</span>
+        <span class="cluster c-s" style="left: 250px; top: 360px">9</span>
+        <span class="cluster c-s" style="left: 140px; top: 470px; background: var(--pin-hiring)">6</span>
+        <span class="pin match" style="left: 230px; top: 470px"></span>
+        <span class="pin idle" style="left: 115px; top: 380px"></span>
+        <div style="position: absolute; top: 56px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; gap: 10px">
+            <div class="search glass" style="border: 1px solid rgba(255,255,255,.1); color: #A6B0C9"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.search}}"/></svg>Companies, jobs, cities</div>
+            <button class="icon-btn glass" aria-label="Filters" style="color: #E9EDF7"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.filter}}"/></svg></button>
+          </div>
+          <div style="display: flex; gap: 8px; overflow: hidden">
+            <span class="chip on">Matches only</span><span class="chip glass" style="border-color: rgba(255,255,255,.1)">Remote</span><span class="chip glass" style="border-color: rgba(255,255,255,.1)">Software</span><span class="chip glass" style="border-color: rgba(255,255,255,.1)">Hiring now</span>
+          </div>
+          <span class="pill glass" style="align-self: flex-start; color: #A6B0C9">Updated today 6:00 AM</span>
+        </div>
+      </div>
+      <div class="sheet" style="position: absolute; left: 0; right: 0; bottom: 84px; height: 250px">
+        <span class="grabber"></span>
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><p class="t-heading">Companies in view</p><p class="t-caption t-3">by matches</p></div>
+        <sc-for list="{{companies}}" as="c" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <span class="logo sm {{c.logo}}">{{c.ini}}</span>
+            <div style="flex: 1"><p class="t-heading" style="font-size: 15px">{{c.name}}</p><p class="t-caption t-3">{{c.where}}</p></div>
+            <span class="num t-accent">{{c.m}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div class="tabbar" style="position: absolute; left: 0; right: 0; bottom: 0">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S15 · COMPANY PREVIEW SHEET</p>
+    <div class="phone">
+      <div class="space" style="flex: 1; position: relative">
+        <div class="globe" style="width: 900px; height: 900px; left: -260px; top: 40px"></div>
+        <div class="landmass" style="width: 320px; height: 400px; left: 40px; top: 120px; transform: rotate(18deg)"></div>
+        <span class="pin sel" style="left: 210px; top: 330px"></span>
+        <span class="pin match" style="left: 160px; top: 260px"></span>
+        <span class="pin hiring" style="left: 270px; top: 280px"></span>
+        <span class="pin idle" style="left: 120px; top: 360px"></span>
+      </div>
+      <div class="sheet" style="position: absolute; left: 0; right: 0; bottom: 84px">
+        <span class="grabber"></span>
+        <div style="display: flex; gap: 14px; align-items: center">
+          <span class="logo lg l5">T</span>
+          <div style="flex: 1"><p class="t-title">Tata Motors</p><div class="meta"><span class="pill p-saved">Product</span><span>Pune · HQ Mumbai</span></div></div>
+        </div>
+        <div style="display: flex; gap: 28px"><div><p class="num" style="font-size: 24px">144</p><p class="t-caption t-3">open jobs</p></div><div><p class="num t-accent" style="font-size: 24px">9</p><p class="t-caption t-3">your matches</p></div><div><p class="num" style="font-size: 24px">2:14</p><p class="t-caption t-3">checked today, AM</p></div></div>
+        <div style="display: flex; gap: 10px"><button class="btn btn-secondary" style="flex: 1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.bookmark}}"/></svg>Save</button><button class="btn btn-primary" style="flex: 2">View company</button></div>
+      </div>
+      <div class="tabbar" style="position: absolute; left: 0; right: 0; bottom: 0">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S16 · FILTERS SHEET</p>
+    <div class="phone">
+      <div class="space" style="height: 110px"></div>
+      <div class="sheet" style="flex: 1; border-radius: 24px 24px 0 0; margin-top: -24px; gap: 16px; overflow: hidden">
+        <span class="grabber"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><p class="t-title">Filters</p><a class="btn btn-text" href="#reset">Reset</a></div>
+        <p class="t-caption t-2">ROLE CATEGORY</p>
+        <div class="chips"><span class="chip on">Software <span class="count">1,166</span></span><span class="chip">Data &amp; AI <span class="count">416</span></span><span class="chip">Hardware <span class="count">133</span></span><span class="chip">Design <span class="count">55</span></span></div>
+        <p class="t-caption t-2">WORK MODE</p>
+        <div class="segs"><span class="seg on">Any</span><span class="seg">Remote</span><span class="seg">Hybrid</span><span class="seg">On-site</span></div>
+        <p class="t-caption t-2">COMPANY</p>
+        <div class="chips"><span class="chip on">Product</span><span class="chip">Service</span><span class="chip">Seed</span><span class="chip">Series A+</span><span class="chip">Public</span><span class="chip">51–200</span><span class="chip">1000+</span></div>
+        <p class="t-caption t-2">POSTED WITHIN</p>
+        <div class="segs"><span class="seg">24h</span><span class="seg on">7 days</span><span class="seg">30 days</span></div>
+        <div class="card" style="align-items: center; justify-content: space-between; box-shadow: none; padding: 12px 16px"><p class="t-heading" style="font-size: 15px">Matches only</p><span class="toggle" role="img" aria-label="On"></span></div>
+        <button class="btn btn-primary btn-block" style="margin-top: auto; margin-bottom: 24px">Show 214 companies</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S17 · SEARCH</p>
+    <div class="phone">
+      <div class="topbar"><div class="search focus" style="border-color: var(--accent)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.search}}"/></svg><span style="color: var(--text)">pun</span></div><a class="btn btn-text" href="#cancel">Cancel</a></div>
+      <div class="screen" style="gap: 10px">
+        <p class="t-caption t-2">CITIES</p>
+        <div class="list-row" style="padding: 10px 0"><span class="icon-btn" style="width: 36px; height: 36px" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="{{i.pin}}"/></svg></span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Pune</p><p class="t-caption t-3">14 companies</p></div></div>
+        <p class="t-caption t-2">COMPANIES</p>
+        <div class="list-row" style="padding: 10px 0"><span class="logo sm l8">P</span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">PayU India</p><p class="t-caption t-3">Product · Gurugram</p></div></div>
+        <p class="t-caption t-2">JOBS</p>
+        <div class="list-row" style="padding: 10px 0"><span class="logo sm l5">T</span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Senior Manager (L5) Current Quality</p><p class="t-caption t-3">Tata Motors · Pune</p></div></div>
+        <div class="list-row" style="padding: 10px 0"><span class="logo sm l4">N</span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">SWQA Test Developer Engineer</p><p class="t-caption t-3">NVIDIA · Pune</p></div></div>
+        <p class="t-caption t-2" style="margin-top: 8px">RECENT</p>
+        <div class="chips"><span class="chip">VLSI Bengaluru</span><span class="chip">Razorpay</span><span class="chip">remote design</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"dark"},"$preview":{"width":1816,"height":990}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'dark') === 'dark';
+    const i = {
+      globe: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z',
+      sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z', kanban: 'M6 5v11M12 5v6M18 5v14',
+      bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z', user: 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8a4 4 0 1 0 0 8z',
+      search: 'M11 19a8 8 0 1 0 0-16a8 8 0 1 0 0 16zM21 21l-4.3-4.3', filter: 'M3 6h18M7 12h10M10 18h4',
+      pin: 'M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 1 0 0 5z',
+    };
+    const tabs = [['Globe', i.globe], ['Matches', i.sparkles], ['Tracker', i.kanban], ['Saved', i.bookmark], ['Profile', i.user]];
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light', i,
+      tabs: tabs.map(([label, d], n) => ({ label, d, cls: n === 0 ? 'tab on' : 'tab' })),
+      companies: [
+        { name: 'Razorpay', where: 'Bengaluru · 38 open', m: 7, ini: 'R', logo: 'l7' },
+        { name: 'Groww', where: 'Bengaluru · 22 open', m: 5, ini: 'G', logo: 'l1' },
+        { name: 'NVIDIA', where: 'Bengaluru, Pune · 240 open', m: 4, ini: 'N', logo: 'l4' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

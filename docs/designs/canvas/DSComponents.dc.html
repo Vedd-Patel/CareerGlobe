@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CareerGlobe components</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}}" style="width: 1440px; min-height: 1960px; padding: 64px; display: flex; flex-direction: column; gap: 44px">
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <p class="t-caption t-accent">CAREERGLOBE · DESIGN SYSTEM v1</p>
+    <h1 class="t-display">Components</h1>
+  </div>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Map pin · cluster bubble</h2>
+      <div class="space" style="height: 220px; border-radius: 20px">
+        <span class="pin match" style="left: 70px; top: 70px"></span>
+        <span class="pin hiring" style="left: 150px; top: 70px"></span>
+        <span class="pin idle" style="left: 230px; top: 70px"></span>
+        <span class="pin sel" style="left: 310px; top: 70px"></span>
+        <span class="cluster c-s" style="left: 90px; top: 160px">8</span>
+        <span class="cluster c-m" style="left: 190px; top: 160px">42</span>
+        <span class="cluster c-l" style="left: 310px; top: 160px">310</span>
+        <div style="position: absolute; left: 40px; top: 96px; display: flex; gap: 38px; color: #A6B0C9" class="t-caption"><span>Matching</span><span>Hiring</span><span>Not hiring</span><span>Selected</span></div>
+        <div class="glass" style="position: absolute; right: 24px; top: 24px; border-radius: 14px; padding: 12px 14px; width: 220px; display: flex; gap: 10px; align-items: center">
+          <span class="logo sm l2">Z</span>
+          <div><p class="t-caption" style="color: #E9EDF7">Zerodha</p><p class="t-caption" style="color: #A6B0C9">Bengaluru · 6 matches</p></div>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Match score ring · 0–100 colour bands</h2>
+      <div class="card" style="align-items: center; justify-content: space-around; height: 220px">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><div class="ring lg band-hi" style="--p: 92%"><span>92</span></div><span class="t-caption t-2">80–100 strong</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><div class="ring band-mid" style="--p: 68%"><span>68</span></div><span class="t-caption t-2">60–79 match</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><div class="ring sm band-lo" style="--p: 41%"><span>41</span></div><span class="t-caption t-2">below 60</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Job card · default, new, saved, closed</h2>
+      <div class="card">
+        <div class="ring band-hi" style="--p: 87%"><span>87</span></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0">
+          <div style="display: flex; gap: 8px; align-items: center"><p class="t-heading">Senior Backend Engineer</p><span class="badge-new">NEW</span></div>
+          <div class="meta"><span>Razorpay</span><span>Bengaluru · Hybrid</span><span>Software Engineering</span></div>
+          <p class="t-body t-2">Matches 7 of 9 skills · missing Kubernetes, GraphQL</p>
+        </div>
+        <button class="icon-btn" aria-label="Save job"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{i.bookmark}}"/></svg></button>
+      </div>
+      <div class="card">
+        <div class="ring band-mid" style="--p: 64%"><span>64</span></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+          <p class="t-heading">Product Designer</p>
+          <div class="meta"><span>Swiggy</span><span>Remote</span><span>3 days ago</span></div>
+        </div>
+        <button class="icon-btn" aria-label="Saved" style="background: var(--accent); color: var(--on-accent); border-color: var(--accent)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.bookmark}}"/></svg></button>
+      </div>
+      <div class="card closed-card">
+        <div class="ring band-lo" style="--p: 0%"><span>—</span></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+          <p class="t-heading">QA Engineer</p>
+          <div class="meta"><span>Lupin</span><span>Pune</span></div>
+          <span class="pill p-withdrawn">No longer on the careers page</span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Company card · list row, compact sheet, saved</h2>
+      <div class="card" style="align-items: center">
+        <span class="logo l1">G</span>
+        <div style="flex: 1"><p class="t-heading">Groww</p><div class="meta"><span>Product</span><span>Bengaluru</span></div></div>
+        <div style="text-align: right"><p class="num t-accent" style="font-size: 18px">12</p><p class="t-caption t-3">matches</p></div>
+      </div>
+      <div class="sheet" style="border-radius: 24px; border: 1px solid var(--line)">
+        <span class="grabber"></span>
+        <div style="display: flex; gap: 14px; align-items: center">
+          <span class="logo lg l5">T</span>
+          <div style="flex: 1"><p class="t-title">Tata Motors</p><div class="meta"><span class="pill p-saved" style="height: 22px">Product</span><span>Pune</span></div></div>
+        </div>
+        <div style="display: flex; gap: 24px"><div><p class="num" style="font-size: 22px">144</p><p class="t-caption t-3">open jobs</p></div><div><p class="num t-accent" style="font-size: 22px">9</p><p class="t-caption t-3">your matches</p></div></div>
+        <div style="display: flex; gap: 10px"><button class="btn btn-secondary" style="flex: 1">Save</button><button class="btn btn-primary" style="flex: 2">View company</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Skill chip · have, missing, editable</h2>
+      <div class="chips">
+        <span class="skill have"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="{{i.check}}"/></svg>Go</span>
+        <span class="skill have">Kafka</span><span class="skill miss">Kubernetes</span><span class="skill miss">GraphQL</span>
+        <span class="skill edit">React <button class="btn-text" aria-label="Remove React" style="border: 0; background: none; color: var(--text-3); padding: 0; display: inline-flex"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="{{i.x}}"/></svg></button></span>
+      </div>
+      <h2 class="t-heading" style="margin-top: 10px">Filter chip · off, on, with count</h2>
+      <div class="chips"><span class="chip">Remote</span><span class="chip on">Matches only</span><span class="chip">Design <span class="count">32</span></span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Status pill</h2>
+      <div class="chips"><span class="pill p-saved">Saved</span><span class="pill p-applied">Applied</span><span class="pill p-interview">Interview</span><span class="pill p-offer">Offer</span><span class="pill p-rejected">Rejected</span><span class="pill p-withdrawn">Withdrawn</span></div>
+      <h2 class="t-heading" style="margin-top: 10px">Buttons</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <button class="btn btn-primary">Continue</button><button class="btn btn-secondary">Not now</button><button class="btn btn-text">Forgot password?</button>
+        <a class="btn btn-primary" href="#apply">Apply on company site <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="{{i.external}}"/></svg></a>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Tracker card · default, dragging, next step, closed</h2>
+      <div class="tcard"><div style="display: flex; gap: 10px; align-items: center"><span class="logo sm l3">S</span><div><p class="t-heading" style="font-size: 15px">Data Engineer</p><p class="t-caption t-3">Swiggy · updated 2d ago</p></div></div></div>
+      <div class="tcard drag"><div style="display: flex; gap: 10px; align-items: center"><span class="logo sm l4">N</span><div><p class="t-heading" style="font-size: 15px">ASIC Design Engineer</p><p class="t-caption t-3">NVIDIA · moving to Interview</p></div></div></div>
+      <div class="tcard"><div style="display: flex; gap: 10px; align-items: center"><span class="logo sm l2">Z</span><div style="flex: 1"><p class="t-heading" style="font-size: 15px">SRE</p><p class="t-caption t-3">Zerodha</p></div></div><span class="pill p-interview">Tech round · Thu 24 Oct</span></div>
+      <div class="tcard"><div style="display: flex; gap: 10px; align-items: center"><span class="logo sm l6">A</span><div><p class="t-heading" style="font-size: 15px">Store Manager</p><p class="t-caption t-3">Asian Paints</p></div></div><span class="pill p-rejected">Job left the careers page</span></div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Inputs</h2>
+      <div class="field"><label for="cs1">Email</label><input id="cs1" class="input" value="priya@example.com"></div>
+      <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.search}}"/></svg>Companies, jobs, cities</div>
+      <div class="field"><label for="cs2">City</label><input id="cs2" class="input focus" value="Beng"></div>
+      <div class="stepper"><button aria-label="Fewer years">−</button><span>4 years</span><button aria-label="More years">+</button></div>
+      <div class="field"><label for="cs3">Minimum salary (₹ LPA)</label><input id="cs3" class="input" value="18"></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">File drop zone · banners</h2>
+      <div class="dropzone"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true" style="color: var(--accent)"><path d="{{i.upload}}"/></svg><p class="t-heading">Drop your resume here</p><p class="t-caption t-3">PDF or DOCX · up to 5 MB</p></div>
+      <div class="banner b-info"><span class="txt">Updated today at 6:00 AM</span></div>
+      <div class="banner b-warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.alert}}"/></svg><span class="txt">No longer on the careers page since 18 Oct</span></div>
+      <div class="banner b-err"><span class="txt">Couldn't read this file — try a text PDF</span></div>
+      <div class="banner b-off"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.wifiOff}}"/></svg><span class="txt">You're offline. Showing saved data.</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="t-heading">Empty state · skeletons</h2>
+      <div class="card" style="flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 24px">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.sparkles}}"/></svg></div>
+        <p class="t-heading">No matches yet</p><p class="t-body t-2">Widen your cities or categories, or upload your resume.</p>
+        <button class="btn btn-secondary">Edit preferences</button>
+      </div>
+      <div class="card" style="gap: 12px"><span class="sk" style="width: 56px; height: 56px; border-radius: 50%"></span><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><span class="sk" style="height: 16px; width: 70%"></span><span class="sk" style="height: 12px; width: 45%"></span><span class="sk" style="height: 12px; width: 85%"></span></div></div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 14px">
+    <h2 class="t-heading">Navigation · bottom tab bar (phone) and side rail (web)</h2>
+    <div style="display: flex; gap: 40px; align-items: flex-start">
+      <div class="tabbar" style="width: 390px; border: 1px solid var(--line); border-radius: 20px">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+          <a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a>
+        </sc-for>
+      </div>
+      <div class="rail" style="border: 1px solid var(--line); border-radius: 20px; height: 420px">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+          <a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; width: 390px">
+        <p class="t-caption t-2">Bottom sheet · peek, half, full</p>
+        <div style="display: flex; gap: 10px; align-items: flex-end; height: 200px">
+          <div class="sheet" style="flex: 1; height: 60px; border: 1px solid var(--line)"><span class="grabber"></span></div>
+          <div class="sheet" style="flex: 1; height: 120px; border: 1px solid var(--line)"><span class="grabber"></span></div>
+          <div class="sheet" style="flex: 1; height: 190px; border: 1px solid var(--line)"><span class="grabber"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const i = {
+      globe: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z',
+      sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z',
+      kanban: 'M6 5v11M12 5v6M18 5v14',
+      bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z',
+      user: 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8a4 4 0 1 0 0 8z',
+      search: 'M11 19a8 8 0 1 0 0-16a8 8 0 1 0 0 16zM21 21l-4.3-4.3',
+      external: 'M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6',
+      x: 'M18 6L6 18M6 6l12 12',
+      check: 'M20 6L9 17l-5-5',
+      upload: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
+      alert: 'M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+      wifiOff: 'M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 4.2-2.8M10.7 5.1A15 15 0 0 1 22 8.8M5 12.9a10 10 0 0 1 5.2-2.8M12 20h.01',
+    };
+    const names = [['Globe', i.globe], ['Matches', i.sparkles], ['Tracker', i.kanban], ['Saved', i.bookmark], ['Profile', i.user]];
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light',
+      i,
+      tabs: names.map(([label, d], n) => ({ label, d, cls: n === 0 ? 'tab on' : 'tab' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

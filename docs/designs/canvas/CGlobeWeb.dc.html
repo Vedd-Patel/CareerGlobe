@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S14 Globe · web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#3DD6C6}a:hover{color:#6FE6DA}</style>
+</helmet>
+<div class="cg {{themeClass}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+  <nav class="rail" aria-label="Main">
+    <span style="width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3DD6C6, #0E2150); margin-bottom: 18px"></span>
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+  </nav>
+  <main class="space" style="flex: 999 1 560px; min-width: 0; min-height: 900px; position: relative">
+    <div class="globe" style="width: 1100px; height: 1100px; left: -120px; top: 60px"></div>
+    <div class="landmass" style="width: 360px; height: 460px; left: 200px; top: 180px; transform: rotate(18deg)"></div>
+    <span class="cluster c-l" style="left: 420px; top: 560px">312</span>
+    <span class="cluster c-m" style="left: 330px; top: 360px">48</span>
+    <span class="cluster c-m" style="left: 470px; top: 440px">27</span>
+    <span class="cluster c-s" style="left: 300px; top: 520px; background: var(--pin-hiring)">6</span>
+    <span class="pin sel" style="left: 360px; top: 600px"></span>
+    <span class="pin match" style="left: 520px; top: 500px"></span>
+    <span class="pin idle" style="left: 260px; top: 450px"></span>
+    <div style="position: absolute; top: 24px; left: 24px; right: 24px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <div class="search glass" style="max-width: 420px; color: #A6B0C9; border: 1px solid rgba(255,255,255,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.search}}"/></svg>Companies, jobs, cities</div>
+      <span class="chip on">Matches only</span><span class="chip glass" style="border-color: rgba(255,255,255,.1)">Remote</span><span class="chip glass" style="border-color: rgba(255,255,255,.1)">Software</span><span class="chip glass" style="border-color: rgba(255,255,255,.1)">Product</span><span class="chip glass" style="border-color: rgba(255,255,255,.1)">Hiring now</span>
+      <button class="chip glass" style="border-color: rgba(255,255,255,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.filter}}"/></svg>All filters</button>
+    </div>
+    <div style="position: absolute; left: 24px; bottom: 24px; display: flex; gap: 10px; align-items: center">
+      <span class="pill glass" style="color: #A6B0C9">Updated today 6:00 AM</span>
+      <span class="pill glass" style="color: #A6B0C9">Map data © OpenStreetMap · Natural Earth</span>
+    </div>
+    <div style="position: absolute; right: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px">
+      <button class="icon-btn glass" aria-label="Zoom in">+</button><button class="icon-btn glass" aria-label="Zoom out">−</button>
+    </div>
+  </main>
+  <aside style="flex: 1 1 420px; max-width: 460px; min-width: 0; background: var(--surface); border-left: 1px solid var(--line); display: flex; flex-direction: column">
+    <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px; border-bottom: 1px solid var(--line)">
+      <div style="display: flex; gap: 14px; align-items: center">
+        <span class="logo lg l5">T</span>
+        <div style="flex: 1"><p class="t-title">Tata Motors</p><div class="meta"><span class="pill p-saved">Product</span><span>Pune</span></div></div>
+        <button class="icon-btn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.x}}"/></svg></button>
+      </div>
+      <div style="display: flex; gap: 28px"><div><p class="num" style="font-size: 24px">144</p><p class="t-caption t-3">open jobs</p></div><div><p class="num t-accent" style="font-size: 24px">9</p><p class="t-caption t-3">your matches</p></div></div>
+      <div style="display: flex; gap: 10px"><button class="btn btn-secondary" style="flex: 1">Save</button><a class="btn btn-primary" href="#company" style="flex: 2">View company</a></div>
+    </div>
+    <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 4px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px"><p class="t-heading">Companies in view</p><p class="t-caption t-3">48 · by matches</p></div>
+      <sc-for list="{{companies}}" as="c" hint-placeholder-count="6">
+        <div class="list-row">
+          <span class="logo sm {{c.logo}}">{{c.ini}}</span>
+          <div style="flex: 1; min-width: 0"><p class="t-heading" style="font-size: 15px">{{c.name}}</p><p class="t-caption t-3">{{c.where}}</p></div>
+          <div style="text-align: right"><p class="num t-accent">{{c.m}}</p><p class="t-caption t-3">matches</p></div>
+        </div>
+      </sc-for>
+    </div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'dark') === 'dark';
+    const i = {
+      globe: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z',
+      sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z', kanban: 'M6 5v11M12 5v6M18 5v14',
+      bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z', user: 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8a4 4 0 1 0 0 8z',
+      search: 'M11 19a8 8 0 1 0 0-16a8 8 0 1 0 0 16zM21 21l-4.3-4.3', filter: 'M3 6h18M7 12h10M10 18h4', x: 'M18 6L6 18M6 6l12 12',
+    };
+    const tabs = [['Globe', i.globe], ['Matches', i.sparkles], ['Tracker', i.kanban], ['Saved', i.bookmark], ['Profile', i.user]];
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light', i,
+      tabs: tabs.map(([label, d], n) => ({ label, d, cls: n === 0 ? 'tab on' : 'tab' })),
+      companies: [
+        { name: 'Razorpay', where: 'Product · Bengaluru · 38 open', m: 7, ini: 'R', logo: 'l7' },
+        { name: 'Groww', where: 'Product · Bengaluru · 22 open', m: 5, ini: 'G', logo: 'l1' },
+        { name: 'NVIDIA', where: 'Product · Bengaluru, Pune · 240 open', m: 4, ini: 'N', logo: 'l4' },
+        { name: 'Zensar Technologies', where: 'Service · Pune · 179 open', m: 3, ini: 'Z', logo: 'l6' },
+        { name: 'Lupin', where: 'Product · Mumbai · 90 open', m: 1, ini: 'L', logo: 'l8' },
+        { name: 'Bajaj Auto', where: 'Product · Pune · 482 open', m: 0, ini: 'B', logo: 'l3' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

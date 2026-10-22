@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S23 Tracker · web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+  <nav class="rail" aria-label="Main">
+    <span style="width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3DD6C6, #0E2150); margin-bottom: 18px"></span>
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+  </nav>
+  <main style="flex: 999 1 640px; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center">
+      <h1 class="t-title">Tracker</h1>
+      <div class="card" style="padding: 12px 18px; gap: 24px; align-items: center; box-shadow: none">
+        <div><p class="num" style="font-size: 20px; color: var(--applied)">6</p><p class="t-caption t-3">applied</p></div>
+        <div><p class="num" style="font-size: 20px; color: var(--interview)">2</p><p class="t-caption t-3">interviews</p></div>
+        <div><p class="num" style="font-size: 20px; color: var(--offer)">1</p><p class="t-caption t-3">offer</p></div>
+        <div><p class="num t-accent" style="font-size: 20px">33%</p><p class="t-caption t-3">response rate</p></div>
+      </div>
+    </div>
+    <div style="overflow-x: auto"><div style="display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 16px; min-width: 1000px">
+      <sc-for list="{{cols}}" as="c" hint-placeholder-count="4">
+        <div class="col">
+          <div style="display: flex; justify-content: space-between; align-items: center"><span class="pill {{c.pill}}">{{c.name}}</span><span class="t-caption t-3">{{c.count}}</span></div>
+          <sc-for list="{{c.cards}}" as="k" hint-placeholder-count="2">
+            <div class="{{k.cls}}">
+              <div style="display: flex; gap: 10px; align-items: center"><span class="logo sm {{k.logo}}">{{k.ini}}</span><div style="min-width: 0"><p class="t-heading" style="font-size: 15px">{{k.title}}</p><p class="t-caption t-3">{{k.sub}}</p></div></div>
+              <sc-if value="{{k.note}}" hint-placeholder-val="{{ false }}"><span class="pill {{k.notePill}}">{{k.note}}</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div></div>
+    <button class="btn btn-text" style="align-self: flex-start">Rejected / Withdrawn · 3 ▾</button>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const i = {
+      globe: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z',
+      sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z', kanban: 'M6 5v11M12 5v6M18 5v14',
+      bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z', user: 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8a4 4 0 1 0 0 8z',
+    };
+    const tabs = [['Globe', i.globe], ['Matches', i.sparkles], ['Tracker', i.kanban], ['Saved', i.bookmark], ['Profile', i.user]];
+    const k = (title, sub, ini, logo, note, notePill, drag) => ({ title, sub, ini, logo, note: note || '', notePill: notePill || '', cls: drag ? 'tcard drag' : 'tcard' });
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light',
+      tabs: tabs.map(([label, d], n) => ({ label, d, cls: n === 2 ? 'tab on' : 'tab' })),
+      cols: [
+        { name: 'Saved', pill: 'p-saved', count: 4, cards: [k('Data Engineer', 'Swiggy · saved 2d ago', 'S', 'l3'), k('Product Designer', 'Groww · saved 4d ago', 'G', 'l1')] },
+        { name: 'Applied', pill: 'p-applied', count: 6, cards: [k('Senior Backend Engineer', 'Razorpay · 3 days ago', 'R', 'l7'), k('ASIC Design Engineer', 'NVIDIA · dragging to Interview', 'N', 'l4', '', '', true), k('Area Sales Manager', 'Asian Paints · 2 weeks ago', 'A', 'l6', 'Job left the careers page', 'p-rejected')] },
+        { name: 'Interview', pill: 'p-interview', count: 2, cards: [k('SRE', 'Zerodha · 1 week ago', 'Z', 'l2', 'HR call · Thu 24 Oct', 'p-interview')] },
+        { name: 'Offer', pill: 'p-offer', count: 1, cards: [k('Backend Engineer', 'PayU India · offer 20 Oct', 'P', 'l8', 'Reply by Mon 27 Oct', 'p-offer')] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

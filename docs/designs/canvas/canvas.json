@@ -1,0 +1,40 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-22T05:30:00Z"},
+  "title": "CareerGlobe Designs",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 1560, "title": "Design system · Tokens"},
+    "DSComponents.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 1960, "title": "Design system · Components"},
+    "APublicPhone.dc.html": {"x": 0, "y": 2400, "w": 3066, "h": 990, "title": "A · Before signup · Phone (S02–S07)"},
+    "ALandingWeb.dc.html": {"x": 3146, "y": 2400, "w": 1440, "h": 1720, "title": "A · S01 Landing · Web", "expand": "fill"},
+    "AAccessWeb.dc.html": {"x": 4666, "y": 2400, "w": 1440, "h": 900, "title": "A · S04/S05 Access + Log in · Web", "expand": "fill"},
+    "BOnboardingPhone.dc.html": {"x": 0, "y": 4540, "w": 2626, "h": 990, "title": "B · Onboarding · Phone (S08–S13)"},
+    "CGlobePhone.dc.html": {"x": 0, "y": 5950, "w": 1816, "h": 990, "title": "C · Globe · Phone (S14–S17)"},
+    "CGlobeWeb.dc.html": {"x": 1896, "y": 5950, "w": 1440, "h": 900, "title": "C · S14/S15 Globe · Web", "expand": "fill"},
+    "DJobsPhone.dc.html": {"x": 0, "y": 7360, "w": 2266, "h": 990, "title": "D · Companies and jobs · Phone (S18–S22)"},
+    "DJobsWeb.dc.html": {"x": 2346, "y": 7360, "w": 1440, "h": 960, "title": "D · S19/S20 Matches + Job · Web", "expand": "fill"},
+    "ETrackerPhone.dc.html": {"x": 0, "y": 8770, "w": 1366, "h": 990, "title": "E · Tracker · Phone (S23–S25)"},
+    "ETrackerWeb.dc.html": {"x": 1446, "y": 8770, "w": 1440, "h": 900, "title": "E · S23/S25 Tracker · Web", "expand": "fill"},
+    "FSavedProfilePhone.dc.html": {"x": 0, "y": 10180, "w": 1816, "h": 990, "title": "F · Saved, inbox, profile · Phone (S26–S29)"},
+    "GAdminWeb.dc.html": {"x": 0, "y": 11590, "w": 1440, "h": 1120, "title": "G · S30 Admin console · Web", "expand": "fill"},
+    "StatesPhone.dc.html": {"x": 1520, "y": 11590, "w": 2626, "h": 990, "title": "States · loading, empty, error, offline, hints"}
+  },
+  "order": [
+    "Main.dc.html", "DSComponents.dc.html", "APublicPhone.dc.html", "ALandingWeb.dc.html", "AAccessWeb.dc.html",
+    "BOnboardingPhone.dc.html", "CGlobePhone.dc.html", "CGlobeWeb.dc.html", "DJobsPhone.dc.html", "DJobsWeb.dc.html",
+    "ETrackerPhone.dc.html", "ETrackerWeb.dc.html", "FSavedProfilePhone.dc.html", "GAdminWeb.dc.html", "StatesPhone.dc.html"
+  ],
+  "notes": {
+    "dsTitle": {"x": 0, "y": -300, "text": "Design system", "kind": "title1", "maxW": 2960},
+    "aTitle": {"x": 0, "y": 2100, "text": "A · Before signup", "kind": "title1", "maxW": 6106},
+    "bTitle": {"x": 0, "y": 4240, "text": "B · Onboarding", "kind": "title1", "maxW": 2626},
+    "cTitle": {"x": 0, "y": 5650, "text": "C · Globe", "kind": "title1", "maxW": 3336},
+    "dTitle": {"x": 0, "y": 7060, "text": "D · Companies and jobs", "kind": "title1", "maxW": 3786},
+    "eTitle": {"x": 0, "y": 8470, "text": "E · Application tracker", "kind": "title1", "maxW": 2886},
+    "fTitle": {"x": 0, "y": 9880, "text": "F · Saved, alerts and profile", "kind": "title1", "maxW": 1816},
+    "gTitle": {"x": 0, "y": 11290, "text": "G · Admin and screen states", "kind": "title1", "maxW": 4146}
+  },
+  "designSystems": []
+}

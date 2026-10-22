@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S01 Landing</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#3DD6C6}a:hover{color:#6FE6DA}</style>
+</helmet>
+<div class="cg theme-dark" style="min-height: 1720px; display: flex; flex-direction: column">
+  <section class="space" style="min-height: 860px; display: flex; flex-direction: column">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 28px clamp(20px, 5vw, 72px)">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3DD6C6, #0E2150)"></span><span class="t-heading">CareerGlobe</span></div>
+      <a class="btn btn-secondary" href="#login" style="background: transparent; color: #E9EDF7; border-color: rgba(255,255,255,.2)">Log in</a>
+    </header>
+    <div style="flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 48px; padding: 24px clamp(20px, 5vw, 72px) 72px; max-width: 1360px; width: 100%; margin: 0 auto">
+      <div style="flex: 1 1 480px; display: flex; flex-direction: column; gap: 24px; min-width: 0">
+        <span class="pill" style="background: rgba(61,214,198,.14); color: #3DD6C6; align-self: flex-start">Private · invite-only</span>
+        <h1 style="font: 800 clamp(40px, 5vw, 64px)/1.05 var(--font); letter-spacing: -.03em">Every company in India, on one globe.</h1>
+        <p class="t-body" style="font-size: 18px; line-height: 28px; color: #A6B0C9; max-width: 560px">Jobs read every night from each company's own careers page. Upload your resume, see the roles that fit you and why, and track every application.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+          <a class="btn btn-primary" href="#code" style="min-height: 56px; padding: 0 28px; font-size: 16px">I have an access code</a>
+          <span class="t-caption" style="color: #8E98B3">No public sign-up. Ask a member for a code.</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 36px; margin-top: 12px">
+          <div><p class="num" style="font-size: 34px">56</p><p class="t-caption" style="color: #8E98B3">companies</p></div>
+          <div><p class="num" style="font-size: 34px">6,729</p><p class="t-caption" style="color: #8E98B3">open jobs</p></div>
+          <div><p class="num" style="font-size: 34px; color: #3DD6C6">6:00 AM</p><p class="t-caption" style="color: #8E98B3">updated this morning</p></div>
+        </div>
+      </div>
+      <div style="flex: 1 1 420px; position: relative; height: 540px; min-width: 0">
+        <div class="globe" style="width: 520px; height: 520px; max-width: 100%; left: 50%; top: 10px; transform: translateX(-50%); filter: blur(.4px)"></div>
+        <div class="landmass" style="width: 150px; height: 190px; left: calc(50% - 30px); top: 180px; transform: rotate(18deg)"></div>
+        <span class="cluster c-l" style="left: calc(50% + 30px); top: 300px">312</span>
+        <span class="cluster c-m" style="left: calc(50% - 10px); top: 230px">48</span>
+        <span class="pin match" style="left: calc(50% + 70px); top: 360px"></span>
+        <span class="pin hiring" style="left: calc(50% + 2px); top: 330px"></span>
+        <span class="pin match" style="left: calc(50% + 50px); top: 250px"></span>
+        <span class="pin idle" style="left: calc(50% - 40px); top: 300px"></span>
+        <span class="pin hiring" style="left: calc(50% + 90px); top: 280px"></span>
+      </div>
+    </div>
+  </section>
+
+  <section style="background: var(--bg); padding: 88px clamp(20px, 5vw, 72px)">
+    <div style="max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px">
+      <div class="card" style="flex-direction: column; gap: 14px; padding: 28px">
+        <div style="width: 52px; height: 52px; border-radius: 16px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z"/></svg></div>
+        <h2 class="t-title">A globe of real employers</h2>
+        <p class="t-body t-2">Spin to any city and see who is hiring there. Only jobs from each company's own careers page, checked every night — no aggregators.</p>
+      </div>
+      <div class="card" style="flex-direction: column; gap: 14px; padding: 28px">
+        <div style="width: 52px; height: 52px; border-radius: 16px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg></div>
+        <h2 class="t-title">Matches you can read</h2>
+        <p class="t-body t-2">Every score comes with its reason: "Matches 7 of 9 skills · missing Kubernetes". VLSI, design, sales, finance — every field.</p>
+      </div>
+      <div class="card" style="flex-direction: column; gap: 14px; padding: 28px">
+        <div style="width: 52px; height: 52px; border-radius: 16px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M6 5v11M12 5v6M18 5v14"/></svg></div>
+        <h2 class="t-title">Track every application</h2>
+        <p class="t-body t-2">Apply on the company's site, then move it along Saved → Applied → Interview → Offer, with reminders for the next step.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top: 1px solid var(--line); padding: 32px clamp(20px, 5vw, 72px); display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: center" class="t-caption t-3">
+    <span>CareerGlobe · jobs as found on each company's careers page, credited to the company</span>
+    <nav style="display: flex; flex-wrap: wrap; gap: 24px"><a href="#about">About</a><a href="#privacy">Privacy</a><a href="#terms">Terms</a><a href="#contact">Contact</a><a href="#remove">Remove my company</a></nav>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1720}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

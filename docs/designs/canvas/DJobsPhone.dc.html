@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D · Companies and jobs · phone</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}} board" style="width: 2266px; height: 990px">
+
+  <div>
+    <p class="phone-label">S18 · COMPANY DETAIL</p>
+    <div class="phone">
+      <div class="topbar"><button class="icon-btn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.back}}"/></svg></button><span style="flex: 1"></span><button class="icon-btn" aria-label="Save company"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.bookmark}}"/></svg></button></div>
+      <div class="screen" style="gap: 14px">
+        <div style="display: flex; gap: 14px; align-items: center"><span class="logo lg l7">R</span><div><h1 class="t-title">Razorpay</h1><div class="meta"><span class="pill p-saved">Product</span><span>Fintech · Bengaluru</span></div></div></div>
+        <div class="meta"><a href="#web">razorpay.com</a><a href="#careers">Careers page ↗</a></div>
+        <p class="t-body t-2">Payments and banking for businesses in India. [Company description from the admin console]</p>
+        <div class="space" style="height: 110px; border-radius: 16px"><span class="pin match" style="left: 120px; top: 60px"></span><span class="pin hiring" style="left: 230px; top: 40px"></span><span class="pill glass" style="position: absolute; left: 12px; bottom: 10px; color: #A6B0C9">Bengaluru HQ · Gurugram</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><p class="t-heading">38 open roles</p><p class="t-caption t-3">7 match you</p></div>
+        <p class="t-caption t-2">SOFTWARE ENGINEERING · 21</p>
+        <div class="list-row" style="padding: 8px 0"><div class="ring sm band-hi" style="--p: 87%"><span>87</span></div><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Senior Backend Engineer</p><p class="t-caption t-3">Bengaluru · Hybrid</p></div></div>
+        <div class="list-row" style="padding: 8px 0"><div class="ring sm band-mid" style="--p: 66%"><span>66</span></div><div style="flex: 1"><p class="t-heading" style="font-size: 15px">SDE 2, Payments</p><p class="t-caption t-3">Bengaluru</p></div></div>
+        <p class="t-caption t-3">Careers page last checked: today 2:14 AM · <a href="#report">Report wrong info</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S19 · MATCHES</p>
+    <div class="phone">
+      <div class="topbar" style="justify-content: space-between"><h1 class="t-title">Matches</h1><div class="segs" style="width: 190px"><span class="seg on">Best</span><span class="seg">Newest</span></div></div>
+      <div style="display: flex; gap: 8px; padding: 0 20px 12px; overflow: hidden"><span class="chip">Remote</span><span class="chip on">Software</span><span class="chip">Product</span><span class="chip">Pune</span></div>
+      <div class="screen" style="gap: 12px">
+        <sc-for list="{{jobs}}" as="j" hint-placeholder-count="4">
+          <div class="card" style="padding: 14px; gap: 12px">
+            <div class="ring sm {{j.band}}" style="--p: {{j.p}}"><span>{{j.score}}</span></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+              <div style="display: flex; gap: 6px; align-items: center"><p class="t-heading" style="font-size: 15px">{{j.title}}</p><sc-if value="{{j.isNew}}" hint-placeholder-val="{{ true }}"><span class="badge-new">NEW</span></sc-if></div>
+              <p class="t-caption t-2">{{j.company}} · {{j.where}} · {{j.age}}</p>
+              <p class="t-caption t-3">{{j.reason}}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div class="tabbar">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S20 · JOB DETAIL</p>
+    <div class="phone">
+      <div class="topbar"><button class="icon-btn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.back}}"/></svg></button></div>
+      <div class="screen" style="gap: 14px">
+        <div style="display: flex; gap: 10px; align-items: center"><span class="logo sm l7">R</span><span class="t-heading" style="font-size: 15px">Razorpay</span></div>
+        <h1 class="t-title">Senior Backend Engineer</h1>
+        <div class="meta"><span>Bengaluru · Hybrid</span><span>Software Engineering · Senior</span><span>First seen 2 days ago · verified today</span></div>
+        <div class="card" style="flex-direction: column; gap: 12px">
+          <div style="display: flex; gap: 14px; align-items: center"><div class="ring band-hi" style="--p: 87%"><span>87</span></div><div><p class="t-heading">Strong match</p><p class="t-caption t-2">Matches 7 of 9 skills</p></div></div>
+          <div class="chips"><span class="skill have">Go</span><span class="skill have">Kafka</span><span class="skill have">PostgreSQL</span><span class="skill have">AWS</span><span class="skill have">+3</span><span class="skill miss">Kubernetes</span><span class="skill miss">GraphQL</span></div>
+          <p class="t-caption t-2">Senior role, you have 7 years · Bengaluru is a city you chose</p>
+        </div>
+        <p class="t-heading">About the role</p>
+        <p class="t-body t-2">Build and run the services that move payments for millions of businesses. You will design APIs, own reliability … [excerpt; full posting on razorpay.com]</p>
+      </div>
+      <div style="display: flex; gap: 10px; padding: 12px 20px 30px; border-top: 1px solid var(--line); background: var(--surface)">
+        <button class="icon-btn" aria-label="Save job" style="width: 52px; height: 52px; border-radius: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.bookmark}}"/></svg></button>
+        <a class="btn btn-primary" href="#apply" style="flex: 1">Apply on company site <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.external}}"/></svg></a>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S21 · "DID YOU APPLY?" PROMPT</p>
+    <div class="phone">
+      <div class="topbar"><button class="icon-btn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.back}}"/></svg></button></div>
+      <div class="screen" style="opacity: .35; gap: 14px"><h1 class="t-title">Senior Backend Engineer</h1><div class="card" style="height: 160px"></div><div class="card" style="height: 120px"></div></div>
+      <div style="position: absolute; inset: 0; background: rgba(5,8,19,.45)"></div>
+      <div class="sheet" style="position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: 36px">
+        <span class="grabber"></span>
+        <div style="display: flex; gap: 12px; align-items: center"><span class="logo sm l7">R</span><div><p class="t-heading">Did you apply?</p><p class="t-caption t-3">Senior Backend Engineer · Razorpay</p></div></div>
+        <button class="btn btn-primary btn-block">Yes, I applied</button>
+        <button class="btn btn-secondary btn-block">Not yet</button>
+        <button class="btn btn-text btn-block">Don't ask for this job</button>
+        <p class="t-caption t-3" style="text-align: center">"Yes" moves it to Applied in your tracker, with today's date.</p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="phone-label">S22 · JOB CLOSED</p>
+    <div class="phone">
+      <div class="topbar"><button class="icon-btn" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.back}}"/></svg></button></div>
+      <div class="screen" style="gap: 14px">
+        <div class="banner b-warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.alert}}"/></svg><span class="txt">No longer on the careers page since 18 Oct</span></div>
+        <div style="display: flex; gap: 10px; align-items: center"><span class="logo sm l7">R</span><span class="t-heading" style="font-size: 15px">Razorpay</span></div>
+        <h1 class="t-title" style="color: var(--text-2)">Staff Backend Engineer</h1>
+        <div class="meta"><span>Bengaluru</span><span>First seen 2 Sep · last seen 17 Oct</span></div>
+        <p class="t-heading" style="margin-top: 8px">Similar open jobs</p>
+        <div class="card" style="padding: 14px; gap: 12px"><div class="ring sm band-hi" style="--p: 87%"><span>87</span></div><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Senior Backend Engineer</p><p class="t-caption t-2">Razorpay · Bengaluru</p></div></div>
+        <div class="card" style="padding: 14px; gap: 12px"><div class="ring sm band-mid" style="--p: 72%"><span>72</span></div><div style="flex: 1"><p class="t-heading" style="font-size: 15px">Backend Engineer, Payments</p><p class="t-caption t-2">PayU India · Gurugram</p></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":2266,"height":990}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const i = {
+      globe: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z',
+      sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z', kanban: 'M6 5v11M12 5v6M18 5v14',
+      bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z', user: 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8a4 4 0 1 0 0 8z',
+      back: 'M15 18l-6-6 6-6', external: 'M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6',
+      alert: 'M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+    };
+    const tabs = [['Globe', i.globe], ['Matches', i.sparkles], ['Tracker', i.kanban], ['Saved', i.bookmark], ['Profile', i.user]];
+    const job = (title, company, where, age, score, reason, isNew) => ({ title, company, where, age, score, reason, isNew,
+      p: score + '%', band: score >= 80 ? 'band-hi' : score >= 60 ? 'band-mid' : 'band-lo' });
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light', i,
+      tabs: tabs.map(([label, d], n) => ({ label, d, cls: n === 1 ? 'tab on' : 'tab' })),
+      jobs: [
+        job('Senior Backend Engineer', 'Razorpay', 'Bengaluru', '2d', 87, 'Matches 7 of 9 skills · missing Kubernetes, GraphQL', true),
+        job('Staff Engineer, Platform', 'Groww', 'Bengaluru', '5d', 81, 'Matches 6 of 7 skills · missing Terraform', true),
+        job('Backend Engineer, Payments', 'PayU India', 'Gurugram', '1w', 72, 'Matches 5 of 8 skills · missing Redis, gRPC +1', false),
+        job('Senior Software Engineer', 'Sprinklr', 'Remote', '1w', 64, 'Few skills listed in this posting', false),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S19 Matches and S20 job · web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}}" style="min-height: 960px; display: flex; flex-wrap: wrap">
+  <nav class="rail" aria-label="Main">
+    <span style="width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3DD6C6, #0E2150); margin-bottom: 18px"></span>
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><a class="{{t.cls}}" href="#tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"/></svg>{{t.label}}</a></sc-for>
+  </nav>
+  <main style="flex: 999 1 520px; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+      <div><h1 class="t-title">Matches</h1><p class="t-caption t-3">42 jobs score 60 or more · updated today 6:00 AM</p></div>
+      <div class="segs" style="width: 220px"><span class="seg on">Best match</span><span class="seg">Newest</span></div>
+    </div>
+    <div class="chips"><span class="chip">Remote</span><span class="chip on">Software <span class="count">31</span></span><span class="chip">Product</span><span class="chip">Bengaluru</span><span class="chip">Pune</span></div>
+    <sc-for list="{{jobs}}" as="j" hint-placeholder-count="6">
+      <div class="card" style="{{j.sel}}">
+        <div class="ring {{j.band}}" style="--p: {{j.p}}"><span>{{j.score}}</span></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <div style="display: flex; gap: 8px; align-items: center"><p class="t-heading">{{j.title}}</p><sc-if value="{{j.isNew}}" hint-placeholder-val="{{ true }}"><span class="badge-new">NEW</span></sc-if></div>
+          <div class="meta"><span>{{j.company}}</span><span>{{j.where}}</span><span>{{j.age}}</span></div>
+          <p class="t-body t-2">{{j.reason}}</p>
+        </div>
+        <button class="icon-btn" aria-label="Save job"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="{{i.bookmark}}"/></svg></button>
+      </div>
+    </sc-for>
+  </main>
+  <aside style="flex: 1 1 440px; max-width: 520px; min-width: 0; background: var(--surface); border-left: 1px solid var(--line); padding: 32px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; gap: 10px; align-items: center"><span class="logo sm l7">R</span><a class="t-heading" href="#company" style="font-size: 15px; color: var(--text)">Razorpay</a></div>
+    <h2 class="t-title">Senior Backend Engineer</h2>
+    <div class="meta"><span>Bengaluru · Hybrid</span><span>Software Engineering · Senior</span><span>First seen 2 days ago · verified today</span></div>
+    <div class="card" style="flex-direction: column; gap: 14px; box-shadow: none; background: var(--raised)">
+      <div style="display: flex; gap: 16px; align-items: center"><div class="ring lg band-hi" style="--p: 87%"><span>87</span></div><div><p class="t-heading">Strong match</p><p class="t-body t-2">Matches 7 of 9 skills · missing Kubernetes, GraphQL</p></div></div>
+      <p class="t-caption t-2">SKILLS YOU HAVE</p>
+      <div class="chips"><span class="skill have">Go</span><span class="skill have">Kafka</span><span class="skill have">PostgreSQL</span><span class="skill have">AWS</span><span class="skill have">Microservices</span><span class="skill have">REST</span><span class="skill have">Docker</span></div>
+      <p class="t-caption t-2">SKILLS MISSING</p>
+      <div class="chips"><span class="skill miss">Kubernetes</span><span class="skill miss">GraphQL</span></div>
+      <div class="meta"><span>Seniority: Senior role, you have 7 years</span><span>Location: Bengaluru · a city you chose</span></div>
+    </div>
+    <p class="t-heading">About the role</p>
+    <p class="t-body t-2">Build and run the services that move payments for millions of businesses … [excerpt only: the full posting is on razorpay.com]</p>
+    <div style="display: flex; gap: 10px; margin-top: auto">
+      <button class="btn btn-secondary">Save</button>
+      <a class="btn btn-primary" href="#apply" style="flex: 1">Apply on company site <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{i.external}}"/></svg></a>
+    </div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const i = {
+      globe: 'M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z',
+      sparkles: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z', kanban: 'M6 5v11M12 5v6M18 5v14',
+      bookmark: 'M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z', user: 'M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8a4 4 0 1 0 0 8z',
+      external: 'M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6',
+    };
+    const tabs = [['Globe', i.globe], ['Matches', i.sparkles], ['Tracker', i.kanban], ['Saved', i.bookmark], ['Profile', i.user]];
+    const job = (title, company, where, age, score, reason, isNew, selected) => ({ title, company, where, age, score, reason, isNew,
+      p: score + '%', band: score >= 80 ? 'band-hi' : score >= 60 ? 'band-mid' : 'band-lo',
+      sel: selected ? 'border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft)' : '' });
+    return {
+      themeClass: dark ? 'theme-dark' : 'theme-light', i,
+      tabs: tabs.map(([label, d], n) => ({ label, d, cls: n === 1 ? 'tab on' : 'tab' })),
+      jobs: [
+        job('Senior Backend Engineer', 'Razorpay', 'Bengaluru · Hybrid', '2 days ago', 87, 'Matches 7 of 9 skills · missing Kubernetes, GraphQL', true, true),
+        job('Staff Engineer, Platform', 'Groww', 'Bengaluru', '5 days ago', 81, 'Matches 6 of 7 skills · missing Terraform', true, false),
+        job('Backend Engineer, Payments', 'PayU India', 'Gurugram', '1 week ago', 72, 'Matches 5 of 8 skills · missing Redis, gRPC +1', false, false),
+        job('Senior Software Engineer', 'Sprinklr', 'Remote', '1 week ago', 64, 'Few skills listed in this posting', false, false),
+        job('Solutions Architect', 'NVIDIA', 'Pune', '2 weeks ago', 61, 'Matches 3 of 5 skills · missing CUDA, C++', false, false),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

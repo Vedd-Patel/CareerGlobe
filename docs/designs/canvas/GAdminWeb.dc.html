@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S30 Admin console</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}}" style="min-height: 1120px; padding: 32px clamp(16px, 3vw, 40px); display: flex; flex-direction: column; gap: 20px">
+  <header style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between">
+    <div><p class="t-caption t-accent">ADMIN · ONLY YOU</p><h1 class="t-title">Admin console</h1></div>
+    <nav style="display: flex; flex-wrap: wrap; gap: 6px" aria-label="Admin sections">
+      <a class="chip on" href="#crawl">Last night</a><a class="chip" href="#failing">Failing <span class="count">3</span></a><a class="chip" href="#add">Add company</a><a class="chip" href="#rules">Category rules</a><a class="chip" href="#unclassified">Unclassified <span class="count">1,764</span></a><a class="chip" href="#codes">Access codes</a><a class="chip" href="#removal">Removal requests <span class="count">1</span></a>
+    </nav>
+  </header>
+
+  <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px">
+    <div class="card" style="flex-direction: column; gap: 4px"><p class="t-caption t-3">CRAWL · 22 OCT, 01:30–04:40</p><p class="num" style="font-size: 30px; color: var(--offer)">56 ok</p><p class="t-caption t-2">0 failed (limit 10%)</p></div>
+    <div class="card" style="flex-direction: column; gap: 4px"><p class="t-caption t-3">JOBS</p><p class="num" style="font-size: 30px">+3,235</p><p class="t-caption t-2">0 closed · 6,729 open</p></div>
+    <div class="card" style="flex-direction: column; gap: 4px"><p class="t-caption t-3">MATCHING</p><p class="num" style="font-size: 30px">4:52 AM</p><p class="t-caption t-2">finished · heartbeat ok</p></div>
+    <div class="card" style="flex-direction: column; gap: 4px; border-color: var(--interview)"><p class="t-caption t-3">CODE GUESSES · LAST HOUR</p><p class="num" style="font-size: 30px; color: var(--interview)">7</p><p class="t-caption t-2">alarm above 25</p></div>
+  </section>
+
+  <section style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+    <div class="card" style="flex: 999 1 600px; min-width: 0; flex-direction: column; gap: 12px">
+      <h2 class="t-heading">Failing companies</h2>
+      <div style="overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse; font: 600 14px/20px var(--font); min-width: 620px">
+          <thead><tr class="t-caption t-3" style="text-align: left"><th style="padding: 8px 6px">Company</th><th style="padding: 8px 6px">Source</th><th style="padding: 8px 6px">Status</th><th style="padding: 8px 6px">Error</th><th style="padding: 8px 6px"></th></tr></thead>
+          <tbody>
+            <tr style="border-top: 1px solid var(--line)"><td style="padding: 10px 6px">Acme Retail</td><td style="padding: 10px 6px" class="t-2">jsonld</td><td style="padding: 10px 6px"><span class="pill p-interview">review</span></td><td style="padding: 10px 6px" class="t-2">no JobPosting on the careers page and no job URLs in its sitemap</td><td style="padding: 10px 6px"><a href="#fix">Fix</a></td></tr>
+            <tr style="border-top: 1px solid var(--line)"><td style="padding: 10px 6px">Beta Labs</td><td style="padding: 10px 6px" class="t-2">lever</td><td style="padding: 10px 6px"><span class="pill p-rejected">broken</span></td><td style="padding: 10px 6px" class="t-2">0 jobs returned; 12 were open</td><td style="padding: 10px 6px"><a href="#fix">Fix</a></td></tr>
+            <tr style="border-top: 1px solid var(--line)"><td style="padding: 10px 6px">Gamma Corp</td><td style="padding: 10px 6px" class="t-2">workday</td><td style="padding: 10px 6px"><span class="pill p-withdrawn">blocked</span></td><td style="padding: 10px 6px" class="t-2">robots.txt disallows /wday/cxs/…</td><td style="padding: 10px 6px"><a href="#fix">Fix</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="divider"></div>
+      <h3 class="t-heading" style="font-size: 16px">Fix selectors · Acme Retail</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px">
+        <div class="field"><label for="g1">Careers URL</label><input id="g1" class="input" value="https://acme.example/careers"></div>
+        <div class="field"><label for="g2">Each job (item)</label><input id="g2" class="input" value="div.opening"></div>
+        <div class="field"><label for="g3">Title</label><input id="g3" class="input" value="h3"></div>
+        <div class="field"><label for="g4">Location</label><input id="g4" class="input" value=".loc"></div>
+      </div>
+      <div style="display: flex; gap: 10px"><button class="btn btn-primary">Save and recrawl tonight</button><button class="btn btn-secondary">Disable</button></div>
+    </div>
+    <div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+      <div class="card" style="flex-direction: column; gap: 12px">
+        <h2 class="t-heading">Access codes</h2>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap"><input class="input" aria-label="Label" value="Ravi (college)" style="flex: 1 1 140px; height: 44px"><input class="input" aria-label="Max uses" value="1" style="width: 70px; height: 44px"><button class="btn btn-primary" style="min-height: 44px">Create</button></div>
+        <div class="banner b-info"><span class="txt"><b>CG-7K4P-2QXM</b> · copy it now, it can't be shown again</span></div>
+        <div class="list-row" style="padding: 8px 0"><div style="flex: 1"><p class="t-heading" style="font-size: 14px">Friends batch 1</p><p class="t-caption t-3">5 of 5 used · no expiry</p></div><button class="btn btn-text" style="color: var(--rejected)">Revoke</button></div>
+        <div class="list-row" style="padding: 8px 0"><div style="flex: 1"><p class="t-heading" style="font-size: 14px">Priya</p><p class="t-caption t-3">1 of 1 used · expires 30 Nov</p></div><button class="btn btn-text" style="color: var(--rejected)">Revoke</button></div>
+        <div class="list-row" style="padding: 8px 0; border: 0"><div style="flex: 1"><p class="t-heading" style="font-size: 14px; color: var(--text-3)">Old test code</p><p class="t-caption t-3">revoked · 2 users locked out</p></div><button class="btn btn-text">Restore</button></div>
+      </div>
+      <div class="card" style="flex-direction: column; gap: 10px">
+        <h2 class="t-heading">Unclassified titles</h2>
+        <div class="list-row" style="padding: 6px 0"><span style="flex: 1" class="t-body">Senior Executive</span><span class="num t-2">58</span><button class="chip">→ category</button></div>
+        <div class="list-row" style="padding: 6px 0"><span style="flex: 1" class="t-body">Transportation Representative</span><span class="num t-2">41</span><button class="chip">→ category</button></div>
+        <div class="list-row" style="padding: 6px 0; border: 0"><span style="flex: 1" class="t-body">Officer</span><span class="num t-2">33</span><button class="chip">→ category</button></div>
+      </div>
+      <div class="card" style="flex-direction: column; gap: 10px">
+        <h2 class="t-heading">Removal requests</h2>
+        <div class="list-row" style="padding: 6px 0; border: 0"><div style="flex: 1"><p class="t-heading" style="font-size: 14px">Company opt-out · legal@acme.example</p><p class="t-caption t-3">received 20 Oct · due by 27 Oct (7 days)</p></div><button class="btn btn-secondary" style="min-height: 40px">Mark done</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themeClass: (this.props.theme ?? 'light') === 'dark' ? 'theme-dark' : 'theme-light' };
+  }
+}
+</script>
+</body>
+</html>

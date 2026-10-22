@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S04 Access code · web</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/fa807017aa22db43e0eca531686c76e1">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#0B7A72}a:hover{color:#075E58}</style>
+</helmet>
+<div class="cg {{themeClass}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+  <div class="space" style="flex: 1 1 520px; min-height: 420px; display: flex; flex-direction: column; justify-content: flex-end; padding: 48px; color: #E9EDF7">
+    <div class="globe" style="width: 560px; height: 560px; left: -60px; top: 60px"></div>
+    <div class="landmass" style="width: 150px; height: 190px; left: 220px; top: 250px; transform: rotate(18deg)"></div>
+    <span class="cluster c-l" style="left: 290px; top: 380px">312</span>
+    <span class="pin match" style="left: 250px; top: 300px"></span>
+    <span class="pin hiring" style="left: 330px; top: 440px"></span>
+    <div style="position: relative; display: flex; flex-direction: column; gap: 10px; max-width: 460px">
+      <p class="t-title">Private, invite-only</p>
+      <p class="t-body" style="color: #A6B0C9">Nobody gets past this screen without a code from a member. Your code is checked again on every request, so access stays private.</p>
+    </div>
+  </div>
+  <div style="flex: 1 1 480px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 32px; padding: 48px 24px">
+    <div class="card" style="width: 420px; max-width: 100%; flex-direction: column; gap: 20px; padding: 32px">
+      <p class="t-caption t-accent">STEP 1 OF 2</p>
+      <h1 class="t-title">Enter your access code</h1>
+      <div class="field"><label for="w1">Access code</label><input id="w1" class="input code-input focus" value="CG-7K4P-2QXM"></div>
+      <button class="btn btn-primary btn-block">Continue</button>
+      <div class="banner b-err"><span class="txt">Too many tries. Wait 15 minutes and try again.</span></div>
+      <p class="t-caption t-3">Already have an account? <a href="#login">Log in</a> — returning members never re-enter a code.</p>
+    </div>
+    <div class="card" style="width: 420px; max-width: 100%; flex-direction: column; gap: 16px; padding: 32px">
+      <p class="t-caption t-accent">STEP 2 OF 2 · CODE ACCEPTED</p>
+      <h1 class="t-title">Create your account</h1>
+      <button class="btn btn-secondary btn-block"><span style="font-weight: 800">G</span> Continue with Google</button>
+      <button class="btn btn-secondary btn-block">Continue with Apple</button>
+      <div class="field"><label for="w2">Email</label><input id="w2" class="input" value="priya@example.com"></div>
+      <div class="field"><label for="w3">Password</label><input id="w3" class="input" type="password" value="••••••••••"></div>
+      <label class="check"><input type="checkbox" checked>I agree to the Terms and Privacy Policy.</label>
+      <button class="btn btn-primary btn-block">Create account</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themeClass: (this.props.theme ?? 'light') === 'dark' ? 'theme-dark' : 'theme-light' };
+  }
+}
+</script>
+</body>
+</html>
