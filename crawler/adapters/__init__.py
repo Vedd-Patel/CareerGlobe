@@ -50,7 +50,7 @@ _PATTERNS = [
 _KEKA_HOST = re.compile(r"^([a-z0-9-]+)\.keka\.com$")
 _WORKDAY_HOST = re.compile(r"^([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com$")
 # Optional locale before the site name: /en-US/NVIDIAExternalCareerSite/job/...
-_WORKDAY_PATH = re.compile(r"^/(?:[a-z]{2}-[A-Z]{2}/)?([A-Za-z0-9_-]+)")
+_WORKDAY_PATH = re.compile(r"^/(?:[a-zA-Z]{2}-[a-zA-Z]{2}/)?([A-Za-z0-9_-]+)")
 
 
 def detect(careers_url: str) -> tuple[str, str] | None:
@@ -74,7 +74,7 @@ def detect(careers_url: str) -> tuple[str, str] | None:
     m = _WORKDAY_HOST.match(host)
     if m:
         pm = _WORKDAY_PATH.match(parts.path)
-        if pm and pm.group(1) not in ("wday", "job"):
+        if pm and pm.group(1) not in ("wday", "job") and not re.fullmatch(r"[a-zA-Z]{2}-[a-zA-Z]{2}", pm.group(1)):
             return "workday", f"{m.group(1)}.{m.group(2)}/{pm.group(1)}"
         return None
     if re.match(r"^(?:boards|job-boards)(?:\.eu)?\.greenhouse\.io$", host) and parts.path.startswith("/embed/"):

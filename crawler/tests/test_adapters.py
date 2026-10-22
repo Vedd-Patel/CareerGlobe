@@ -132,6 +132,8 @@ def test_empty_boards_parse_to_no_jobs():
         ("https://salesforce.wd12.myworkdayjobs.com/External_Career_Site/",
          ("workday", "salesforce.wd12/External_Career_Site")),
         ("https://nvidia.wd5.myworkdayjobs.com/", None),
+        ("https://acme.wd1.myworkdayjobs.com/en-us/Careers", ("workday", "acme.wd1/Careers")),
+        ("https://ghr.wd1.myworkdayjobs.com/en-us", None),  # a locale alone is not a site
         ("https://careers.zohocorp.com", None),
         ("https://boards.greenhouse.io/embed/job_board", None),
     ],
