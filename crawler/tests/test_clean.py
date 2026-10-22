@@ -94,3 +94,23 @@ def test_clean_html_wrapper_divs_do_not_nest_paragraphs():
 def test_cities_country_code_and_underscores():
     assert cities_from(["IN"]) == []
     assert cities_from(["Pune_RD, MH, IN"]) == ["Pune"]
+
+
+@pytest.mark.parametrize("locations, want", [
+    (["Bengaluru, India"], True),
+    (["Pune, MH, IN"], True),
+    (["Hybrid in Santa Clara, CA", "Bangalore"], True),  # any India location keeps the job
+    (["Gurgaon"], True),
+    (["Remote - Karnataka"], True),
+    (["San Francisco, CA"], False),
+    (["Springfield"], None),  # a place we do not know: cannot tell, kept
+    (["New York, United States"], False),
+    (["London, UK", "Dublin, Ireland"], False),
+    (["Remote - US"], False),
+    (["Remote"], None),
+    (["Multiple locations"], None),
+    ([], None),
+])
+def test_in_india(locations, want):
+    from clean import in_india
+    assert in_india(locations) is want

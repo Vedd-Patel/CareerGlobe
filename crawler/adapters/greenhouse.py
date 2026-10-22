@@ -8,7 +8,7 @@ import html
 from datetime import datetime
 
 from adapters.base import ParseError, RawJob
-from clean import cities_from, clean_html, work_mode_from
+from clean import cities_from, clean_html, in_india, work_mode_from
 
 NAME = "greenhouse"
 
@@ -36,6 +36,7 @@ def parse(data, slug: str) -> list[RawJob]:
                 description=clean_html(html.unescape(content)) if content else None,
                 cities=cities_from(locations),
                 work_mode=work_mode_from(locations),
+                in_india=in_india(locations),
                 posted_at=_dt(j.get("first_published") or j.get("updated_at")),
             )
         )

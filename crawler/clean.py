@@ -66,6 +66,38 @@ def cities_from(locations: list[str]) -> list[str]:
     return found
 
 
+INDIAN_STATES = (
+    "andhra pradesh|arunachal pradesh|assam|bihar|chhattisgarh|goa|gujarat|haryana|himachal pradesh|jharkhand|"
+    "karnataka|kerala|madhya pradesh|maharashtra|manipur|meghalaya|mizoram|nagaland|odisha|orissa|punjab|rajasthan|"
+    "sikkim|tamil nadu|telangana|tripura|uttar pradesh|uttarakhand|west bengal|delhi ncr|ncr|jammu|kashmir|puducherry"
+)
+_INDIA_RE = re.compile(rf"\b(india|indian|{INDIAN_STATES})\b|,\s*(IN|IND)\s*$|\b(KA|MH|TN|TS|TG|UP|DL|HR|GJ|WB|KL|RJ|AP)\s*,\s*IN\b",
+                       re.IGNORECASE)
+_FOREIGN_RE = re.compile(
+    r"\b(united states|usa|u\.s\.|us|united kingdom|uk|england|london|ireland|dublin|germany|berlin|munich|france|paris|"
+    r"netherlands|amsterdam|spain|madrid|barcelona|italy|poland|warsaw|portugal|lisbon|sweden|stockholm|switzerland|zurich|"
+    r"canada|toronto|vancouver|mexico|brazil|sao paulo|argentina|australia|sydney|melbourne|new zealand|singapore|"
+    r"malaysia|kuala lumpur|indonesia|jakarta|philippines|manila|vietnam|thailand|bangkok|japan|tokyo|china|shanghai|"
+    r"beijing|hong kong|taiwan|korea|seoul|uae|dubai|abu dhabi|saudi|riyadh|qatar|doha|israel|tel aviv|egypt|cairo|"
+    r"nigeria|lagos|kenya|nairobi|south africa|turkey|istanbul|pakistan|karachi|lahore|bangladesh|dhaka|sri lanka|colombo|"
+    r"nepal|kathmandu|emea|apac|latam|americas|europe|new york|san francisco|seattle|austin|boston|chicago|"
+    r"california|texas|washington|atlanta|denver|remote - us|us remote|remote us)\b",
+    re.IGNORECASE)
+
+
+def in_india(locations: list[str]) -> bool | None:
+    """True if any location is in India, False if all named locations are clearly
+    elsewhere, None when it cannot tell (e.g. "Remote", "Multiple locations")."""
+    texts = [t for t in locations if t and t.strip()]
+    if not texts:
+        return None
+    if any(_INDIA_RE.search(t) or _CITY_RE.search(t.replace("_", " ")) for t in texts):
+        return True
+    if all(_FOREIGN_RE.search(t) for t in texts):
+        return False
+    return None
+
+
 def work_mode_from(texts: list[str]) -> str | None:
     joined = " ".join(t for t in texts if t).lower()
     if "hybrid" in joined:

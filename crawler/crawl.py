@@ -86,6 +86,7 @@ async def crawl_source(conn, db_lock: asyncio.Lock, client: PoliteClient, run, s
     if not_modified:
         compute, count = diff_not_modified, "unchanged (304)"
     else:
+        jobs = [j for j in jobs if j.in_india is not False]  # India jobs only (spec: companies in India)
         fetched = [(job_key(src.company_id, src.ats_type, j.source_job_id, j.apply_url), j) for j in jobs]
         compute, count = (lambda existing: diff(existing, fetched)), f"{len(jobs)} jobs"
 

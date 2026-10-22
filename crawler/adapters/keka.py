@@ -9,7 +9,7 @@ Job page: https://{slug}.keka.com/careers/jobdetails/{id}
 from datetime import datetime
 
 from adapters.base import ParseError, RawJob
-from clean import annual_inr, cities_from, clean_html, work_mode_from
+from clean import annual_inr, cities_from, clean_html, in_india, work_mode_from
 
 NAME = "keka"
 # Keka's SalaryPeriod enum: 0 not available, 1 hourly, 2 bi-weekly, 3 monthly, 4 annual.
@@ -42,6 +42,7 @@ def parse(data, slug: str) -> list[RawJob]:
                 description=clean_html(j.get("description")),
                 cities=cities,
                 work_mode=work_mode_from(names),
+                in_india=in_india([" ".join(filter(None, [l.get("city"), l.get("state"), l.get("country"), l.get("name")])) for l in locs]),
                 salary_min=lo,
                 salary_max=hi,
                 posted_at=_dt(j.get("publishedOn")),

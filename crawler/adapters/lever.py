@@ -9,7 +9,7 @@ import html
 from datetime import datetime, timezone
 
 from adapters.base import ParseError, RawJob
-from clean import annual_inr, cities_from, clean_html, work_mode_from
+from clean import annual_inr, cities_from, clean_html, in_india, work_mode_from
 
 NAME = "lever"
 _PERIODS = {"per-year-salary": "year", "per-month-salary": "month"}
@@ -45,6 +45,7 @@ def parse(data, slug: str) -> list[RawJob]:
                 apply_url=p["hostedUrl"],
                 description=clean_html(_description(p)),
                 cities=cities_from(locations),
+                in_india=in_india(locations + [cats.get("location") or ""]),
                 work_mode=mode,
                 salary_min=lo,
                 salary_max=hi,

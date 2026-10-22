@@ -21,6 +21,9 @@ class RawJob:
     # The source's own change stamp (sitemap <lastmod>); a job page is fetched
     # again only when it changes.
     source_updated: str | None = None
+    # Set by adapters whose boards are worldwide (Greenhouse, Lever, Keka, Workable):
+    # False = clearly outside India, so the crawl drops it.
+    in_india: bool | None = None
 
 
 class ParseError(Exception):
