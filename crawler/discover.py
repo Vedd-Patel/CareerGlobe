@@ -42,7 +42,6 @@ DEFAULT_OUT = config.REPO_ROOT / "seeds" / "discovered.csv"
 OTHER_BOARDS = [
     ("ashby", re.compile(r"^https?://jobs\.ashbyhq\.com/[^/?#]+", re.I)),
     ("smartrecruiters", re.compile(r"^https?://(careers|jobs)\.smartrecruiters\.com/[^/?#]+", re.I)),
-    ("workable", re.compile(r"^https?://apply\.workable\.com/[^/?#]+", re.I)),
     ("recruitee", re.compile(r"^https?://[a-z0-9-]+\.recruitee\.com", re.I)),
     ("darwinbox", re.compile(r"^https?://[a-z0-9-]+\.darwinbox\.(in|com)", re.I)),
     ("zohorecruit", re.compile(r"^https?://[a-z0-9-]+\.zohorecruit\.(in|com)", re.I)),

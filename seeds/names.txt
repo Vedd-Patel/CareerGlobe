@@ -1,0 +1,447 @@
+# Indian companies to probe on Greenhouse, Lever, Workable and Keka by name.
+# Run: crawler/.venv/bin/python crawler/probe_boards.py --names seeds/names.txt
+# Names already in seeds/companies.csv are skipped.
+
+# Consumer internet, commerce, mobility
+Flipkart
+Myntra
+Swiggy
+Zomato
+Blinkit
+Zepto
+BigBasket
+Nykaa
+Lenskart
+Urban Company
+Ola
+Rapido
+MakeMyTrip
+ixigo
+EaseMyTrip
+Yatra
+OYO
+Dream11
+Dream Sports
+MPL
+Games24x7
+WinZO
+Nazara
+ShareChat
+Moj
+Dailyhunt
+VerSe Innovation
+Glance
+InMobi
+Pocket FM
+Kuku FM
+Pratilipi
+Eloelo
+Josh
+Roposo
+Meesho
+DealShare
+CityMall
+Udaan
+Jumbotail
+Ninjacart
+Licious
+FreshToHome
+Country Delight
+Milkbasket
+Swiggy Instamart
+Dunzo
+Porter
+Shadowfax
+Delhivery
+Ecom Express
+Xpressbees
+Shiprocket
+Pickrr
+LoadShare
+BlackBuck
+Rivigo
+Vahak
+Cars24
+Spinny
+CarDekho
+Droom
+CarTrade
+Park+
+Yulu
+Bounce
+Zoomcar
+Ather Energy
+Ola Electric
+Ultraviolette
+River
+Euler Motors
+Log9 Materials
+Exponent Energy
+Battery Smart
+Sun Mobility
+Simple Energy
+Okinawa Autotech
+boAt
+Noise
+Mamaearth
+Honasa Consumer
+Sugar Cosmetics
+Purplle
+Bewakoof
+The Souled Store
+Snitch
+Rare Rabbit
+FirstCry
+Pepperfry
+Livspace
+Urban Ladder
+Wakefit
+Sleepy Owl
+Licious
+The Whole Truth
+Yoga Bar
+Bombay Shaving Company
+Mokobara
+Lahori
+Zepto Cafe
+Rebel Foods
+EatSure
+Curefoods
+Box8
+Wow Momo
+Chaayos
+Third Wave Coffee
+Blue Tokai
+Infra.Market
+Moglix
+OfBusiness
+Zetwerk
+Bizongo
+Vegrow
+DeHaat
+AgroStar
+Arya.ag
+Jai Kisan
+BharatAgri
+Gramophone
+NoBroker
+Housing.com
+Square Yards
+Magicbricks
+NestAway
+Stanza Living
+Zolo
+Colive
+WeWork India
+Awfis
+Smartworks
+Info Edge
+Naukri
+Apna
+WorkIndia
+Internshala
+Unstop
+Instahyre
+Cutshort
+Hirect
+foundit
+JustDial
+IndiaMART
+TradeIndia
+PolicyBazaar
+Paisabazaar
+Acko
+Digit Insurance
+InsuranceDekho
+Turtlemint
+RenewBuy
+Plum
+Onsurity
+Loop Health
+Even Healthcare
+
+# Fintech
+PhonePe
+Pine Labs
+BharatPe
+MobiKwik
+Cashfree Payments
+PayU
+Juspay
+Razorpay
+Zerodha
+Upstox
+Angel One
+Groww
+Dhan
+Smallcase
+INDmoney
+Kuvera
+Scripbox
+ET Money
+Jar
+Fi
+Jupiter
+Niyo
+Slice
+OneCard
+Uni Cards
+Navi
+KreditBee
+Lendingkart
+Aye Finance
+Indifi
+Capital Float
+Axio
+Fibe
+MoneyTap
+CASHe
+Kissht
+LazyPay
+Simpl
+ZestMoney
+Perfios
+M2P Fintech
+Zeta
+Open
+RazorpayX
+Khatabook
+OkCredit
+Vyapar
+Rupeek
+Easebuzz
+PayGlocal
+Decentro
+Setu
+Signzy
+IDfy
+HyperVerge
+Bureau
+Credgenics
+Spinny Finance
+Paytm
+CRED
+Freo
+Stable Money
+Bharat Nxt
+CoinDCX
+CoinSwitch
+Mudrex
+Giottus
+Vauld
+
+# SaaS, developer tools, AI
+Freshworks
+Zoho
+Postman
+BrowserStack
+Chargebee
+Darwinbox
+Whatfix
+CleverTap
+MoEngage
+WebEngage
+Netcore Cloud
+LeadSquared
+Icertis
+Innovaccer
+Sprinklr
+Hasura
+Druva
+Mindtickle
+Uniphore
+Yellow.ai
+Gupshup
+Haptik
+Exotel
+Ozonetel
+Kaleyra
+Capillary Technologies
+Zeta Suite
+Atlan
+Rocketlane
+Zluri
+Spyne
+Leena AI
+Skit.ai
+Observe.AI
+Sarvam AI
+Krutrim
+Gnani.ai
+CoRover
+Mad Street Den
+Vernacular.ai
+Rephrase.ai
+Wingify
+VWO
+Hevo Data
+Airbyte India
+DevRev
+Facets.cloud
+Middleware
+SigNoz
+Appsmith
+ToolJet
+Hoppscotch
+Chatwoot
+Frappe
+ERPNext
+Nanonets
+Docsumo
+Unbxd
+Netomi
+Kapture CX
+Exotel
+Servify
+Zenoti
+Practo
+MediBuddy
+Pristyn Care
+Tata 1mg
+PharmEasy
+Truemeds
+Netmeds
+Cult.fit
+HealthifyMe
+Ultrahuman
+Fitterfly
+Qure.ai
+Niramai
+SigTuple
+Tricog
+Innovaccer
+HealthPlix
+Eka Care
+Clinikk
+Mfine
+Instamojo
+Shopflo
+GoKwik
+Simplify360
+Bizom
+FieldAssist
+Zoho Corporation
+Kissflow
+Freshdesk
+Agrim
+Superset
+Scaler
+InterviewBit
+Masai School
+Newton School
+upGrad
+Unacademy
+Vedantu
+Toppr
+Eruditus
+Emeritus
+Great Learning
+Simplilearn
+Physics Wallah
+Classplus
+Teachmint
+LEAD School
+Leap Scholar
+Yocket
+Cuemath
+Seekho
+Testbook
+Adda247
+Doubtnut
+Brainly India
+iQuanta
+
+# Deep tech, hardware, space, semiconductors
+Skyroot Aerospace
+Agnikul Cosmos
+Pixxel
+Dhruva Space
+Bellatrix Aerospace
+ideaForge
+Garuda Aerospace
+Tonbo Imaging
+Mindtree
+Tejas Networks
+Saankhya Labs
+Mindgrove Technologies
+InCore Semiconductors
+Signalchip
+Steradian Semiconductors
+Moschip
+Tessolve
+Sankalp Semiconductor
+Ola Krutrim
+Ather
+Bosch Global Software Technologies
+Sasken
+L&T Technology Services
+Tata Elxsi
+KPIT
+Cyient
+Tata Technologies
+Quest Global
+HCL Software
+Netradyne
+Uber India
+Grofers
+Lummo
+Ninjacart
+
+# IT services and consulting (mid-size)
+Persistent Systems
+Coforge
+Mphasis
+Hexaware
+Zensar
+Birlasoft
+Sonata Software
+Mastek
+Happiest Minds
+Nagarro
+Globant India
+Thoughtworks
+EPAM India
+Publicis Sapient
+Sigmoid
+Tiger Analytics
+Fractal
+LatentView
+Tredence
+Course5 Intelligence
+Mu Sigma
+Affine
+Absolutdata
+Quantiphi
+Searce
+Ollion
+CloudThat
+Crayon Data
+Gramener
+TheMathCompany
+MathCo
+Kanerika
+Indium Software
+Ideas2IT
+Kissflow
+Payoda
+Codewave
+GeekyAnts
+Hashedin
+Deloitte USI
+Infogain
+Virtusa
+Ness Digital
+Cybage
+Synechron
+3i Infotech
+Intellect Design
+Newgen
+Nucleus Software
+Ramco
+Subex
+Tanla
+Route Mobile
+Affle
+Nazara Technologies
+Zaggle
+Mobikwik

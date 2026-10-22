@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Awaitable, Callable
 from urllib.parse import parse_qs, urlsplit
 
-from adapters import amazon, eightfold, greenhouse, html, jsonld, keka, lever, oracle, successfactors, workday
+from adapters import amazon, eightfold, greenhouse, html, jsonld, keka, lever, oracle, successfactors, workable, workday
 from adapters.base import ParseError, RawJob
 
 
@@ -29,6 +29,7 @@ ADAPTERS = {
     "lever": Adapter("lever", lever.board_url, lever.parse),
     "lever_eu": Adapter("lever_eu", lever.board_url_eu, lever.parse),
     "keka": Adapter("keka", keka.board_url, keka.parse),
+    "workable": Adapter("workable", workable.board_url, workable.parse),
     "workday": Adapter("workday", fetch=workday.fetch),
     "successfactors": Adapter("successfactors", fetch=successfactors.fetch),
     "jsonld": Adapter("jsonld", fetch=jsonld.fetch),
@@ -44,6 +45,7 @@ _PATTERNS = [
     ("greenhouse", re.compile(r"^boards-api(?:\.eu)?\.greenhouse\.io$"), re.compile(rf"^/v1/boards/{_SLUG}")),
     ("lever", re.compile(r"^jobs\.lever\.co$"), re.compile(rf"^/{_SLUG}")),
     ("lever_eu", re.compile(r"^jobs\.eu\.lever\.co$"), re.compile(rf"^/{_SLUG}")),
+    ("workable", re.compile(r"^apply\.workable\.com$"), re.compile(r"^/(?!j/|api/)([A-Za-z0-9][A-Za-z0-9_-]*)")),
 ]
 _KEKA_HOST = re.compile(r"^([a-z0-9-]+)\.keka\.com$")
 _WORKDAY_HOST = re.compile(r"^([a-z0-9-]+)\.(wd\d+)\.myworkdayjobs\.com$")
