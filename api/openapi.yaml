@@ -1,0 +1,1474 @@
+openapi: 3.1.0
+info:
+  title: CareerGlobe API
+  version: "1.0.0"
+  description: |
+    The one API behind the web, Android and iOS apps. Every `/v1` endpoint except
+    `/v1/public/stats`, `/v1/access/verify` and `/v1/ops/*` requires a Firebase ID token
+    (`Authorization: Bearer <token>`) **and** an account linked to a non-revoked access code.
+
+    - No token or an invalid one: `401 unauthorized`.
+    - A valid Firebase account that never redeemed a code: `403 access_code_required` (send the user to S04).
+    - A revoked code: `403 access_removed` (show "Your access has been removed").
+    - Email/password accounts must verify their email first: `403 email_not_verified`.
+
+    Errors always have the shape `{"error": "<code>", "message": "<text for people>"}`.
+    Versioning: fields are only ever added under `/v1`, never renamed or removed.
+servers:
+  - url: https://api.careerglobe.example
+    description: Production (Cloudflare Tunnel)
+  - url: http://127.0.0.1:8080
+    description: Local development
+security:
+  - firebase: []
+
+tags:
+  - name: access
+  - name: me
+  - name: globe
+  - name: companies
+  - name: jobs
+  - name: matches
+  - name: tracker
+  - name: profile
+  - name: notifications
+  - name: admin
+  - name: ops
+
+paths:
+  /healthz:
+    get:
+      operationId: getHealthz
+      tags: [ops]
+      summary: Health check (database reachable)
+      security: []
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Status" } } } }
+        "503": { description: Database unreachable, content: { application/json: { schema: { $ref: "#/components/schemas/Status" } } } }
+
+  /v1/public/stats:
+    get:
+      operationId: getPublicStats
+      tags: [access]
+      summary: Landing page counters (S01); aggregates only
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [companies, open_jobs]
+                properties:
+                  companies: { type: integer }
+                  open_jobs: { type: integer }
+                  last_crawl_at: { type: [string, "null"], format: date-time }
+
+  /v1/access/verify:
+    post:
+      operationId: postAccessVerify
+      tags: [access]
+      summary: Check an access code and get a 10-minute single-use ticket (S04 step 1)
+      description: Does not use up the code. At most 5 failed tries per IP or device per 15 minutes.
+      security: []
+      parameters:
+        - { name: X-Device-Id, in: header, required: false, schema: { type: string, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, example: CG-7K4P-2QXM }
+                device_id: { type: string }
+      responses:
+        "200":
+          description: Valid code
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ticket, expires_at]
+                properties:
+                  ticket: { type: string }
+                  expires_at: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+
+  /v1/access/redeem:
+    post:
+      operationId: postAccessRedeem
+      tags: [access]
+      summary: Link the signed-in Firebase account to the code behind a ticket (S04 step 2)
+      description: Needs a Firebase token but no linked code yet. Idempotent for an already linked account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ticket]
+              properties:
+                ticket: { type: string }
+      responses:
+        "200":
+          description: Linked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id: { type: integer, format: int64 }
+                  created_at: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/Error" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+
+  /v1/me:
+    get:
+      operationId: getMe
+      tags: [me]
+      summary: The signed-in user, onboarding state and badge counts
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Me" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/meta:
+    get:
+      operationId: getMeta
+      tags: [me]
+      summary: Categories, seniority bands, cities and data freshness
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Meta" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/globe:
+    get:
+      operationId: getGlobe
+      tags: [globe]
+      summary: Pins in the map bounds (S14); clusters below zoom 7, at most 500 items
+      parameters:
+        - $ref: "#/components/parameters/West"
+        - $ref: "#/components/parameters/South"
+        - $ref: "#/components/parameters/East"
+        - $ref: "#/components/parameters/North"
+        - { name: zoom, in: query, schema: { type: number } }
+        - $ref: "#/components/parameters/Category"
+        - $ref: "#/components/parameters/Remote"
+        - $ref: "#/components/parameters/CompanyType"
+        - $ref: "#/components/parameters/Posted"
+        - { name: hiring, in: query, schema: { type: boolean }, description: Only companies with open jobs }
+        - { name: matches, in: query, schema: { type: boolean }, description: Only companies with matches >= 60 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [mode, items]
+                properties:
+                  mode: { type: string, enum: [pins, clusters] }
+                  updated_at: { type: [string, "null"], format: date-time }
+                  items:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/Pin"
+                        - $ref: "#/components/schemas/Cluster"
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/companies/in-view:
+    get:
+      operationId: getCompaniesInView
+      tags: [globe]
+      summary: The "Companies in view" list, sorted by matches
+      parameters:
+        - $ref: "#/components/parameters/West"
+        - $ref: "#/components/parameters/South"
+        - $ref: "#/components/parameters/East"
+        - $ref: "#/components/parameters/North"
+        - $ref: "#/components/parameters/CompanyType"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CompanyListResponse" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/companies/{id}:
+    get:
+      operationId: getCompaniesById
+      tags: [companies]
+      summary: Company detail with offices and open roles (S18)
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CompanyDetail" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/companies/{id}/save:
+    put:
+      operationId: putCompaniesByIdSave
+      tags: [companies]
+      summary: Save a company (alerts when it posts a matching job)
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200": { $ref: "#/components/responses/Saved" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: deleteCompaniesByIdSave
+      tags: [companies]
+      summary: Unsave a company
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200": { $ref: "#/components/responses/Saved" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/saved/companies:
+    get:
+      operationId: getSavedCompanies
+      tags: [companies]
+      summary: Saved companies (S26)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/SavedCompany" } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/jobs/{id}:
+    get:
+      operationId: getJobsById
+      tags: [jobs]
+      summary: Job detail with match breakdown (S20) or closed state with similar jobs (S22)
+      description: Only an excerpt of the description is returned; it is the company's content.
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/JobDetail" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/search:
+    get:
+      operationId: getSearch
+      tags: [jobs]
+      summary: Companies, open jobs and cities in one box (S17)
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 80 } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  companies: { type: array, items: { $ref: "#/components/schemas/CompanyRef" } }
+                  jobs: { type: array, items: { $ref: "#/components/schemas/JobRef" } }
+                  cities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        city: { type: [string, "null"] }
+                        companies: { type: integer }
+                        lat: { type: number }
+                        lon: { type: number }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/reports:
+    post:
+      operationId: postReports
+      tags: [jobs]
+      summary: Report wrong info about a company or job (S18)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                company_id: { type: integer, format: int64 }
+                job_id: { type: integer, format: int64 }
+                message: { type: string, maxLength: 2000 }
+      responses:
+        "201": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/matches:
+    get:
+      operationId: getMatches
+      tags: [matches]
+      summary: Ranked matches (S19); only scores >= 60 by default
+      parameters:
+        - { name: sort, in: query, schema: { type: string, enum: [best, newest], default: best } }
+        - $ref: "#/components/parameters/Category"
+        - $ref: "#/components/parameters/Remote"
+        - $ref: "#/components/parameters/CompanyType"
+        - { name: city, in: query, schema: { type: string } }
+        - { name: min_score, in: query, schema: { type: integer, minimum: 0, maximum: 100, default: 60 } }
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/MatchCard" } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/matches/{job_id}/seen:
+    post:
+      operationId: postMatchesByJobIdSeen
+      tags: [matches]
+      summary: Clear the "New" badge on a match
+      parameters:
+        - { name: job_id, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/applications:
+    get:
+      operationId: getApplications
+      tags: [tracker]
+      summary: Tracker board (S23)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/ApplicationCard" } }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      operationId: postApplications
+      tags: [tracker]
+      summary: Save a job, or mark it applied (S20, S21)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [job_id]
+              properties:
+                job_id: { type: integer, format: int64 }
+                status: { $ref: "#/components/schemas/ApplicationStatus" }
+      responses:
+        "201": { description: Created or updated, content: { application/json: { schema: { $ref: "#/components/schemas/Application" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/applications/stats:
+    get:
+      operationId: getApplicationsStats
+      tags: [tracker]
+      summary: Counts per stage and response rate (S25)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  saved: { type: integer }
+                  applied: { type: integer }
+                  interview: { type: integer }
+                  offer: { type: integer }
+                  rejected: { type: integer }
+                  withdrawn: { type: integer }
+                  response_rate: { type: [number, "null"], description: "applied -> interview" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/applications/{id}:
+    get:
+      operationId: getApplicationsById
+      tags: [tracker]
+      summary: Application detail with timeline and interview rounds (S24)
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  application: { $ref: "#/components/schemas/ApplicationCard" }
+                  events: { type: array, items: { $ref: "#/components/schemas/ApplicationEvent" } }
+                  rounds: { type: array, items: { $ref: "#/components/schemas/InterviewRound" } }
+        default: { $ref: "#/components/responses/Error" }
+    patch:
+      operationId: patchApplicationsById
+      tags: [tracker]
+      summary: Change status, notes, next step or the "don't ask" flag
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { $ref: "#/components/schemas/ApplicationStatus" }
+                notes: { type: string, maxLength: 20000 }
+                next_step: { type: string }
+                next_step_at: { type: string, format: date-time }
+                clear_next_step: { type: boolean }
+                dont_ask: { type: boolean }
+                event_note: { type: string, description: Note stored with a status change }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Application" } } } }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: deleteApplicationsById
+      tags: [tracker]
+      summary: Remove from the tracker
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/applications/{id}/rounds:
+    post:
+      operationId: postApplicationsByIdRounds
+      tags: [tracker]
+      summary: Add an interview round
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [at, kind]
+              properties:
+                at: { type: string, format: date-time }
+                kind: { type: string, maxLength: 100, example: Technical }
+                notes: { type: string, maxLength: 5000 }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/InterviewRound" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/applications/{id}/rounds/{round_id}:
+    delete:
+      operationId: deleteApplicationsByIdRoundsByRoundId
+      tags: [tracker]
+      summary: Delete an interview round
+      parameters:
+        - { $ref: "#/components/parameters/Id" }
+        - { name: round_id, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Confirmed (or draft) profile (S28)
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Profile" } } } }
+        default: { $ref: "#/components/responses/Error" }
+    put:
+      operationId: putProfile
+      tags: [profile]
+      summary: Edit the profile; confirm=true is S09's "Looks good"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                skills: { type: array, items: { type: string }, maxItems: 100 }
+                titles: { type: array, items: { type: string }, maxItems: 10 }
+                years_exp: { type: [number, "null"], minimum: 0, maximum: 60 }
+                current_city: { type: [string, "null"] }
+                education: { type: array, items: { type: string } }
+                confirm: { type: boolean }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Profile" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/preferences:
+    get:
+      operationId: getPreferences
+      tags: [profile]
+      summary: Matching and notification preferences (S10-S13, S29)
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Preferences" } } } }
+        default: { $ref: "#/components/responses/Error" }
+    put:
+      operationId: putPreferences
+      tags: [profile]
+      summary: Save preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categories: { type: array, items: { $ref: "#/components/schemas/Category" } }
+                cities: { type: array, items: { type: string } }
+                anywhere: { type: boolean }
+                remote_ok: { type: boolean }
+                seniority: { type: array, items: { $ref: "#/components/schemas/Seniority" } }
+                min_salary: { type: [integer, "null"], description: Annual INR }
+                push_time: { type: string, pattern: "^\\d{2}:\\d{2}$", example: "08:00" }
+                push_enabled: { type: boolean }
+                theme: { type: string, enum: [system, light, dark] }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Preferences" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/resume:
+    get:
+      operationId: getResume
+      tags: [profile]
+      summary: Stored resume metadata (never the file) and the consent text
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploaded: { type: boolean }
+                  original_name: { type: [string, "null"] }
+                  size_bytes: { type: integer }
+                  uploaded_at: { type: string, format: date-time }
+                  parsed_at: { type: [string, "null"], format: date-time }
+                  consent_text: { type: string }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      operationId: postResume
+      tags: [profile]
+      summary: Upload a resume (S08); returns the parsed draft for S09
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, consent]
+              properties:
+                file: { type: string, format: binary, description: "PDF or DOCX, up to 5 MB" }
+                consent: { type: string, enum: ["true"], description: The required consent checkbox }
+      responses:
+        "201": { description: Parsed draft, content: { application/json: { schema: { $ref: "#/components/schemas/ResumeDraft" } } } }
+        "400": { $ref: "#/components/responses/Error" }
+        "413": { $ref: "#/components/responses/Error" }
+        "415": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/consents:
+    get:
+      operationId: getConsents
+      tags: [profile]
+      summary: Consents given, with dates (S29)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  consent_text: { type: string }
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        policy_version: { type: string }
+                        accepted_at: { type: string, format: date-time }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/push-tokens:
+    post:
+      operationId: postPushTokens
+      tags: [notifications]
+      summary: Register this device for push
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [platform, token]
+              properties:
+                platform: { type: string, enum: [android, ios, web] }
+                token: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+    delete:
+      operationId: deletePushTokens
+      tags: [notifications]
+      summary: Unregister this device (log out)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: Notifications inbox (S27), newest first, last 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Notification" } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/notifications/read:
+    post:
+      operationId: postNotificationsRead
+      tags: [notifications]
+      summary: Mark one notification (id) or all as read
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: integer, format: int64 }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/account:
+    delete:
+      operationId: deleteAccount
+      tags: [profile]
+      summary: Delete the account and all its data (DPDP erasure)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [confirm]
+              properties:
+                confirm: { type: string, enum: [DELETE] }
+      responses:
+        "200": { description: Deleted, content: { application/json: { schema: { type: object, properties: { deleted: { type: boolean } } } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/crawl:
+    get:
+      operationId: getAdminCrawl
+      tags: [admin]
+      summary: Recent crawl runs, health and the code-guessing alarm (S30)
+      parameters: [{ name: limit, in: query, schema: { type: integer, default: 14, maximum: 90 } }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  health: { type: string, enum: [ok, missing, running_or_stopped, too_many_failures] }
+                  failed_code_guesses_last_hour: { type: integer }
+                  runs: { type: array, items: { $ref: "#/components/schemas/CrawlRun" } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/sources/failing:
+    get:
+      operationId: getAdminSourcesFailing
+      tags: [admin]
+      summary: Failing companies queue
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/CareersSource" } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/sources/{id}:
+    put:
+      operationId: putAdminSourcesById
+      tags: [admin]
+      summary: Fix a careers source (URL, ATS, selectors, status)
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [careers_url, status]
+              properties:
+                careers_url: { type: string, format: uri }
+                ats_type: { type: [string, "null"] }
+                ats_slug: { type: [string, "null"] }
+                selectors: { type: [object, "null"] }
+                status: { type: string, enum: [active, broken, blocked, review, disabled] }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CareersSource" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/companies:
+    post:
+      operationId: postAdminCompanies
+      tags: [admin]
+      summary: Add a company from the console
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, careers_url]
+              properties:
+                name: { type: string }
+                website: { type: string }
+                careers_url: { type: string }
+                city: { type: string }
+                state: { type: string }
+                type: { type: string, enum: [product, service, both] }
+                ats_type: { type: string }
+                ats_slug: { type: string }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Company" } } } }
+        "409": { $ref: "#/components/responses/Error" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/category-rules:
+    get:
+      operationId: getAdminCategoryRules
+      tags: [admin]
+      summary: Title keyword -> category rules
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories: { type: array, items: { $ref: "#/components/schemas/Category" } }
+                  items: { type: array, items: { $ref: "#/components/schemas/CategoryRule" } }
+        default: { $ref: "#/components/responses/Error" }
+    put:
+      operationId: putAdminCategoryRules
+      tags: [admin]
+      summary: Add or change a rule (applies at the next nightly classify)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [keyword, category]
+              properties:
+                keyword: { type: string, maxLength: 60 }
+                category: { $ref: "#/components/schemas/Category" }
+                priority: { type: integer, description: Lower wins; default 5 beats the built-in rules }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CategoryRule" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/category-rules/{id}:
+    delete:
+      operationId: deleteAdminCategoryRulesById
+      tags: [admin]
+      summary: Delete a rule
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/unclassified:
+    get:
+      operationId: getAdminUnclassified
+      tags: [admin]
+      summary: Open job titles filed as Other, most common first
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { type: object, properties: { title: { type: string }, jobs: { type: integer } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/codes:
+    get:
+      operationId: getAdminCodes
+      tags: [admin]
+      summary: Access codes with use counts (never the codes themselves)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/AccessCode" } }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      operationId: postAdminCodes
+      tags: [admin]
+      summary: Create a code; the plain code is returned once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [label]
+              properties:
+                label: { type: string, maxLength: 100 }
+                max_uses: { type: integer, minimum: 1, maximum: 1000, default: 1 }
+                expires_at: { type: [string, "null"], format: date-time }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer, format: int64 }
+                  code: { type: string }
+                  label: { type: string }
+                  max_uses: { type: integer }
+                  expires_at: { type: [string, "null"], format: date-time }
+                  note: { type: string }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/codes/{id}/revoked:
+    put:
+      operationId: putAdminCodesByIdRevoked
+      tags: [admin]
+      summary: Revoke or restore a code (its users lose access within a minute)
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [revoked], properties: { revoked: { type: boolean } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: object, properties: { id: { type: integer }, revoked: { type: boolean }, note: { type: string } } } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/codes/{id}/users:
+    get:
+      operationId: getAdminCodesByIdUsers
+      tags: [admin]
+      summary: Who used a code
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer, format: int64 }
+                        name: { type: [string, "null"] }
+                        email: { type: [string, "null"] }
+                        created_at: { type: string, format: date-time }
+                        last_login_at: { type: [string, "null"], format: date-time }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/removal-requests:
+    get:
+      operationId: getAdminRemovalRequests
+      tags: [admin]
+      summary: Data-removal and "remove my company" requests
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/RemovalRequest" } }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      operationId: postAdminRemovalRequests
+      tags: [admin]
+      summary: Log a request that arrived by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, email]
+              properties:
+                kind: { type: string, enum: [user_data, company] }
+                email: { type: string, format: email }
+                user_id: { type: integer, format: int64 }
+                company_id: { type: integer, format: int64 }
+                note: { type: string }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/RemovalRequest" } } } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/removal-requests/{id}/done:
+    post:
+      operationId: postAdminRemovalRequestsByIdDone
+      tags: [admin]
+      summary: Mark a removal request done
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { note: { type: string } } }
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/reports:
+    get:
+      operationId: getAdminReports
+      tags: [admin]
+      summary: '"Report wrong info" submissions'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Report" } }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/admin/reports/{id}/done:
+    post:
+      operationId: postAdminReportsByIdDone
+      tags: [admin]
+      summary: Mark a report handled
+      parameters: [{ $ref: "#/components/parameters/Id" }]
+      responses:
+        "200": { $ref: "#/components/responses/Ok" }
+        default: { $ref: "#/components/responses/Error" }
+
+  /v1/ops/crawl-status:
+    get:
+      operationId: getOpsCrawlStatus
+      tags: [ops]
+      summary: For the GitHub watchdog; OPS_TOKEN bearer, not Firebase
+      security: [{ ops: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  finished_today: { type: boolean }
+                  last_run: { type: [object, "null"] }
+        "401": { $ref: "#/components/responses/Error" }
+
+  /v1/ops/crawl-trigger:
+    post:
+      operationId: postOpsCrawlTrigger
+      tags: [ops]
+      summary: Ask the server to run the crawl again (one pending request at a time)
+      security: [{ ops: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string, maxLength: 200 } } }
+      responses:
+        "202": { description: Queued, content: { application/json: { schema: { type: object, properties: { queued: { type: boolean }, id: { type: integer } } } } } }
+        "200": { description: Already pending, content: { application/json: { schema: { type: object, properties: { queued: { type: boolean }, pending_since: { type: string, format: date-time } } } } } }
+        "401": { $ref: "#/components/responses/Error" }
+
+components:
+  securitySchemes:
+    firebase:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID token
+    ops:
+      type: http
+      scheme: bearer
+      description: OPS_TOKEN shared with the GitHub watchdog
+
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+    West: { name: west, in: query, required: true, schema: { type: number, minimum: -180, maximum: 180 } }
+    South: { name: south, in: query, required: true, schema: { type: number, minimum: -90, maximum: 90 } }
+    East: { name: east, in: query, required: true, schema: { type: number, minimum: -180, maximum: 180 } }
+    North: { name: north, in: query, required: true, schema: { type: number, minimum: -90, maximum: 90 } }
+    Category: { name: category, in: query, schema: { $ref: "#/components/schemas/Category" } }
+    Remote: { name: remote, in: query, schema: { type: boolean } }
+    CompanyType: { name: type, in: query, schema: { type: string, enum: [product, service] } }
+    Posted: { name: posted, in: query, schema: { type: string, enum: [24h, 7d, 30d] } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+    Offset: { name: offset, in: query, schema: { type: integer, minimum: 0 } }
+
+  responses:
+    Error:
+      description: Error
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Ok:
+      description: OK
+      content: { application/json: { schema: { type: object, properties: { ok: { type: boolean } } } } }
+    Saved:
+      description: OK
+      content: { application/json: { schema: { type: object, properties: { saved: { type: boolean } } } } }
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          description: Stable code the apps switch on
+          examples: [unauthorized, access_code_required, access_removed, email_not_verified, not_admin, invalid_code,
+            code_revoked, code_expired, code_used_up, too_many_attempts, ticket_used, invalid_ticket, ticket_expired,
+            not_found, bad_request, consent_required, too_large, unsupported, no_text, uploads_off, exists, internal]
+        message: { type: string }
+    Status:
+      type: object
+      properties: { status: { type: string, enum: [ok, unavailable] } }
+    Category:
+      type: string
+      enum: [Software Engineering, Hardware & Semiconductor, Design, Product, Data & AI, QA & Testing, DevOps & IT,
+        Recruiting/HR, Sales, Marketing, Operations, Finance, Customer Support, Legal, Other]
+    Seniority:
+      type: string
+      enum: [Intern, Fresher, Junior, Mid, Senior, Lead+]
+    WorkMode:
+      type: [string, "null"]
+      enum: [remote, hybrid, onsite, null]
+    CompanyType:
+      type: [string, "null"]
+      enum: [product, service, both, null]
+    ApplicationStatus:
+      type: string
+      enum: [saved, applied, interview, offer, rejected, withdrawn]
+    Me:
+      type: object
+      properties:
+        user_id: { type: integer, format: int64 }
+        name: { type: [string, "null"] }
+        email: { type: [string, "null"] }
+        is_admin: { type: boolean }
+        joined_at: { type: string, format: date-time }
+        onboarding:
+          type: object
+          properties:
+            has_resume: { type: boolean }
+            profile_confirmed: { type: boolean }
+            has_preferences: { type: boolean }
+        unread_notifications: { type: integer }
+        new_matches: { type: integer }
+    Meta:
+      type: object
+      properties:
+        categories: { type: array, items: { $ref: "#/components/schemas/Category" } }
+        seniority: { type: array, items: { $ref: "#/components/schemas/Seniority" } }
+        cities:
+          type: array
+          items: { type: object, properties: { city: { type: string }, state: { type: [string, "null"] }, companies: { type: integer } } }
+        companies: { type: integer }
+        open_jobs: { type: integer }
+        last_crawl_at: { type: [string, "null"], format: date-time }
+        policy_version: { type: string }
+    Pin:
+      type: object
+      properties:
+        company_id: { type: integer, format: int64 }
+        name: { type: string }
+        slug: { type: string }
+        type: { $ref: "#/components/schemas/CompanyType" }
+        logo_url: { type: [string, "null"] }
+        location_id: { type: integer, format: int64 }
+        city: { type: [string, "null"] }
+        state: { type: [string, "null"] }
+        is_hq: { type: boolean }
+        lat: { type: number }
+        lon: { type: number }
+        open_jobs: { type: integer }
+        matches: { type: integer }
+    Cluster:
+      type: object
+      properties:
+        lat: { type: number }
+        lon: { type: number }
+        companies: { type: integer }
+        open_jobs: { type: integer }
+        matches: { type: integer }
+        top_company_id: { type: integer, format: int64 }
+    CompanyRef:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        slug: { type: string }
+        type: { $ref: "#/components/schemas/CompanyType" }
+        logo_url: { type: [string, "null"] }
+    CompanyListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/CompanyRef"
+              - type: object
+                properties:
+                  city: { type: [string, "null"] }
+                  open_jobs: { type: integer }
+                  matches: { type: integer }
+    SavedCompany:
+      allOf:
+        - $ref: "#/components/schemas/CompanyRef"
+        - type: object
+          properties:
+            created_at: { type: string, format: date-time }
+            open_jobs: { type: integer }
+    Company:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        slug: { type: string }
+        website: { type: [string, "null"] }
+        logo_url: { type: [string, "null"] }
+        type: { $ref: "#/components/schemas/CompanyType" }
+        stage: { type: [string, "null"] }
+        size_band: { type: [string, "null"] }
+        industry: { type: [string, "null"] }
+        description: { type: [string, "null"] }
+        verified_at: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
+        origin: { type: string, enum: [seed, admin] }
+    CompanyDetail:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        slug: { type: string }
+        website: { type: [string, "null"] }
+        logo_url: { type: [string, "null"] }
+        type: { $ref: "#/components/schemas/CompanyType" }
+        stage: { type: [string, "null"] }
+        size_band: { type: [string, "null"] }
+        industry: { type: [string, "null"] }
+        description: { type: [string, "null"] }
+        careers_url: { type: [string, "null"] }
+        last_checked_at: { type: [string, "null"], format: date-time, description: '"Careers page last checked"' }
+        saved: { type: boolean }
+        locations:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer, format: int64 }
+              city: { type: [string, "null"] }
+              state: { type: [string, "null"] }
+              country: { type: string }
+              is_hq: { type: boolean }
+              geo_approximate: { type: boolean }
+              lat: { type: number }
+              lon: { type: number }
+        open_jobs:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer, format: int64 }
+              title: { type: string }
+              category: { type: [string, "null"] }
+              category_2: { type: [string, "null"] }
+              seniority: { type: [string, "null"] }
+              cities: { type: array, items: { type: string } }
+              work_mode: { $ref: "#/components/schemas/WorkMode" }
+              posted_at: { type: [string, "null"], format: date-time }
+              first_seen: { type: string, format: date-time }
+              score: { type: [integer, "null"] }
+    JobRef:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        title: { type: string }
+        cities: { type: array, items: { type: string } }
+        work_mode: { $ref: "#/components/schemas/WorkMode" }
+        first_seen: { type: string, format: date-time }
+        company_id: { type: integer, format: int64 }
+        company_name: { type: string }
+        logo_url: { type: [string, "null"] }
+        score: { type: [integer, "null"] }
+    MatchReasons:
+      type: object
+      properties:
+        summary: { type: string, example: "Matches 7 of 9 skills · missing Kubernetes, GraphQL" }
+        skills_have: { type: array, items: { type: string } }
+        skills_missing: { type: array, items: { type: string } }
+        few_skills: { type: boolean }
+        seniority:
+          type: object
+          properties:
+            job: { type: string }
+            you: { type: string }
+            fit: { type: string, enum: [exact, close, far] }
+            info: { type: string }
+        location: { type: string }
+        parts:
+          type: object
+          description: Points per signal (skills 45, role 20, seniority 15, location 15, freshness 5)
+          additionalProperties: { type: number }
+    JobDetail:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        title: { type: string }
+        category: { type: [string, "null"] }
+        category_2: { type: [string, "null"] }
+        seniority: { type: [string, "null"] }
+        description_excerpt: { type: string, description: "Plain text, at most ~900 characters" }
+        cities: { type: array, items: { type: string } }
+        work_mode: { $ref: "#/components/schemas/WorkMode" }
+        salary_min: { type: [integer, "null"], description: "Annual INR, only when stated" }
+        salary_max: { type: [integer, "null"] }
+        apply_url: { type: string, format: uri, description: The company's own job page }
+        posted_at: { type: [string, "null"], format: date-time }
+        first_seen: { type: string, format: date-time }
+        last_verified: { type: string, format: date-time }
+        closed_at: { type: [string, "null"], format: date-time }
+        status: { type: string, enum: [open, closed] }
+        company: { $ref: "#/components/schemas/CompanyRef" }
+        match:
+          type: object
+          properties:
+            score: { type: integer }
+            reasons: { $ref: "#/components/schemas/MatchReasons" }
+            computed_at: { type: string, format: date-time }
+        application:
+          type: object
+          properties:
+            id: { type: integer, format: int64 }
+            status: { $ref: "#/components/schemas/ApplicationStatus" }
+            dont_ask: { type: boolean }
+        similar: { type: array, items: { $ref: "#/components/schemas/JobRef" } }
+    MatchCard:
+      type: object
+      properties:
+        job_id: { type: integer, format: int64 }
+        title: { type: string }
+        category: { type: [string, "null"] }
+        cities: { type: array, items: { type: string } }
+        work_mode: { $ref: "#/components/schemas/WorkMode" }
+        posted_at: { type: [string, "null"], format: date-time }
+        first_seen: { type: string, format: date-time }
+        company_id: { type: integer, format: int64 }
+        company_name: { type: string }
+        logo_url: { type: [string, "null"] }
+        score: { type: integer }
+        reasons: { $ref: "#/components/schemas/MatchReasons" }
+        new: { type: boolean }
+        saved: { type: boolean }
+    Application:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        user_id: { type: integer, format: int64 }
+        job_id: { type: integer, format: int64 }
+        status: { $ref: "#/components/schemas/ApplicationStatus" }
+        applied_at: { type: [string, "null"], format: date-time }
+        notes: { type: string }
+        next_step: { type: [string, "null"] }
+        next_step_at: { type: [string, "null"], format: date-time }
+        dont_ask: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ApplicationCard:
+      allOf:
+        - $ref: "#/components/schemas/Application"
+        - type: object
+          properties:
+            title: { type: string }
+            job_status: { type: string, enum: [open, closed] }
+            job_closed_at: { type: [string, "null"], format: date-time }
+            cities: { type: array, items: { type: string } }
+            work_mode: { $ref: "#/components/schemas/WorkMode" }
+            apply_url: { type: string, description: Detail view only }
+            company_id: { type: integer, format: int64 }
+            company_name: { type: string }
+            logo_url: { type: [string, "null"] }
+    ApplicationEvent:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        application_id: { type: integer, format: int64 }
+        from_status: { type: [string, "null"] }
+        to_status: { type: string }
+        at: { type: string, format: date-time }
+        note: { type: [string, "null"] }
+    InterviewRound:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        application_id: { type: integer, format: int64 }
+        at: { type: string, format: date-time }
+        kind: { type: string }
+        notes: { type: string }
+    Profile:
+      type: object
+      properties:
+        skills: { type: array, items: { type: string } }
+        titles: { type: array, items: { type: string } }
+        years_exp: { type: [number, "null"] }
+        current_city: { type: [string, "null"] }
+        education: { type: array, items: { type: string } }
+        confirmed_at: { type: [string, "null"], format: date-time }
+        updated_at: { type: string, format: date-time }
+    ResumeDraft:
+      type: object
+      properties:
+        skills: { type: array, items: { type: string } }
+        titles: { type: array, items: { type: string } }
+        years_exp: { type: [number, "null"] }
+        current_city: { type: [string, "null"] }
+        education: { type: array, items: { type: string } }
+    Preferences:
+      type: object
+      properties:
+        categories: { type: array, items: { $ref: "#/components/schemas/Category" } }
+        cities: { type: array, items: { type: string } }
+        anywhere: { type: boolean }
+        remote_ok: { type: boolean }
+        seniority: { type: array, items: { $ref: "#/components/schemas/Seniority" } }
+        min_salary: { type: [integer, "null"] }
+        push_time: { type: string, example: "08:00" }
+        push_enabled: { type: boolean }
+        theme: { type: string, enum: [system, light, dark] }
+        saved: { type: boolean, description: False until the user saves preferences once }
+    Notification:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        user_id: { type: integer, format: int64 }
+        kind: { type: string, enum: [matches, saved_company, reminder, system] }
+        title: { type: string }
+        body: { type: string }
+        link: { type: [string, "null"], description: Path inside the app }
+        created_at: { type: string, format: date-time }
+        read_at: { type: [string, "null"], format: date-time }
+    CrawlRun:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: [string, "null"], format: date-time }
+        companies_ok: { type: integer }
+        companies_failed: { type: integer }
+        jobs_new: { type: integer }
+        jobs_closed: { type: integer }
+    CareersSource:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        company_id: { type: integer, format: int64 }
+        company: { type: string }
+        careers_url: { type: string }
+        ats_type: { type: [string, "null"] }
+        ats_slug: { type: [string, "null"] }
+        status: { type: string, enum: [active, broken, blocked, review, disabled] }
+        fail_count: { type: integer }
+        last_error: { type: [string, "null"] }
+        last_attempt_at: { type: [string, "null"], format: date-time }
+        last_ok_at: { type: [string, "null"], format: date-time }
+        selectors: { type: [object, "null"] }
+    CategoryRule:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        keyword: { type: string }
+        category: { $ref: "#/components/schemas/Category" }
+        priority: { type: integer }
+    AccessCode:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        label: { type: string }
+        max_uses: { type: integer }
+        used_count: { type: integer }
+        expires_at: { type: [string, "null"], format: date-time }
+        revoked: { type: boolean }
+        created_at: { type: string, format: date-time }
+        users: { type: integer }
+    RemovalRequest:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        kind: { type: string, enum: [user_data, company] }
+        email: { type: string }
+        user_id: { type: [integer, "null"], format: int64 }
+        company_id: { type: [integer, "null"], format: int64 }
+        received_at: { type: string, format: date-time }
+        done_at: { type: [string, "null"], format: date-time }
+        note: { type: string }
+    Report:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        user_id: { type: [integer, "null"], format: int64 }
+        company_id: { type: [integer, "null"], format: int64 }
+        job_id: { type: [integer, "null"], format: int64 }
+        message: { type: string }
+        created_at: { type: string, format: date-time }
+        done_at: { type: [string, "null"], format: date-time }
+        company_name: { type: [string, "null"] }
+        job_title: { type: [string, "null"] }

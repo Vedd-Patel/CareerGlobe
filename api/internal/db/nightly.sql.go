@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -15,11 +16,11 @@ INSERT INTO notifications (user_id, kind, title, body, link) VALUES ($1, $2, $3,
 `
 
 type AddNotificationParams struct {
-	UserID int64
-	Kind   string
-	Title  string
-	Body   string
-	Link   *string
+	UserID int64   `json:"user_id"`
+	Kind   string  `json:"kind"`
+	Title  string  `json:"title"`
+	Body   string  `json:"body"`
+	Link   *string `json:"link"`
 }
 
 func (q *Queries) AddNotification(ctx context.Context, arg AddNotificationParams) error {
@@ -48,25 +49,25 @@ WHERE j.status = 'open'
 `
 
 type CandidateJobsParams struct {
-	Categories []string
-	Anywhere   bool
-	Cities     []string
-	RemoteOk   bool
-	MinSalary  *int32
+	Categories []string `json:"categories"`
+	Anywhere   bool     `json:"anywhere"`
+	Cities     []string `json:"cities"`
+	RemoteOk   bool     `json:"remote_ok"`
+	MinSalary  *int32   `json:"min_salary"`
 }
 
 type CandidateJobsRow struct {
-	ID        int64
-	Title     string
-	Category  *string
-	Category2 *string
-	Seniority *string
-	Skills    []string
-	Cities    []string
-	WorkMode  *string
-	SalaryMin *int32
-	SalaryMax *int32
-	FirstSeen time.Time
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	Category  *string   `json:"category"`
+	Category2 *string   `json:"category_2"`
+	Seniority *string   `json:"seniority"`
+	Skills    []string  `json:"skills"`
+	Cities    []string  `json:"cities"`
+	WorkMode  *string   `json:"work_mode"`
+	SalaryMin *int32    `json:"salary_min"`
+	SalaryMax *int32    `json:"salary_max"`
+	FirstSeen time.Time `json:"first_seen"`
 }
 
 // Hard filters in SQL: open, in the user's categories (if any), in a preferred
@@ -114,9 +115,9 @@ SELECT keyword, category, priority FROM category_rules
 `
 
 type CategoryRuleListRow struct {
-	Keyword  string
-	Category string
-	Priority int32
+	Keyword  string `json:"keyword"`
+	Category string `json:"category"`
+	Priority int32  `json:"priority"`
 }
 
 func (q *Queries) CategoryRuleList(ctx context.Context) ([]CategoryRuleListRow, error) {
@@ -144,8 +145,8 @@ SELECT DISTINCT city, state FROM company_locations WHERE city IS NOT NULL AND st
 `
 
 type CityStatesRow struct {
-	City  *string
-	State *string
+	City  *string `json:"city"`
+	State *string `json:"state"`
 }
 
 func (q *Queries) CityStates(ctx context.Context) ([]CityStatesRow, error) {
@@ -203,10 +204,10 @@ LIMIT $1
 `
 
 type JobsToClassifyRow struct {
-	ID          int64
-	Title       string
-	Description string
-	TextHash    string
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	TextHash    string `json:"text_hash"`
 }
 
 // Open jobs whose title or description changed since they were last classified.
@@ -249,8 +250,8 @@ SELECT fcm_token, platform FROM push_tokens WHERE user_id = $1
 `
 
 type PushTokensForUserRow struct {
-	FcmToken string
-	Platform string
+	FcmToken string `json:"fcm_token"`
+	Platform string `json:"platform"`
 }
 
 func (q *Queries) PushTokensForUser(ctx context.Context, userID int64) ([]PushTokensForUserRow, error) {
@@ -284,10 +285,10 @@ GROUP BY sc.user_id, c.id, c.name
 `
 
 type SavedCompanyNewJobsRow struct {
-	UserID      int64
-	CompanyID   int64
-	CompanyName string
-	Jobs        int32
+	UserID      int64  `json:"user_id"`
+	CompanyID   int64  `json:"company_id"`
+	CompanyName string `json:"company_name"`
+	Jobs        int32  `json:"jobs"`
 }
 
 // Jobs first seen since a time at companies a user saved, that match their categories.
@@ -321,12 +322,12 @@ UPDATE jobs SET category = $2, category_2 = $3, seniority = $4, skills = $5, cla
 `
 
 type SetJobClassificationParams struct {
-	ID             int64
-	Category       *string
-	Category2      *string
-	Seniority      *string
-	Skills         []string
-	ClassifiedHash *string
+	ID             int64    `json:"id"`
+	Category       *string  `json:"category"`
+	Category2      *string  `json:"category_2"`
+	Seniority      *string  `json:"seniority"`
+	Skills         []string `json:"skills"`
+	ClassifiedHash *string  `json:"classified_hash"`
 }
 
 func (q *Queries) SetJobClassification(ctx context.Context, arg SetJobClassificationParams) error {
@@ -385,12 +386,12 @@ WHERE a.next_step_at >= now() + interval '12 hours' AND a.next_step_at < now() +
 `
 
 type UpcomingNextStepsRow struct {
-	ID          int64
-	UserID      int64
-	NextStep    *string
-	NextStepAt  *time.Time
-	Title       string
-	CompanyName string
+	ID          int64      `json:"id"`
+	UserID      int64      `json:"user_id"`
+	NextStep    *string    `json:"next_step"`
+	NextStepAt  *time.Time `json:"next_step_at"`
+	Title       string     `json:"title"`
+	CompanyName string     `json:"company_name"`
 }
 
 // Tracker reminders: next steps due in the next 24-48 hours (sent once, the day before).
@@ -428,10 +429,10 @@ ON CONFLICT (user_id, job_id) DO UPDATE SET score = EXCLUDED.score, reasons = EX
 `
 
 type UpsertMatchParams struct {
-	UserID  int64
-	JobID   int64
-	Score   int16
-	Reasons []byte
+	UserID  int64           `json:"user_id"`
+	JobID   int64           `json:"job_id"`
+	Score   int16           `json:"score"`
+	Reasons json.RawMessage `json:"reasons"`
 }
 
 func (q *Queries) UpsertMatch(ctx context.Context, arg UpsertMatchParams) error {
@@ -457,8 +458,8 @@ GROUP BY u.id
 `
 
 type UsersDueForPushRow struct {
-	ID         int64
-	NewMatches int32
+	ID         int64 `json:"id"`
+	NewMatches int32 `json:"new_matches"`
 }
 
 // Users whose push time (IST) has passed today, who have not had today's push,
@@ -495,17 +496,17 @@ ORDER BY u.id
 `
 
 type UsersToMatchRow struct {
-	ID          int64
-	Skills      []string
-	Titles      []string
-	YearsExp    *float64
-	CurrentCity *string
-	Categories  []string
-	Cities      []string
-	Anywhere    bool
-	RemoteOk    bool
-	Seniority   []string
-	MinSalary   *int32
+	ID          int64    `json:"id"`
+	Skills      []string `json:"skills"`
+	Titles      []string `json:"titles"`
+	YearsExp    *float64 `json:"years_exp"`
+	CurrentCity *string  `json:"current_city"`
+	Categories  []string `json:"categories"`
+	Cities      []string `json:"cities"`
+	Anywhere    bool     `json:"anywhere"`
+	RemoteOk    bool     `json:"remote_ok"`
+	Seniority   []string `json:"seniority"`
+	MinSalary   *int32   `json:"min_salary"`
 }
 
 // Users with a confirmed profile (matching stays off until a resume is confirmed).

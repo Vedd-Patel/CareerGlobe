@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -42,34 +43,34 @@ LIMIT $9::int OFFSET $8::int
 `
 
 type ListMatchesParams struct {
-	UserID      int64
-	MinScore    int32
-	Category    *string
-	RemoteOnly  bool
-	CompanyType *string
-	City        *string
-	SortNewest  bool
-	Skip        int32
-	MaxRows     int32
+	UserID      int64   `json:"user_id"`
+	MinScore    int32   `json:"min_score"`
+	Category    *string `json:"category"`
+	RemoteOnly  bool    `json:"remote_only"`
+	CompanyType *string `json:"company_type"`
+	City        *string `json:"city"`
+	SortNewest  bool    `json:"sort_newest"`
+	Skip        int32   `json:"skip"`
+	MaxRows     int32   `json:"max_rows"`
 }
 
 type ListMatchesRow struct {
-	JobID       int64
-	Title       string
-	Category    *string
-	Cities      []string
-	WorkMode    *string
-	PostedAt    *time.Time
-	FirstSeen   time.Time
-	Status      string
-	CompanyID   int64
-	CompanyName string
-	LogoUrl     *string
-	Score       int16
-	Reasons     []byte
-	Seen        bool
-	ComputedAt  time.Time
-	Saved       bool
+	JobID       int64           `json:"job_id"`
+	Title       string          `json:"title"`
+	Category    *string         `json:"category"`
+	Cities      []string        `json:"cities"`
+	WorkMode    *string         `json:"work_mode"`
+	PostedAt    *time.Time      `json:"posted_at"`
+	FirstSeen   time.Time       `json:"first_seen"`
+	Status      string          `json:"status"`
+	CompanyID   int64           `json:"company_id"`
+	CompanyName string          `json:"company_name"`
+	LogoUrl     *string         `json:"logo_url"`
+	Score       int16           `json:"score"`
+	Reasons     json.RawMessage `json:"reasons"`
+	Seen        bool            `json:"seen"`
+	ComputedAt  time.Time       `json:"computed_at"`
+	Saved       bool            `json:"saved"`
 }
 
 // Ranked matches (score >= min_score) on open jobs, with optional filters.
@@ -125,8 +126,8 @@ UPDATE matches SET seen = true WHERE user_id = $1 AND job_id = $2
 `
 
 type MarkMatchSeenParams struct {
-	UserID int64
-	JobID  int64
+	UserID int64 `json:"user_id"`
+	JobID  int64 `json:"job_id"`
 }
 
 func (q *Queries) MarkMatchSeen(ctx context.Context, arg MarkMatchSeenParams) error {

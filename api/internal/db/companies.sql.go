@@ -18,14 +18,14 @@ ORDER BY is_hq DESC, city
 `
 
 type CompanyLocationsRow struct {
-	ID             int64
-	City           *string
-	State          *string
-	Country        string
-	IsHq           bool
-	GeoApproximate bool
-	Lat            float64
-	Lon            float64
+	ID             int64   `json:"id"`
+	City           *string `json:"city"`
+	State          *string `json:"state"`
+	Country        string  `json:"country"`
+	IsHq           bool    `json:"is_hq"`
+	GeoApproximate bool    `json:"geo_approximate"`
+	Lat            float64 `json:"lat"`
+	Lon            float64 `json:"lon"`
 }
 
 func (q *Queries) CompanyLocations(ctx context.Context, companyID int64) ([]CompanyLocationsRow, error) {
@@ -68,21 +68,21 @@ LIMIT 500
 `
 
 type CompanyOpenJobsParams struct {
-	UserID    int64
-	CompanyID int64
+	UserID    int64 `json:"user_id"`
+	CompanyID int64 `json:"company_id"`
 }
 
 type CompanyOpenJobsRow struct {
-	ID        int64
-	Title     string
-	Category  *string
-	Category2 *string
-	Seniority *string
-	Cities    []string
-	WorkMode  *string
-	PostedAt  *time.Time
-	FirstSeen time.Time
-	Score     *int16
+	ID        int64      `json:"id"`
+	Title     string     `json:"title"`
+	Category  *string    `json:"category"`
+	Category2 *string    `json:"category_2"`
+	Seniority *string    `json:"seniority"`
+	Cities    []string   `json:"cities"`
+	WorkMode  *string    `json:"work_mode"`
+	PostedAt  *time.Time `json:"posted_at"`
+	FirstSeen time.Time  `json:"first_seen"`
+	Score     *int16     `json:"score"`
 }
 
 func (q *Queries) CompanyOpenJobs(ctx context.Context, arg CompanyOpenJobsParams) ([]CompanyOpenJobsRow, error) {
@@ -121,10 +121,10 @@ INSERT INTO reports (user_id, company_id, job_id, message) VALUES ($1, $2, $3, $
 `
 
 type CreateReportParams struct {
-	UserID    *int64
-	CompanyID *int64
-	JobID     *int64
-	Message   string
+	UserID    *int64 `json:"user_id"`
+	CompanyID *int64 `json:"company_id"`
+	JobID     *int64 `json:"job_id"`
+	Message   string `json:"message"`
 }
 
 func (q *Queries) CreateReport(ctx context.Context, arg CreateReportParams) error {
@@ -147,27 +147,27 @@ FROM companies c WHERE c.id = $2::bigint
 `
 
 type GetCompanyParams struct {
-	UserID int64
-	ID     int64
+	UserID int64 `json:"user_id"`
+	ID     int64 `json:"id"`
 }
 
 type GetCompanyRow struct {
-	ID            int64
-	Name          string
-	Slug          string
-	Website       *string
-	LogoUrl       *string
-	Type          *string
-	Stage         *string
-	SizeBand      *string
-	Industry      *string
-	Description   *string
-	VerifiedAt    *time.Time
-	CreatedAt     time.Time
-	Origin        string
-	CareersUrl    string
-	LastCheckedAt *time.Time
-	Saved         bool
+	ID            int64      `json:"id"`
+	Name          string     `json:"name"`
+	Slug          string     `json:"slug"`
+	Website       *string    `json:"website"`
+	LogoUrl       *string    `json:"logo_url"`
+	Type          *string    `json:"type"`
+	Stage         *string    `json:"stage"`
+	SizeBand      *string    `json:"size_band"`
+	Industry      *string    `json:"industry"`
+	Description   *string    `json:"description"`
+	VerifiedAt    *time.Time `json:"verified_at"`
+	CreatedAt     time.Time  `json:"created_at"`
+	Origin        string     `json:"origin"`
+	CareersUrl    string     `json:"careers_url"`
+	LastCheckedAt *time.Time `json:"last_checked_at"`
+	Saved         bool       `json:"saved"`
 }
 
 func (q *Queries) GetCompany(ctx context.Context, arg GetCompanyParams) (GetCompanyRow, error) {
@@ -199,8 +199,8 @@ INSERT INTO saved_companies (user_id, company_id) VALUES ($1, $2) ON CONFLICT DO
 `
 
 type SaveCompanyParams struct {
-	UserID    int64
-	CompanyID int64
+	UserID    int64 `json:"user_id"`
+	CompanyID int64 `json:"company_id"`
 }
 
 func (q *Queries) SaveCompany(ctx context.Context, arg SaveCompanyParams) error {
@@ -216,13 +216,13 @@ WHERE sc.user_id = $1 ORDER BY sc.created_at DESC
 `
 
 type SavedCompaniesRow struct {
-	ID        int64
-	Name      string
-	Slug      string
-	Type      *string
-	LogoUrl   *string
-	CreatedAt time.Time
-	OpenJobs  int32
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Slug      string    `json:"slug"`
+	Type      *string   `json:"type"`
+	LogoUrl   *string   `json:"logo_url"`
+	CreatedAt time.Time `json:"created_at"`
+	OpenJobs  int32     `json:"open_jobs"`
 }
 
 func (q *Queries) SavedCompanies(ctx context.Context, userID int64) ([]SavedCompaniesRow, error) {
@@ -258,8 +258,8 @@ DELETE FROM saved_companies WHERE user_id = $1 AND company_id = $2
 `
 
 type UnsaveCompanyParams struct {
-	UserID    int64
-	CompanyID int64
+	UserID    int64 `json:"user_id"`
+	CompanyID int64 `json:"company_id"`
 }
 
 func (q *Queries) UnsaveCompany(ctx context.Context, arg UnsaveCompanyParams) error {

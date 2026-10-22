@@ -49,29 +49,29 @@ LIMIT $2::int
 `
 
 type ClustersInViewParams struct {
-	Cell        float64
-	MaxPins     int32
-	UserID      int64
-	Category    *string
-	RemoteOnly  bool
-	PostedSince *time.Time
-	West        float64
-	South       float64
-	East        float64
-	North       float64
-	CompanyType *string
-	HiringOnly  bool
-	MatchesOnly bool
-	JobFilters  bool
+	Cell        float64    `json:"cell"`
+	MaxPins     int32      `json:"max_pins"`
+	UserID      int64      `json:"user_id"`
+	Category    *string    `json:"category"`
+	RemoteOnly  bool       `json:"remote_only"`
+	PostedSince *time.Time `json:"posted_since"`
+	West        float64    `json:"west"`
+	South       float64    `json:"south"`
+	East        float64    `json:"east"`
+	North       float64    `json:"north"`
+	CompanyType *string    `json:"company_type"`
+	HiringOnly  bool       `json:"hiring_only"`
+	MatchesOnly bool       `json:"matches_only"`
+	JobFilters  bool       `json:"job_filters"`
 }
 
 type ClustersInViewRow struct {
-	Lat          float64
-	Lon          float64
-	Companies    int32
-	OpenJobs     int32
-	Matches      int32
-	TopCompanyID int64
+	Lat          float64 `json:"lat"`
+	Lon          float64 `json:"lon"`
+	Companies    int32   `json:"companies"`
+	OpenJobs     int32   `json:"open_jobs"`
+	Matches      int32   `json:"matches"`
+	TopCompanyID int64   `json:"top_company_id"`
 }
 
 // Zoomed out: pins snapped to a grid of `cell` degrees, one row per occupied cell.
@@ -135,25 +135,25 @@ LIMIT $8::int OFFSET $7::int
 `
 
 type CompaniesInViewParams struct {
-	UserID      int64
-	West        float64
-	South       float64
-	East        float64
-	North       float64
-	CompanyType *string
-	Skip        int32
-	MaxRows     int32
+	UserID      int64   `json:"user_id"`
+	West        float64 `json:"west"`
+	South       float64 `json:"south"`
+	East        float64 `json:"east"`
+	North       float64 `json:"north"`
+	CompanyType *string `json:"company_type"`
+	Skip        int32   `json:"skip"`
+	MaxRows     int32   `json:"max_rows"`
 }
 
 type CompaniesInViewRow struct {
-	ID       int64
-	Name     string
-	Slug     string
-	Type     *string
-	LogoUrl  *string
-	City     *string
-	OpenJobs int32
-	Matches  int32
+	ID       int64   `json:"id"`
+	Name     string  `json:"name"`
+	Slug     string  `json:"slug"`
+	Type     *string `json:"type"`
+	LogoUrl  *string `json:"logo_url"`
+	City     *string `json:"city"`
+	OpenJobs int32   `json:"open_jobs"`
+	Matches  int32   `json:"matches"`
 }
 
 // The "Companies in view" list beside the globe, sorted by matches.
@@ -228,35 +228,35 @@ LIMIT $9::int
 `
 
 type PinsInViewParams struct {
-	West        float64
-	South       float64
-	East        float64
-	North       float64
-	CompanyType *string
-	HiringOnly  bool
-	MatchesOnly bool
-	JobFilters  bool
-	MaxPins     int32
-	UserID      int64
-	Category    *string
-	RemoteOnly  bool
-	PostedSince *time.Time
+	West        float64    `json:"west"`
+	South       float64    `json:"south"`
+	East        float64    `json:"east"`
+	North       float64    `json:"north"`
+	CompanyType *string    `json:"company_type"`
+	HiringOnly  bool       `json:"hiring_only"`
+	MatchesOnly bool       `json:"matches_only"`
+	JobFilters  bool       `json:"job_filters"`
+	MaxPins     int32      `json:"max_pins"`
+	UserID      int64      `json:"user_id"`
+	Category    *string    `json:"category"`
+	RemoteOnly  bool       `json:"remote_only"`
+	PostedSince *time.Time `json:"posted_since"`
 }
 
 type PinsInViewRow struct {
-	CompanyID  int64
-	Name       string
-	Slug       string
-	Type       *string
-	LogoUrl    *string
-	LocationID int64
-	City       *string
-	State      *string
-	IsHq       bool
-	Lat        float64
-	Lon        float64
-	OpenJobs   int32
-	Matches    int32
+	CompanyID  int64   `json:"company_id"`
+	Name       string  `json:"name"`
+	Slug       string  `json:"slug"`
+	Type       *string `json:"type"`
+	LogoUrl    *string `json:"logo_url"`
+	LocationID int64   `json:"location_id"`
+	City       *string `json:"city"`
+	State      *string `json:"state"`
+	IsHq       bool    `json:"is_hq"`
+	Lat        float64 `json:"lat"`
+	Lon        float64 `json:"lon"`
+	OpenJobs   int32   `json:"open_jobs"`
+	Matches    int32   `json:"matches"`
 }
 
 // Globe: company pins inside the map bounds. Filters are optional (NULL = off).

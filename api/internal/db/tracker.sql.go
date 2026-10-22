@@ -15,10 +15,10 @@ INSERT INTO application_events (application_id, from_status, to_status, note) VA
 `
 
 type AddApplicationEventParams struct {
-	ApplicationID int64
-	FromStatus    *string
-	ToStatus      string
-	Note          *string
+	ApplicationID int64   `json:"application_id"`
+	FromStatus    *string `json:"from_status"`
+	ToStatus      string  `json:"to_status"`
+	Note          *string `json:"note"`
 }
 
 func (q *Queries) AddApplicationEvent(ctx context.Context, arg AddApplicationEventParams) error {
@@ -36,10 +36,10 @@ INSERT INTO interview_rounds (application_id, at, kind, notes) VALUES ($1, $2, $
 `
 
 type AddInterviewRoundParams struct {
-	ApplicationID int64
-	At            time.Time
-	Kind          string
-	Notes         string
+	ApplicationID int64     `json:"application_id"`
+	At            time.Time `json:"at"`
+	Kind          string    `json:"kind"`
+	Notes         string    `json:"notes"`
 }
 
 func (q *Queries) AddInterviewRound(ctx context.Context, arg AddInterviewRoundParams) (InterviewRound, error) {
@@ -99,9 +99,9 @@ RETURNING id, user_id, job_id, status, applied_at, notes, next_step, next_step_a
 `
 
 type CreateApplicationParams struct {
-	UserID int64
-	JobID  int64
-	Status string
+	UserID int64  `json:"user_id"`
+	JobID  int64  `json:"job_id"`
+	Status string `json:"status"`
 }
 
 func (q *Queries) CreateApplication(ctx context.Context, arg CreateApplicationParams) (Application, error) {
@@ -128,8 +128,8 @@ DELETE FROM applications WHERE id = $1 AND user_id = $2
 `
 
 type DeleteApplicationParams struct {
-	ID     int64
-	UserID int64
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
 }
 
 func (q *Queries) DeleteApplication(ctx context.Context, arg DeleteApplicationParams) error {
@@ -143,8 +143,8 @@ WHERE r.id = $1 AND r.application_id = a.id AND a.user_id = $2
 `
 
 type DeleteInterviewRoundParams struct {
-	ID     int64
-	UserID int64
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
 }
 
 func (q *Queries) DeleteInterviewRound(ctx context.Context, arg DeleteInterviewRoundParams) error {
@@ -162,31 +162,31 @@ WHERE a.id = $1 AND a.user_id = $2
 `
 
 type GetApplicationParams struct {
-	ID     int64
-	UserID int64
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
 }
 
 type GetApplicationRow struct {
-	ID          int64
-	UserID      int64
-	JobID       int64
-	Status      string
-	AppliedAt   *time.Time
-	Notes       string
-	NextStep    *string
-	NextStepAt  *time.Time
-	DontAsk     bool
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Title       string
-	JobStatus   string
-	JobClosedAt *time.Time
-	Cities      []string
-	WorkMode    *string
-	ApplyUrl    string
-	CompanyID   int64
-	CompanyName string
-	LogoUrl     *string
+	ID          int64      `json:"id"`
+	UserID      int64      `json:"user_id"`
+	JobID       int64      `json:"job_id"`
+	Status      string     `json:"status"`
+	AppliedAt   *time.Time `json:"applied_at"`
+	Notes       string     `json:"notes"`
+	NextStep    *string    `json:"next_step"`
+	NextStepAt  *time.Time `json:"next_step_at"`
+	DontAsk     bool       `json:"dont_ask"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	Title       string     `json:"title"`
+	JobStatus   string     `json:"job_status"`
+	JobClosedAt *time.Time `json:"job_closed_at"`
+	Cities      []string   `json:"cities"`
+	WorkMode    *string    `json:"work_mode"`
+	ApplyUrl    string     `json:"apply_url"`
+	CompanyID   int64      `json:"company_id"`
+	CompanyName string     `json:"company_name"`
+	LogoUrl     *string    `json:"logo_url"`
 }
 
 func (q *Queries) GetApplication(ctx context.Context, arg GetApplicationParams) (GetApplicationRow, error) {
@@ -222,8 +222,8 @@ SELECT id, user_id, job_id, status, applied_at, notes, next_step, next_step_at, 
 `
 
 type GetApplicationForJobParams struct {
-	UserID int64
-	JobID  int64
+	UserID int64 `json:"user_id"`
+	JobID  int64 `json:"job_id"`
 }
 
 func (q *Queries) GetApplicationForJob(ctx context.Context, arg GetApplicationForJobParams) (Application, error) {
@@ -286,25 +286,25 @@ ORDER BY a.updated_at DESC
 `
 
 type ListApplicationsRow struct {
-	ID          int64
-	UserID      int64
-	JobID       int64
-	Status      string
-	AppliedAt   *time.Time
-	Notes       string
-	NextStep    *string
-	NextStepAt  *time.Time
-	DontAsk     bool
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Title       string
-	JobStatus   string
-	JobClosedAt *time.Time
-	Cities      []string
-	WorkMode    *string
-	CompanyID   int64
-	CompanyName string
-	LogoUrl     *string
+	ID          int64      `json:"id"`
+	UserID      int64      `json:"user_id"`
+	JobID       int64      `json:"job_id"`
+	Status      string     `json:"status"`
+	AppliedAt   *time.Time `json:"applied_at"`
+	Notes       string     `json:"notes"`
+	NextStep    *string    `json:"next_step"`
+	NextStepAt  *time.Time `json:"next_step_at"`
+	DontAsk     bool       `json:"dont_ask"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	Title       string     `json:"title"`
+	JobStatus   string     `json:"job_status"`
+	JobClosedAt *time.Time `json:"job_closed_at"`
+	Cities      []string   `json:"cities"`
+	WorkMode    *string    `json:"work_mode"`
+	CompanyID   int64      `json:"company_id"`
+	CompanyName string     `json:"company_name"`
+	LogoUrl     *string    `json:"logo_url"`
 }
 
 func (q *Queries) ListApplications(ctx context.Context, userID int64) ([]ListApplicationsRow, error) {
@@ -361,14 +361,14 @@ FROM applications WHERE user_id = $1
 `
 
 type TrackerStatsRow struct {
-	Saved            int32
-	Applied          int32
-	Interview        int32
-	Offer            int32
-	Rejected         int32
-	Withdrawn        int32
-	EverApplied      int32
-	ReachedInterview int32
+	Saved            int32 `json:"saved"`
+	Applied          int32 `json:"applied"`
+	Interview        int32 `json:"interview"`
+	Offer            int32 `json:"offer"`
+	Rejected         int32 `json:"rejected"`
+	Withdrawn        int32 `json:"withdrawn"`
+	EverApplied      int32 `json:"ever_applied"`
+	ReachedInterview int32 `json:"reached_interview"`
 }
 
 func (q *Queries) TrackerStats(ctx context.Context, userID int64) (TrackerStatsRow, error) {
@@ -401,13 +401,13 @@ RETURNING id, user_id, job_id, status, applied_at, notes, next_step, next_step_a
 `
 
 type UpdateApplicationParams struct {
-	Status     string
-	Notes      string
-	NextStep   *string
-	NextStepAt *time.Time
-	DontAsk    bool
-	ID         int64
-	UserID     int64
+	Status     string     `json:"status"`
+	Notes      string     `json:"notes"`
+	NextStep   *string    `json:"next_step"`
+	NextStepAt *time.Time `json:"next_step_at"`
+	DontAsk    bool       `json:"dont_ask"`
+	ID         int64      `json:"id"`
+	UserID     int64      `json:"user_id"`
 }
 
 func (q *Queries) UpdateApplication(ctx context.Context, arg UpdateApplicationParams) (Application, error) {

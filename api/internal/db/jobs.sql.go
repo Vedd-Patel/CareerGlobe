@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -17,9 +18,9 @@ GROUP BY l.city, l.state ORDER BY companies DESC, l.city LIMIT 200
 `
 
 type CityListRow struct {
-	City      *string
-	State     *string
-	Companies int32
+	City      *string `json:"city"`
+	State     *string `json:"state"`
+	Companies int32   `json:"companies"`
 }
 
 func (q *Queries) CityList(ctx context.Context) ([]CityListRow, error) {
@@ -51,27 +52,27 @@ WHERE j.id = $1
 `
 
 type GetJobRow struct {
-	ID          int64
-	CompanyID   int64
-	Title       string
-	Category    *string
-	Category2   *string
-	Seniority   *string
-	Description *string
-	Cities      []string
-	WorkMode    *string
-	SalaryMin   *int32
-	SalaryMax   *int32
-	ApplyUrl    string
-	PostedAt    *time.Time
-	FirstSeen   time.Time
-	LastSeen    time.Time
-	ClosedAt    *time.Time
-	Status      string
-	CompanyName string
-	CompanySlug string
-	CompanyLogo *string
-	CompanyType *string
+	ID          int64      `json:"id"`
+	CompanyID   int64      `json:"company_id"`
+	Title       string     `json:"title"`
+	Category    *string    `json:"category"`
+	Category2   *string    `json:"category_2"`
+	Seniority   *string    `json:"seniority"`
+	Description *string    `json:"description"`
+	Cities      []string   `json:"cities"`
+	WorkMode    *string    `json:"work_mode"`
+	SalaryMin   *int32     `json:"salary_min"`
+	SalaryMax   *int32     `json:"salary_max"`
+	ApplyUrl    string     `json:"apply_url"`
+	PostedAt    *time.Time `json:"posted_at"`
+	FirstSeen   time.Time  `json:"first_seen"`
+	LastSeen    time.Time  `json:"last_seen"`
+	ClosedAt    *time.Time `json:"closed_at"`
+	Status      string     `json:"status"`
+	CompanyName string     `json:"company_name"`
+	CompanySlug string     `json:"company_slug"`
+	CompanyLogo *string    `json:"company_logo"`
+	CompanyType *string    `json:"company_type"`
 }
 
 func (q *Queries) GetJob(ctx context.Context, id int64) (GetJobRow, error) {
@@ -108,15 +109,15 @@ SELECT score, reasons, computed_at, seen FROM matches WHERE user_id = $1 AND job
 `
 
 type GetMatchParams struct {
-	UserID int64
-	JobID  int64
+	UserID int64 `json:"user_id"`
+	JobID  int64 `json:"job_id"`
 }
 
 type GetMatchRow struct {
-	Score      int16
-	Reasons    []byte
-	ComputedAt time.Time
-	Seen       bool
+	Score      int16           `json:"score"`
+	Reasons    json.RawMessage `json:"reasons"`
+	ComputedAt time.Time       `json:"computed_at"`
+	Seen       bool            `json:"seen"`
 }
 
 func (q *Queries) GetMatch(ctx context.Context, arg GetMatchParams) (GetMatchRow, error) {
@@ -139,9 +140,9 @@ SELECT (SELECT count(*) FROM companies c WHERE EXISTS (
 `
 
 type PublicStatsRow struct {
-	Companies   int32
-	OpenJobs    int32
-	LastCrawlAt *time.Time
+	Companies   int32      `json:"companies"`
+	OpenJobs    int32      `json:"open_jobs"`
+	LastCrawlAt *time.Time `json:"last_crawl_at"`
 }
 
 func (q *Queries) PublicStats(ctx context.Context) (PublicStatsRow, error) {
@@ -160,10 +161,10 @@ GROUP BY l.city ORDER BY companies DESC LIMIT 5
 `
 
 type SearchCitiesRow struct {
-	City      *string
-	Companies int32
-	Lat       float64
-	Lon       float64
+	City      *string `json:"city"`
+	Companies int32   `json:"companies"`
+	Lat       float64 `json:"lat"`
+	Lon       float64 `json:"lon"`
 }
 
 func (q *Queries) SearchCities(ctx context.Context, q_ string) ([]SearchCitiesRow, error) {
@@ -199,11 +200,11 @@ LIMIT 10
 `
 
 type SearchCompaniesRow struct {
-	ID      int64
-	Name    string
-	Slug    string
-	Type    *string
-	LogoUrl *string
+	ID      int64   `json:"id"`
+	Name    string  `json:"name"`
+	Slug    string  `json:"slug"`
+	Type    *string `json:"type"`
+	LogoUrl *string `json:"logo_url"`
 }
 
 func (q *Queries) SearchCompanies(ctx context.Context, q_ string) ([]SearchCompaniesRow, error) {
@@ -241,13 +242,13 @@ LIMIT 20
 `
 
 type SearchJobsRow struct {
-	ID          int64
-	Title       string
-	Cities      []string
-	WorkMode    *string
-	CompanyID   int64
-	CompanyName string
-	LogoUrl     *string
+	ID          int64    `json:"id"`
+	Title       string   `json:"title"`
+	Cities      []string `json:"cities"`
+	WorkMode    *string  `json:"work_mode"`
+	CompanyID   int64    `json:"company_id"`
+	CompanyName string   `json:"company_name"`
+	LogoUrl     *string  `json:"logo_url"`
 }
 
 func (q *Queries) SearchJobs(ctx context.Context, q_ string) ([]SearchJobsRow, error) {
@@ -290,22 +291,22 @@ LIMIT 10
 `
 
 type SimilarOpenJobsParams struct {
-	UserID    int64
-	JobID     int64
-	Category  *string
-	CompanyID int64
+	UserID    int64   `json:"user_id"`
+	JobID     int64   `json:"job_id"`
+	Category  *string `json:"category"`
+	CompanyID int64   `json:"company_id"`
 }
 
 type SimilarOpenJobsRow struct {
-	ID          int64
-	Title       string
-	Cities      []string
-	WorkMode    *string
-	FirstSeen   time.Time
-	CompanyID   int64
-	CompanyName string
-	LogoUrl     *string
-	Score       *int16
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Cities      []string  `json:"cities"`
+	WorkMode    *string   `json:"work_mode"`
+	FirstSeen   time.Time `json:"first_seen"`
+	CompanyID   int64     `json:"company_id"`
+	CompanyName string    `json:"company_name"`
+	LogoUrl     *string   `json:"logo_url"`
+	Score       *int16    `json:"score"`
 }
 
 // For a closed job: open jobs in the same category, same company first.

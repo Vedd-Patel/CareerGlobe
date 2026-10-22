@@ -360,7 +360,7 @@ func TestGlobeCompaniesJobsAndSearch(t *testing.T) {
 		t.Fatalf("pins: %s", r.Raw)
 	}
 	first := items[0].(map[string]any)
-	if first["Name"] != "Acme" || first["Matches"] != float64(1) || first["OpenJobs"] != float64(2) {
+	if first["name"] != "Acme" || first["matches"] != float64(1) || first["open_jobs"] != float64(2) {
 		t.Fatalf("pin sorting/counts: %v", first)
 	}
 	if r := e.do("GET", "/v1/globe?"+india+"&zoom=9&matches=1", "tok-alice", nil); len(r.Body["items"].([]any)) != 1 {
@@ -477,18 +477,18 @@ func TestMatchesAndTracker(t *testing.T) {
 
 	// Save -> applied (S21) -> interview, with a timeline.
 	r = e.do("POST", "/v1/applications", "tok-alice", map[string]any{"job_id": job1})
-	if r.Status != 201 || r.Body["Status"] != "saved" {
+	if r.Status != 201 || r.Body["status"] != "saved" {
 		t.Fatalf("save: %s", r.Raw)
 	}
-	appID := int64(r.Body["ID"].(float64))
+	appID := int64(r.Body["id"].(float64))
 	r = e.do("POST", "/v1/applications", "tok-alice", map[string]any{"job_id": job1, "status": "applied"})
-	if r.Body["Status"] != "applied" || r.Body["AppliedAt"] == nil {
+	if r.Body["status"] != "applied" || r.Body["applied_at"] == nil {
 		t.Fatalf("applied: %s", r.Raw)
 	}
 	next := time.Now().Add(48 * time.Hour).UTC().Truncate(time.Second)
 	r = e.do("PATCH", fmt.Sprintf("/v1/applications/%d", appID), "tok-alice",
 		map[string]any{"status": "interview", "notes": "Recruiter call went well", "next_step": "Tech round", "next_step_at": next})
-	if r.Status != 200 || r.Body["Status"] != "interview" || r.Body["Notes"] != "Recruiter call went well" {
+	if r.Status != 200 || r.Body["status"] != "interview" || r.Body["notes"] != "Recruiter call went well" {
 		t.Fatalf("patch: %s", r.Raw)
 	}
 	if r := e.do("PATCH", fmt.Sprintf("/v1/applications/%d", appID), "tok-bob", map[string]any{"notes": "x"}); r.Status != 404 {
@@ -502,7 +502,7 @@ func TestMatchesAndTracker(t *testing.T) {
 	if r.Status != 201 {
 		t.Fatalf("round: %s", r.Raw)
 	}
-	roundID := int64(r.Body["ID"].(float64))
+	roundID := int64(r.Body["id"].(float64))
 	r = e.do("GET", fmt.Sprintf("/v1/applications/%d", appID), "tok-alice", nil)
 	events := r.Body["events"].([]any)
 	if len(events) != 3 || len(r.Body["rounds"].([]any)) != 1 {
@@ -513,7 +513,7 @@ func TestMatchesAndTracker(t *testing.T) {
 	// A job that left the careers page shows as closed on the board.
 	e.do("POST", "/v1/applications", "tok-alice", map[string]any{"job_id": closed, "status": "applied"})
 	r = e.do("GET", "/v1/applications", "tok-alice", nil)
-	if len(r.Body["items"].([]any)) != 2 || !strings.Contains(r.Raw, `"JobStatus":"closed"`) {
+	if len(r.Body["items"].([]any)) != 2 || !strings.Contains(r.Raw, `"job_status":"closed"`) {
 		t.Fatalf("board: %s", r.Raw)
 	}
 	r = e.do("GET", "/v1/applications/stats", "tok-alice", nil)
@@ -682,12 +682,12 @@ func TestAdminConsole(t *testing.T) {
 	r := e.do("PUT", fmt.Sprintf("/v1/admin/sources/%d", src), "tok-admin", map[string]any{
 		"careers_url": "https://jobs.lever.co/acme", "ats_type": "lever", "ats_slug": "acme",
 		"selectors": map[string]string{"title": "h2"}, "status": "active"})
-	if r.Status != 200 || r.Body["Status"] != "active" {
+	if r.Status != 200 || r.Body["status"] != "active" {
 		t.Fatalf("fix source: %s", r.Raw)
 	}
 	r = e.do("POST", "/v1/admin/companies", "tok-admin", map[string]any{"name": "Gamma Labs", "careers_url": "https://gamma.example/careers",
 		"city": "Chennai", "state": "Tamil Nadu", "type": "product"})
-	if r.Status != 201 || r.Body["Origin"] != "admin" {
+	if r.Status != 201 || r.Body["origin"] != "admin" {
 		t.Fatalf("add company: %s", r.Raw)
 	}
 	if r := e.do("POST", "/v1/admin/companies", "tok-admin", map[string]any{"name": "Gamma Labs", "careers_url": "https://x.example"}); r.Status != 409 {
@@ -695,10 +695,10 @@ func TestAdminConsole(t *testing.T) {
 	}
 
 	r = e.do("PUT", "/v1/admin/category-rules", "tok-admin", map[string]any{"keyword": "Chef", "category": "Operations"})
-	if r.Status != 200 || r.Body["Keyword"] != "chef" {
+	if r.Status != 200 || r.Body["keyword"] != "chef" {
 		t.Fatalf("rule: %s", r.Raw)
 	}
-	ruleID := int64(r.Body["ID"].(float64))
+	ruleID := int64(r.Body["id"].(float64))
 	if r := e.do("GET", "/v1/admin/category-rules", "tok-admin", nil); len(r.Body["items"].([]any)) != 1 {
 		t.Fatalf("rules: %s", r.Raw)
 	}
@@ -731,14 +731,14 @@ func TestAdminConsole(t *testing.T) {
 	if r.Status != 201 {
 		t.Fatalf("removal request: %s", r.Raw)
 	}
-	reqID := int64(r.Body["ID"].(float64))
+	reqID := int64(r.Body["id"].(float64))
 	e.do("POST", fmt.Sprintf("/v1/admin/removal-requests/%d/done", reqID), "tok-admin", map[string]string{"note": "marked do-not-crawl"})
 	if r := e.do("GET", "/v1/admin/removal-requests", "tok-admin", nil); !strings.Contains(r.Raw, "marked do-not-crawl") {
 		t.Fatalf("removal done: %s", r.Raw)
 	}
 	e.do("POST", "/v1/reports", "tok-admin", map[string]any{"company_id": acme, "message": "Logo is wrong"})
 	r = e.do("GET", "/v1/admin/reports", "tok-admin", nil)
-	repID := int64(r.Body["items"].([]any)[0].(map[string]any)["ID"].(float64))
+	repID := int64(r.Body["items"].([]any)[0].(map[string]any)["id"].(float64))
 	if r := e.do("POST", fmt.Sprintf("/v1/admin/reports/%d/done", repID), "tok-admin", nil); r.Status != 200 {
 		t.Fatalf("report done: %s", r.Raw)
 	}

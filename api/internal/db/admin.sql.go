@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -15,9 +16,9 @@ INSERT INTO company_locations (company_id, city, state, is_hq) VALUES ($1, $2, $
 `
 
 type AdminAddLocationParams struct {
-	CompanyID int64
-	City      *string
-	State     *string
+	CompanyID int64   `json:"company_id"`
+	City      *string `json:"city"`
+	State     *string `json:"state"`
 }
 
 func (q *Queries) AdminAddLocation(ctx context.Context, arg AdminAddLocationParams) error {
@@ -30,10 +31,10 @@ INSERT INTO careers_sources (company_id, careers_url, ats_type, ats_slug) VALUES
 `
 
 type AdminAddSourceParams struct {
-	CompanyID  int64
-	CareersUrl string
-	AtsType    *string
-	AtsSlug    *string
+	CompanyID  int64   `json:"company_id"`
+	CareersUrl string  `json:"careers_url"`
+	AtsType    *string `json:"ats_type"`
+	AtsSlug    *string `json:"ats_slug"`
 }
 
 func (q *Queries) AdminAddSource(ctx context.Context, arg AdminAddSourceParams) (CareersSource, error) {
@@ -67,10 +68,10 @@ INSERT INTO companies (name, slug, website, type, origin) VALUES ($1, $2, $3, $4
 `
 
 type AdminCreateCompanyParams struct {
-	Name    string
-	Slug    string
-	Website *string
-	Type    *string
+	Name    string  `json:"name"`
+	Slug    string  `json:"slug"`
+	Website *string `json:"website"`
+	Type    *string `json:"type"`
 }
 
 func (q *Queries) AdminCreateCompany(ctx context.Context, arg AdminCreateCompanyParams) (Company, error) {
@@ -104,11 +105,11 @@ INSERT INTO removal_requests (kind, email, user_id, company_id, note) VALUES ($1
 `
 
 type CreateRemovalRequestParams struct {
-	Kind      string
-	Email     string
-	UserID    *int64
-	CompanyID *int64
-	Note      string
+	Kind      string `json:"kind"`
+	Email     string `json:"email"`
+	UserID    *int64 `json:"user_id"`
+	CompanyID *int64 `json:"company_id"`
+	Note      string `json:"note"`
 }
 
 func (q *Queries) CreateRemovalRequest(ctx context.Context, arg CreateRemovalRequestParams) (RemovalRequest, error) {
@@ -151,18 +152,18 @@ ORDER BY s.fail_count DESC, c.name
 `
 
 type FailingSourcesRow struct {
-	ID            int64
-	CompanyID     int64
-	Company       string
-	CareersUrl    string
-	AtsType       *string
-	AtsSlug       *string
-	Status        string
-	FailCount     int32
-	LastError     *string
-	LastAttemptAt *time.Time
-	LastOkAt      *time.Time
-	Selectors     []byte
+	ID            int64           `json:"id"`
+	CompanyID     int64           `json:"company_id"`
+	Company       string          `json:"company"`
+	CareersUrl    string          `json:"careers_url"`
+	AtsType       *string         `json:"ats_type"`
+	AtsSlug       *string         `json:"ats_slug"`
+	Status        string          `json:"status"`
+	FailCount     int32           `json:"fail_count"`
+	LastError     *string         `json:"last_error"`
+	LastAttemptAt *time.Time      `json:"last_attempt_at"`
+	LastOkAt      *time.Time      `json:"last_ok_at"`
+	Selectors     json.RawMessage `json:"selectors"`
 }
 
 func (q *Queries) FailingSources(ctx context.Context) ([]FailingSourcesRow, error) {
@@ -299,15 +300,15 @@ ORDER BY (r.done_at IS NULL) DESC, r.created_at DESC LIMIT 200
 `
 
 type ListReportsRow struct {
-	ID          int64
-	UserID      *int64
-	CompanyID   *int64
-	JobID       *int64
-	Message     string
-	CreatedAt   time.Time
-	DoneAt      *time.Time
-	CompanyName *string
-	JobTitle    *string
+	ID          int64      `json:"id"`
+	UserID      *int64     `json:"user_id"`
+	CompanyID   *int64     `json:"company_id"`
+	JobID       *int64     `json:"job_id"`
+	Message     string     `json:"message"`
+	CreatedAt   time.Time  `json:"created_at"`
+	DoneAt      *time.Time `json:"done_at"`
+	CompanyName *string    `json:"company_name"`
+	JobTitle    *string    `json:"job_title"`
 }
 
 func (q *Queries) ListReports(ctx context.Context) ([]ListReportsRow, error) {
@@ -345,8 +346,8 @@ UPDATE removal_requests SET done_at = now(), note = $2 WHERE id = $1
 `
 
 type MarkRemovalDoneParams struct {
-	ID   int64
-	Note string
+	ID   int64  `json:"id"`
+	Note string `json:"note"`
 }
 
 func (q *Queries) MarkRemovalDone(ctx context.Context, arg MarkRemovalDoneParams) error {
@@ -370,8 +371,8 @@ GROUP BY title ORDER BY jobs DESC, title LIMIT 200
 `
 
 type UnclassifiedTitlesRow struct {
-	Title string
-	Jobs  int32
+	Title string `json:"title"`
+	Jobs  int32  `json:"jobs"`
 }
 
 func (q *Queries) UnclassifiedTitles(ctx context.Context) ([]UnclassifiedTitlesRow, error) {
@@ -404,12 +405,12 @@ RETURNING id, company_id, careers_url, ats_type, ats_slug, selectors, etag, last
 `
 
 type UpdateSourceParams struct {
-	CareersUrl string
-	AtsType    *string
-	AtsSlug    *string
-	Selectors  []byte
-	Status     string
-	ID         int64
+	CareersUrl string          `json:"careers_url"`
+	AtsType    *string         `json:"ats_type"`
+	AtsSlug    *string         `json:"ats_slug"`
+	Selectors  json.RawMessage `json:"selectors"`
+	Status     string          `json:"status"`
+	ID         int64           `json:"id"`
 }
 
 func (q *Queries) UpdateSource(ctx context.Context, arg UpdateSourceParams) (CareersSource, error) {
@@ -447,9 +448,9 @@ RETURNING id, keyword, category, priority
 `
 
 type UpsertCategoryRuleParams struct {
-	Keyword  string
-	Category string
-	Priority int32
+	Keyword  string `json:"keyword"`
+	Category string `json:"category"`
+	Priority int32  `json:"priority"`
 }
 
 func (q *Queries) UpsertCategoryRule(ctx context.Context, arg UpsertCategoryRuleParams) (CategoryRule, error) {

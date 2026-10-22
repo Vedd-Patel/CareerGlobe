@@ -17,10 +17,10 @@ RETURNING id, firebase_uid, access_code_id, name, email, created_at, last_login_
 `
 
 type CreateUserParams struct {
-	FirebaseUid  string
-	AccessCodeID int64
-	Name         *string
-	Email        *string
+	FirebaseUid  string  `json:"firebase_uid"`
+	AccessCodeID int64   `json:"access_code_id"`
+	Name         *string `json:"name"`
+	Email        *string `json:"email"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -60,13 +60,13 @@ WHERE u.firebase_uid = $1
 `
 
 type GetAccountByUIDRow struct {
-	ID          int64
-	FirebaseUid string
-	Name        *string
-	Email       *string
-	CreatedAt   time.Time
-	LastLoginAt *time.Time
-	CodeRevoked bool
+	ID          int64      `json:"id"`
+	FirebaseUid string     `json:"firebase_uid"`
+	Name        *string    `json:"name"`
+	Email       *string    `json:"email"`
+	CreatedAt   time.Time  `json:"created_at"`
+	LastLoginAt *time.Time `json:"last_login_at"`
+	CodeRevoked bool       `json:"code_revoked"`
 }
 
 // The per-request check: the user and whether their code still lets them in.
@@ -112,9 +112,9 @@ SELECT
 `
 
 type OnboardingStateRow struct {
-	HasResume        bool
-	ProfileConfirmed bool
-	HasPreferences   bool
+	HasResume        bool `json:"has_resume"`
+	ProfileConfirmed bool `json:"profile_confirmed"`
+	HasPreferences   bool `json:"has_preferences"`
 }
 
 func (q *Queries) OnboardingState(ctx context.Context, userID int64) (OnboardingStateRow, error) {
@@ -138,8 +138,8 @@ UPDATE users SET name = $2 WHERE id = $1
 `
 
 type UpdateUserNameParams struct {
-	ID   int64
-	Name *string
+	ID   int64   `json:"id"`
+	Name *string `json:"name"`
 }
 
 func (q *Queries) UpdateUserName(ctx context.Context, arg UpdateUserNameParams) error {
@@ -152,11 +152,11 @@ SELECT id, name, email, created_at, last_login_at FROM users WHERE access_code_i
 `
 
 type UsersByCodeRow struct {
-	ID          int64
-	Name        *string
-	Email       *string
-	CreatedAt   time.Time
-	LastLoginAt *time.Time
+	ID          int64      `json:"id"`
+	Name        *string    `json:"name"`
+	Email       *string    `json:"email"`
+	CreatedAt   time.Time  `json:"created_at"`
+	LastLoginAt *time.Time `json:"last_login_at"`
 }
 
 func (q *Queries) UsersByCode(ctx context.Context, accessCodeID int64) ([]UsersByCodeRow, error) {

@@ -29,9 +29,9 @@ WHERE NOT success AND at >= $1::timestamptz
 `
 
 type CountFailedAttemptsParams struct {
-	Since    time.Time
-	Ip       *netip.Addr
-	DeviceID *string
+	Since    time.Time   `json:"since"`
+	Ip       *netip.Addr `json:"ip"`
+	DeviceID *string     `json:"device_id"`
 }
 
 // Failed code guesses from this IP or device since a time (rate limit).
@@ -49,10 +49,10 @@ RETURNING id, code_hash, label, max_uses, used_count, expires_at, revoked, creat
 `
 
 type CreateCodeParams struct {
-	CodeHash  []byte
-	Label     string
-	MaxUses   int32
-	ExpiresAt *time.Time
+	CodeHash  []byte     `json:"code_hash"`
+	Label     string     `json:"label"`
+	MaxUses   int32      `json:"max_uses"`
+	ExpiresAt *time.Time `json:"expires_at"`
 }
 
 func (q *Queries) CreateCode(ctx context.Context, arg CreateCodeParams) (AccessCode, error) {
@@ -112,15 +112,15 @@ ORDER BY c.created_at DESC
 `
 
 type ListCodesRow struct {
-	ID        int64
-	CodeHash  []byte
-	Label     string
-	MaxUses   int32
-	UsedCount int32
-	ExpiresAt *time.Time
-	Revoked   bool
-	CreatedAt time.Time
-	UserCount int32
+	ID        int64      `json:"id"`
+	CodeHash  []byte     `json:"code_hash"`
+	Label     string     `json:"label"`
+	MaxUses   int32      `json:"max_uses"`
+	UsedCount int32      `json:"used_count"`
+	ExpiresAt *time.Time `json:"expires_at"`
+	Revoked   bool       `json:"revoked"`
+	CreatedAt time.Time  `json:"created_at"`
+	UserCount int32      `json:"user_count"`
 }
 
 func (q *Queries) ListCodes(ctx context.Context) ([]ListCodesRow, error) {
@@ -187,9 +187,9 @@ INSERT INTO access_attempts (ip, device_id, success) VALUES ($1, $2, $3)
 `
 
 type RecordAttemptParams struct {
-	Ip       *netip.Addr
-	DeviceID *string
-	Success  bool
+	Ip       *netip.Addr `json:"ip"`
+	DeviceID *string     `json:"device_id"`
+	Success  bool        `json:"success"`
 }
 
 func (q *Queries) RecordAttempt(ctx context.Context, arg RecordAttemptParams) error {
@@ -202,8 +202,8 @@ UPDATE access_codes SET revoked = $2 WHERE id = $1 RETURNING id, code_hash, labe
 `
 
 type SetCodeRevokedParams struct {
-	ID      int64
-	Revoked bool
+	ID      int64 `json:"id"`
+	Revoked bool  `json:"revoked"`
 }
 
 func (q *Queries) SetCodeRevoked(ctx context.Context, arg SetCodeRevokedParams) (AccessCode, error) {
@@ -236,8 +236,8 @@ INSERT INTO access_tickets_used (ticket_id, expires_at) VALUES ($1, $2) ON CONFL
 `
 
 type UseTicketParams struct {
-	TicketID  string
-	ExpiresAt time.Time
+	TicketID  string    `json:"ticket_id"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // 0 rows: this ticket was already used.

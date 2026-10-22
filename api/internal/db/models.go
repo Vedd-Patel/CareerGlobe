@@ -5,6 +5,7 @@
 package db
 
 import (
+	"encoding/json"
 	"net/netip"
 	"time"
 
@@ -12,271 +13,271 @@ import (
 )
 
 type AccessAttempt struct {
-	ID       int64
-	Ip       *netip.Addr
-	DeviceID *string
-	At       time.Time
-	Success  bool
+	ID       int64       `json:"id"`
+	Ip       *netip.Addr `json:"ip"`
+	DeviceID *string     `json:"device_id"`
+	At       time.Time   `json:"at"`
+	Success  bool        `json:"success"`
 }
 
 type AccessCode struct {
-	ID        int64
-	CodeHash  []byte
-	Label     string
-	MaxUses   int32
-	UsedCount int32
-	ExpiresAt *time.Time
-	Revoked   bool
-	CreatedAt time.Time
+	ID        int64      `json:"id"`
+	CodeHash  []byte     `json:"code_hash"`
+	Label     string     `json:"label"`
+	MaxUses   int32      `json:"max_uses"`
+	UsedCount int32      `json:"used_count"`
+	ExpiresAt *time.Time `json:"expires_at"`
+	Revoked   bool       `json:"revoked"`
+	CreatedAt time.Time  `json:"created_at"`
 }
 
 type AccessTicketsUsed struct {
-	TicketID  string
-	ExpiresAt time.Time
+	TicketID  string    `json:"ticket_id"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 type Application struct {
-	ID         int64
-	UserID     int64
-	JobID      int64
-	Status     string
-	AppliedAt  *time.Time
-	Notes      string
-	NextStep   *string
-	NextStepAt *time.Time
-	DontAsk    bool
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID         int64      `json:"id"`
+	UserID     int64      `json:"user_id"`
+	JobID      int64      `json:"job_id"`
+	Status     string     `json:"status"`
+	AppliedAt  *time.Time `json:"applied_at"`
+	Notes      string     `json:"notes"`
+	NextStep   *string    `json:"next_step"`
+	NextStepAt *time.Time `json:"next_step_at"`
+	DontAsk    bool       `json:"dont_ask"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
 }
 
 type ApplicationEvent struct {
-	ID            int64
-	ApplicationID int64
-	FromStatus    *string
-	ToStatus      string
-	At            time.Time
-	Note          *string
+	ID            int64     `json:"id"`
+	ApplicationID int64     `json:"application_id"`
+	FromStatus    *string   `json:"from_status"`
+	ToStatus      string    `json:"to_status"`
+	At            time.Time `json:"at"`
+	Note          *string   `json:"note"`
 }
 
 type CareersSource struct {
-	ID            int64
-	CompanyID     int64
-	CareersUrl    string
-	AtsType       *string
-	AtsSlug       *string
-	Selectors     []byte
-	Etag          *string
-	LastModified  *string
-	LastAttemptAt *time.Time
-	LastOkAt      *time.Time
-	LastError     *string
-	FailCount     int32
-	Status        string
+	ID            int64           `json:"id"`
+	CompanyID     int64           `json:"company_id"`
+	CareersUrl    string          `json:"careers_url"`
+	AtsType       *string         `json:"ats_type"`
+	AtsSlug       *string         `json:"ats_slug"`
+	Selectors     json.RawMessage `json:"selectors"`
+	Etag          *string         `json:"etag"`
+	LastModified  *string         `json:"last_modified"`
+	LastAttemptAt *time.Time      `json:"last_attempt_at"`
+	LastOkAt      *time.Time      `json:"last_ok_at"`
+	LastError     *string         `json:"last_error"`
+	FailCount     int32           `json:"fail_count"`
+	Status        string          `json:"status"`
 }
 
 type CategoryRule struct {
-	ID       int64
-	Keyword  string
-	Category string
-	Priority int32
+	ID       int64  `json:"id"`
+	Keyword  string `json:"keyword"`
+	Category string `json:"category"`
+	Priority int32  `json:"priority"`
 }
 
 type CityAlias struct {
-	Alias     string
-	Canonical string
-	State     *string
+	Alias     string  `json:"alias"`
+	Canonical string  `json:"canonical"`
+	State     *string `json:"state"`
 }
 
 type Company struct {
-	ID          int64
-	Name        string
-	Slug        string
-	Website     *string
-	LogoUrl     *string
-	Type        *string
-	Stage       *string
-	SizeBand    *string
-	Industry    *string
-	Description *string
-	VerifiedAt  *time.Time
-	CreatedAt   time.Time
-	Origin      string
+	ID          int64      `json:"id"`
+	Name        string     `json:"name"`
+	Slug        string     `json:"slug"`
+	Website     *string    `json:"website"`
+	LogoUrl     *string    `json:"logo_url"`
+	Type        *string    `json:"type"`
+	Stage       *string    `json:"stage"`
+	SizeBand    *string    `json:"size_band"`
+	Industry    *string    `json:"industry"`
+	Description *string    `json:"description"`
+	VerifiedAt  *time.Time `json:"verified_at"`
+	CreatedAt   time.Time  `json:"created_at"`
+	Origin      string     `json:"origin"`
 }
 
 type CompanyLocation struct {
-	ID             int64
-	CompanyID      int64
-	City           *string
-	State          *string
-	Country        string
-	Geo            *string
-	GeoApproximate bool
-	IsHq           bool
+	ID             int64   `json:"id"`
+	CompanyID      int64   `json:"company_id"`
+	City           *string `json:"city"`
+	State          *string `json:"state"`
+	Country        string  `json:"country"`
+	Geo            *string `json:"geo"`
+	GeoApproximate bool    `json:"geo_approximate"`
+	IsHq           bool    `json:"is_hq"`
 }
 
 type Consent struct {
-	ID            int64
-	UserID        int64
-	PolicyVersion string
-	AcceptedAt    time.Time
-	Ip            *netip.Addr
-	UserAgent     *string
+	ID            int64       `json:"id"`
+	UserID        int64       `json:"user_id"`
+	PolicyVersion string      `json:"policy_version"`
+	AcceptedAt    time.Time   `json:"accepted_at"`
+	Ip            *netip.Addr `json:"ip"`
+	UserAgent     *string     `json:"user_agent"`
 }
 
 type CrawlRun struct {
-	ID              int64
-	StartedAt       time.Time
-	FinishedAt      *time.Time
-	CompaniesOk     int32
-	CompaniesFailed int32
-	JobsNew         int32
-	JobsClosed      int32
+	ID              int64      `json:"id"`
+	StartedAt       time.Time  `json:"started_at"`
+	FinishedAt      *time.Time `json:"finished_at"`
+	CompaniesOk     int32      `json:"companies_ok"`
+	CompaniesFailed int32      `json:"companies_failed"`
+	JobsNew         int32      `json:"jobs_new"`
+	JobsClosed      int32      `json:"jobs_closed"`
 }
 
 type CrawlTrigger struct {
-	ID          int64
-	RequestedAt time.Time
-	Reason      string
-	StartedAt   *time.Time
+	ID          int64      `json:"id"`
+	RequestedAt time.Time  `json:"requested_at"`
+	Reason      string     `json:"reason"`
+	StartedAt   *time.Time `json:"started_at"`
 }
 
 type InterviewRound struct {
-	ID            int64
-	ApplicationID int64
-	At            time.Time
-	Kind          string
-	Notes         string
+	ID            int64     `json:"id"`
+	ApplicationID int64     `json:"application_id"`
+	At            time.Time `json:"at"`
+	Kind          string    `json:"kind"`
+	Notes         string    `json:"notes"`
 }
 
 type Job struct {
-	ID             int64
-	CompanyID      int64
-	JobKey         string
-	SourceJobID    *string
-	Title          string
-	Category       *string
-	Category2      *string
-	Seniority      *string
-	Description    *string
-	Cities         []string
-	WorkMode       *string
-	SalaryMin      *int32
-	SalaryMax      *int32
-	ApplyUrl       string
-	PostedAt       *time.Time
-	FirstSeen      time.Time
-	LastSeen       time.Time
-	MissedRuns     int16
-	ClosedAt       *time.Time
-	Status         string
-	SourceUpdated  *string
-	Skills         []string
-	ClassifiedHash *string
+	ID             int64      `json:"id"`
+	CompanyID      int64      `json:"company_id"`
+	JobKey         string     `json:"job_key"`
+	SourceJobID    *string    `json:"source_job_id"`
+	Title          string     `json:"title"`
+	Category       *string    `json:"category"`
+	Category2      *string    `json:"category_2"`
+	Seniority      *string    `json:"seniority"`
+	Description    *string    `json:"description"`
+	Cities         []string   `json:"cities"`
+	WorkMode       *string    `json:"work_mode"`
+	SalaryMin      *int32     `json:"salary_min"`
+	SalaryMax      *int32     `json:"salary_max"`
+	ApplyUrl       string     `json:"apply_url"`
+	PostedAt       *time.Time `json:"posted_at"`
+	FirstSeen      time.Time  `json:"first_seen"`
+	LastSeen       time.Time  `json:"last_seen"`
+	MissedRuns     int16      `json:"missed_runs"`
+	ClosedAt       *time.Time `json:"closed_at"`
+	Status         string     `json:"status"`
+	SourceUpdated  *string    `json:"source_updated"`
+	Skills         []string   `json:"skills"`
+	ClassifiedHash *string    `json:"classified_hash"`
 }
 
 type Match struct {
-	UserID     int64
-	JobID      int64
-	Score      int16
-	Reasons    []byte
-	ComputedAt time.Time
-	NotifiedAt *time.Time
-	Seen       bool
+	UserID     int64           `json:"user_id"`
+	JobID      int64           `json:"job_id"`
+	Score      int16           `json:"score"`
+	Reasons    json.RawMessage `json:"reasons"`
+	ComputedAt time.Time       `json:"computed_at"`
+	NotifiedAt *time.Time      `json:"notified_at"`
+	Seen       bool            `json:"seen"`
 }
 
 type Notification struct {
-	ID        int64
-	UserID    int64
-	Kind      string
-	Title     string
-	Body      string
-	Link      *string
-	CreatedAt time.Time
-	ReadAt    *time.Time
+	ID        int64      `json:"id"`
+	UserID    int64      `json:"user_id"`
+	Kind      string     `json:"kind"`
+	Title     string     `json:"title"`
+	Body      string     `json:"body"`
+	Link      *string    `json:"link"`
+	CreatedAt time.Time  `json:"created_at"`
+	ReadAt    *time.Time `json:"read_at"`
 }
 
 type Preference struct {
-	UserID      int64
-	Categories  []string
-	Cities      []string
-	Anywhere    bool
-	RemoteOk    bool
-	Seniority   []string
-	MinSalary   *int32
-	PushTime    pgtype.Time
-	PushEnabled bool
-	Theme       string
-	UpdatedAt   time.Time
-	LastPushAt  *time.Time
+	UserID      int64       `json:"user_id"`
+	Categories  []string    `json:"categories"`
+	Cities      []string    `json:"cities"`
+	Anywhere    bool        `json:"anywhere"`
+	RemoteOk    bool        `json:"remote_ok"`
+	Seniority   []string    `json:"seniority"`
+	MinSalary   *int32      `json:"min_salary"`
+	PushTime    pgtype.Time `json:"push_time"`
+	PushEnabled bool        `json:"push_enabled"`
+	Theme       string      `json:"theme"`
+	UpdatedAt   time.Time   `json:"updated_at"`
+	LastPushAt  *time.Time  `json:"last_push_at"`
 }
 
 type Profile struct {
-	UserID      int64
-	Skills      []string
-	Titles      []string
-	YearsExp    *float64
-	CurrentCity *string
-	Education   []string
-	ConfirmedAt *time.Time
-	UpdatedAt   time.Time
+	UserID      int64      `json:"user_id"`
+	Skills      []string   `json:"skills"`
+	Titles      []string   `json:"titles"`
+	YearsExp    *float64   `json:"years_exp"`
+	CurrentCity *string    `json:"current_city"`
+	Education   []string   `json:"education"`
+	ConfirmedAt *time.Time `json:"confirmed_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
 type PushToken struct {
-	ID        int64
-	UserID    int64
-	Platform  string
-	FcmToken  string
-	UpdatedAt time.Time
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	Platform  string    `json:"platform"`
+	FcmToken  string    `json:"fcm_token"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type RemovalRequest struct {
-	ID         int64
-	Kind       string
-	Email      string
-	UserID     *int64
-	CompanyID  *int64
-	ReceivedAt time.Time
-	DoneAt     *time.Time
-	Note       string
+	ID         int64      `json:"id"`
+	Kind       string     `json:"kind"`
+	Email      string     `json:"email"`
+	UserID     *int64     `json:"user_id"`
+	CompanyID  *int64     `json:"company_id"`
+	ReceivedAt time.Time  `json:"received_at"`
+	DoneAt     *time.Time `json:"done_at"`
+	Note       string     `json:"note"`
 }
 
 type Report struct {
-	ID        int64
-	UserID    *int64
-	CompanyID *int64
-	JobID     *int64
-	Message   string
-	CreatedAt time.Time
-	DoneAt    *time.Time
+	ID        int64      `json:"id"`
+	UserID    *int64     `json:"user_id"`
+	CompanyID *int64     `json:"company_id"`
+	JobID     *int64     `json:"job_id"`
+	Message   string     `json:"message"`
+	CreatedAt time.Time  `json:"created_at"`
+	DoneAt    *time.Time `json:"done_at"`
 }
 
 type Resume struct {
-	UserID       int64
-	FilePath     string
-	OriginalName *string
-	ContentType  string
-	SizeBytes    int32
-	UploadedAt   time.Time
-	ParsedAt     *time.Time
+	UserID       int64      `json:"user_id"`
+	FilePath     string     `json:"file_path"`
+	OriginalName *string    `json:"original_name"`
+	ContentType  string     `json:"content_type"`
+	SizeBytes    int32      `json:"size_bytes"`
+	UploadedAt   time.Time  `json:"uploaded_at"`
+	ParsedAt     *time.Time `json:"parsed_at"`
 }
 
 type SavedCompany struct {
-	UserID    int64
-	CompanyID int64
-	CreatedAt time.Time
+	UserID    int64     `json:"user_id"`
+	CompanyID int64     `json:"company_id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type SkillSynonym struct {
-	Alias     string
-	Canonical string
+	Alias     string `json:"alias"`
+	Canonical string `json:"canonical"`
 }
 
 type User struct {
-	ID           int64
-	FirebaseUid  string
-	AccessCodeID int64
-	Name         *string
-	Email        *string
-	CreatedAt    time.Time
-	LastLoginAt  *time.Time
+	ID           int64      `json:"id"`
+	FirebaseUid  string     `json:"firebase_uid"`
+	AccessCodeID int64      `json:"access_code_id"`
+	Name         *string    `json:"name"`
+	Email        *string    `json:"email"`
+	CreatedAt    time.Time  `json:"created_at"`
+	LastLoginAt  *time.Time `json:"last_login_at"`
 }

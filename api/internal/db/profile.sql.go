@@ -29,8 +29,8 @@ DELETE FROM push_tokens WHERE user_id = $1 AND fcm_token = $2
 `
 
 type DeletePushTokenParams struct {
-	UserID   int64
-	FcmToken string
+	UserID   int64  `json:"user_id"`
+	FcmToken string `json:"fcm_token"`
 }
 
 func (q *Queries) DeletePushToken(ctx context.Context, arg DeletePushTokenParams) error {
@@ -106,8 +106,8 @@ SELECT policy_version, accepted_at FROM consents WHERE user_id = $1 ORDER BY acc
 `
 
 type ListConsentsRow struct {
-	PolicyVersion string
-	AcceptedAt    time.Time
+	PolicyVersion string    `json:"policy_version"`
+	AcceptedAt    time.Time `json:"accepted_at"`
 }
 
 func (q *Queries) ListConsents(ctx context.Context, userID int64) ([]ListConsentsRow, error) {
@@ -169,8 +169,8 @@ UPDATE notifications SET read_at = now() WHERE user_id = $1 AND read_at IS NULL
 `
 
 type MarkNotificationsReadParams struct {
-	UserID int64
-	ID     *int64
+	UserID int64  `json:"user_id"`
+	ID     *int64 `json:"id"`
 }
 
 func (q *Queries) MarkNotificationsRead(ctx context.Context, arg MarkNotificationsReadParams) error {
@@ -183,10 +183,10 @@ INSERT INTO consents (user_id, policy_version, ip, user_agent) VALUES ($1, $2, $
 `
 
 type RecordConsentParams struct {
-	UserID        int64
-	PolicyVersion string
-	Ip            *netip.Addr
-	UserAgent     *string
+	UserID        int64       `json:"user_id"`
+	PolicyVersion string      `json:"policy_version"`
+	Ip            *netip.Addr `json:"ip"`
+	UserAgent     *string     `json:"user_agent"`
 }
 
 func (q *Queries) RecordConsent(ctx context.Context, arg RecordConsentParams) error {
@@ -211,16 +211,16 @@ RETURNING user_id, categories, cities, anywhere, remote_ok, seniority, min_salar
 `
 
 type UpsertPreferencesParams struct {
-	UserID      int64
-	Categories  []string
-	Cities      []string
-	Anywhere    bool
-	RemoteOk    bool
-	Seniority   []string
-	MinSalary   *int32
-	PushTime    pgtype.Time
-	PushEnabled bool
-	Theme       string
+	UserID      int64       `json:"user_id"`
+	Categories  []string    `json:"categories"`
+	Cities      []string    `json:"cities"`
+	Anywhere    bool        `json:"anywhere"`
+	RemoteOk    bool        `json:"remote_ok"`
+	Seniority   []string    `json:"seniority"`
+	MinSalary   *int32      `json:"min_salary"`
+	PushTime    pgtype.Time `json:"push_time"`
+	PushEnabled bool        `json:"push_enabled"`
+	Theme       string      `json:"theme"`
 }
 
 func (q *Queries) UpsertPreferences(ctx context.Context, arg UpsertPreferencesParams) (Preference, error) {
@@ -267,13 +267,13 @@ RETURNING user_id, skills, titles, years_exp, current_city, education, confirmed
 `
 
 type UpsertProfileParams struct {
-	UserID      int64
-	Skills      []string
-	Titles      []string
-	YearsExp    *float64
-	CurrentCity *string
-	Education   []string
-	Confirm     bool
+	UserID      int64    `json:"user_id"`
+	Skills      []string `json:"skills"`
+	Titles      []string `json:"titles"`
+	YearsExp    *float64 `json:"years_exp"`
+	CurrentCity *string  `json:"current_city"`
+	Education   []string `json:"education"`
+	Confirm     bool     `json:"confirm"`
 }
 
 func (q *Queries) UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error) {
@@ -306,9 +306,9 @@ ON CONFLICT (fcm_token) DO UPDATE SET user_id = EXCLUDED.user_id, platform = EXC
 `
 
 type UpsertPushTokenParams struct {
-	UserID   int64
-	Platform string
-	FcmToken string
+	UserID   int64  `json:"user_id"`
+	Platform string `json:"platform"`
+	FcmToken string `json:"fcm_token"`
 }
 
 func (q *Queries) UpsertPushToken(ctx context.Context, arg UpsertPushTokenParams) error {
@@ -326,12 +326,12 @@ RETURNING user_id, file_path, original_name, content_type, size_bytes, uploaded_
 `
 
 type UpsertResumeParams struct {
-	UserID       int64
-	FilePath     string
-	OriginalName *string
-	ContentType  string
-	SizeBytes    int32
-	ParsedAt     *time.Time
+	UserID       int64      `json:"user_id"`
+	FilePath     string     `json:"file_path"`
+	OriginalName *string    `json:"original_name"`
+	ContentType  string     `json:"content_type"`
+	SizeBytes    int32      `json:"size_bytes"`
+	ParsedAt     *time.Time `json:"parsed_at"`
 }
 
 func (q *Queries) UpsertResume(ctx context.Context, arg UpsertResumeParams) (Resume, error) {
