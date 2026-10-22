@@ -250,3 +250,102 @@ Asian Paints Home,https://www.beautifulhomes.asianpaints.com
 Vedanta,https://www.vedantalimited.com
 Siemens India,https://www.siemens.co.in
 Bosch India,https://www.bosch.in
+
+# Global companies with large India offices (India jobs only are kept)
+Walmart Global Tech,https://tech.walmart.com
+Dell Technologies,https://www.dell.com
+HP Inc,https://www.hp.com
+AMD,https://www.amd.com
+Texas Instruments,https://www.ti.com
+Micron,https://www.micron.com
+Western Digital,https://www.westerndigital.com
+Analog Devices,https://www.analog.com
+NXP Semiconductors,https://www.nxp.com
+Infineon,https://www.infineon.com
+Marvell,https://www.marvell.com
+Applied Materials,https://www.appliedmaterials.com
+KLA,https://www.kla.com
+Lam Research,https://www.lamresearch.com
+Cadence,https://www.cadence.com
+Synopsys,https://www.synopsys.com
+Ansys,https://www.ansys.com
+Arm,https://www.arm.com
+Qualcomm,https://www.qualcomm.com
+Renesas,https://www.renesas.com
+Microchip,https://www.microchip.com
+Juniper Networks,https://www.juniper.net
+Broadcom,https://www.broadcom.com
+Nutanix,https://www.nutanix.com
+Autodesk,https://www.autodesk.com
+Intuit,https://www.intuit.com
+eBay,https://www.ebay.com
+Expedia Group,https://www.expediagroup.com
+Booking Holdings,https://www.bookingholdings.com
+Palo Alto Networks,https://www.paloaltonetworks.com
+Zscaler,https://www.zscaler.com
+Rubrik,https://www.rubrik.com
+Atlassian,https://www.atlassian.com
+ServiceNow,https://www.servicenow.com
+Workday,https://www.workday.com
+Gartner,https://www.gartner.com
+ZS Associates,https://www.zs.com
+Optum,https://www.optum.com
+Deloitte,https://www2.deloitte.com
+PwC India,https://www.pwc.in
+EY,https://www.ey.com
+KPMG India,https://kpmg.com/in
+Capgemini,https://www.capgemini.com
+American Express,https://www.americanexpress.com
+JPMorgan Chase,https://www.jpmorganchase.com
+Morgan Stanley,https://www.morganstanley.com
+HSBC,https://www.hsbc.com
+Deutsche Bank,https://www.db.com
+Standard Chartered,https://www.sc.com
+BNY,https://www.bny.com
+State Street,https://www.statestreet.com
+Visa,https://www.visa.co.in
+Fidelity International,https://www.fidelityinternational.com
+BlackRock,https://www.blackrock.com
+Lowe's India,https://www.lowes.com
+Home Depot,https://www.homedepot.com
+Nike,https://www.nike.com
+Unilever,https://www.unilever.com
+Procter & Gamble,https://www.pg.com
+Shell,https://www.shell.com
+Schneider Electric,https://www.se.com
+ABB,https://new.abb.com
+Honeywell,https://www.honeywell.com
+GE Aerospace,https://www.geaerospace.com
+GE HealthCare,https://www.gehealthcare.com
+Siemens Healthineers,https://www.siemens-healthineers.com
+Philips,https://www.philips.com
+Medtronic,https://www.medtronic.com
+Abbott,https://www.abbott.com
+Novartis,https://www.novartis.com
+Sanofi,https://www.sanofi.com
+Pfizer,https://www.pfizer.com
+AstraZeneca,https://www.astrazeneca.com
+GSK,https://www.gsk.com
+Caterpillar,https://www.caterpillar.com
+John Deere,https://www.deere.com
+Cummins,https://www.cummins.com
+Eaton,https://www.eaton.com
+Emerson,https://www.emerson.com
+Volvo Group,https://www.volvogroup.com
+Boeing,https://www.boeing.com
+Airbus,https://www.airbus.com
+Mercedes-Benz R&D India,https://www.mbrdi.co.in
+Continental,https://www.continental.com
+Nokia,https://www.nokia.com
+Ericsson,https://www.ericsson.com
+Uber,https://www.uber.com
+LinkedIn,https://www.linkedin.com
+Oracle,https://www.oracle.com
+Thomson Reuters,https://www.thomsonreuters.com
+S&P Global,https://www.spglobal.com
+Moody's,https://www.moodys.com
+London Stock Exchange Group,https://www.lseg.com
+McKinsey,https://www.mckinsey.com
+Boston Consulting Group,https://www.bcg.com
+Bain,https://www.bain.com
+Accenture,https://www.accenture.com
