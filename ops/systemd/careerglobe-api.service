@@ -1,0 +1,23 @@
+# The Go API on 127.0.0.1:API_PORT; only the Cloudflare Tunnel reaches it.
+[Unit]
+Description=CareerGlobe API
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+User=careerglobe
+Group=careerglobe
+WorkingDirectory=/opt/careerglobe
+EnvironmentFile=/opt/careerglobe/.env
+ExecStart=/opt/careerglobe/api/bin/api
+Restart=always
+RestartSec=3
+MemoryMax=2G
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/careerglobe
+
+[Install]
+WantedBy=multi-user.target

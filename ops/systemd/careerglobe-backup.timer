@@ -1,0 +1,9 @@
+[Unit]
+Description=CareerGlobe backup at 07:40 IST
+
+[Timer]
+OnCalendar=*-*-* 07:40:00 Asia/Kolkata
+Persistent=true
+
+[Install]
+WantedBy=timers.target

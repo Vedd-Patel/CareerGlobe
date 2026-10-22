@@ -12,6 +12,11 @@ Everything that runs the crawl (and later matching and push) every night.
 | `mac/install.sh` | Installs / removes both launchd jobs (nightly at 01:30, push every 15 minutes). |
 | `systemd/careerglobe-nightly.{service,timer}` | The nightly job on the Oracle server (01:30 IST, `MemoryMax=6G`). |
 | `systemd/careerglobe-push.{service,timer}` | The 15-minute push / re-run job on the server. |
+| `systemd/careerglobe-api.service` | The Go API on localhost (behind the tunnel). |
+| `systemd/careerglobe-backup.{service,timer}` | Encrypted backup to R2 at 07:40 IST (`backup/backup.sh`). |
+| `backup/restore-drill.sh` | Monthly: restore the newest backup into a scratch database and count rows. |
+| `server/setup.sh`, `server/db-roles.sql` | Server hardening and install; the three restricted database users. |
+| `cloudflared/config.yml.example` | Cloudflare Tunnel ingress for the API. |
 | `../.github/workflows/watchdog.yml` | GitHub Actions, 08:00 IST: checks `/healthz` and that last night's crawl finished; asks for a re-run if not. |
 
 ## Nightly run on the Mac (until the server exists)
@@ -71,10 +76,10 @@ Secrets and variables → Actions): `API_URL` (for example `https://api.yourdoma
 `OPS_TOKEN` (the same random value as in the server's `.env`). Until then the workflow
 does nothing. Every push to the repo keeps the scheduled workflow from being auto-disabled.
 
-## Server (later)
+## Server
 
-See `server/README.md` once Phase 0 server work is done. In short: copy the repo to
-`/opt/careerglobe`, put `.env` next to it (chmod 600), then
+Full build / rebuild steps: [`server/README.md`](server/README.md) (setup script, database
+roles, tunnel, backups and restore drill). In short, once `.env` is in `/opt/careerglobe`:
 
 ```bash
 sudo cp ops/systemd/careerglobe-*.{service,timer} /etc/systemd/system/

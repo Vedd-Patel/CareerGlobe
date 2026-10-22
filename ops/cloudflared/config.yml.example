@@ -1,0 +1,14 @@
+# Cloudflare Tunnel: the only way in to the API (spec: no open ports except SSH).
+# 1. cloudflared tunnel login && cloudflared tunnel create careerglobe
+# 2. Copy this file to /etc/cloudflared/config.yml and fill in the tunnel ID and hostname.
+# 3. cloudflared tunnel route dns careerglobe api.yourdomain.in
+# 4. sudo cloudflared service install && sudo systemctl enable --now cloudflared
+tunnel: YOUR-TUNNEL-ID
+credentials-file: /etc/cloudflared/YOUR-TUNNEL-ID.json
+
+ingress:
+  - hostname: api.yourdomain.in
+    service: http://127.0.0.1:8080
+    originRequest:
+      connectTimeout: 10s
+  - service: http_status:404
