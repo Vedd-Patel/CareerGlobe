@@ -11,7 +11,8 @@ Undocumented for candidates but the calls the careers site makes. The
 no rules). Seed slug: "{host}|{site}" from a careers URL like
 https://{host}/hcmUI/CandidateExperience/en/sites/{site}.
 
-- Only jobs whose primary or a secondary location is in India.
+- Only jobs whose primary or a secondary location is in India; when the site
+  lists an "India" location facet the list is asked for India only (big boards).
 - The list gives title, date and a location string; the city and the
   description come from the detail call, made only for jobs new to us.
 """
@@ -40,11 +41,25 @@ def parse_slug(slug: str) -> tuple[str, str]:
     return m.group(1), m.group(2)
 
 
-def list_url(slug: str, offset: int) -> str:
+def list_url(slug: str, offset: int, india: int | None = None, facets: bool = False) -> str:
+    """One page of the list; `india` limits it to that location facet, `facets`
+    asks for the location facet values (to find India's id)."""
     host, site = parse_slug(slug)
-    return (f"{API.format(host=host)}/recruitingCEJobRequisitions?onlyData=true"
-            f"&expand=requisitionList.secondaryLocations"
-            f"&finder=findReqs;siteNumber={site},limit={PAGE_SIZE},offset={offset},sortBy=POSTING_DATES_DESC")
+    extra = ",facetsList=LOCATIONS" if facets else ""
+    if india:
+        extra += f",selectedLocationsFacet={india}"
+    expand = "requisitionList.secondaryLocations" + (",locationsFacet" if facets else "")
+    return (f"{API.format(host=host)}/recruitingCEJobRequisitions?onlyData=true&expand={expand}"
+            f"&finder=findReqs;siteNumber={site},limit={PAGE_SIZE},offset={offset},sortBy=POSTING_DATES_DESC{extra}")
+
+
+def india_location(data) -> int | None:
+    """The id of the "India" location facet value, when the site lists one."""
+    items = data.get("items") if isinstance(data, dict) else None
+    for f in (items[0].get("locationsFacet") or []) if items else []:
+        if isinstance(f, dict) and (f.get("Name") or "").strip().lower() == "india" and f.get("Id"):
+            return int(f["Id"])
+    return None
 
 
 def detail_url(slug: str, job_id: str) -> str:
@@ -112,8 +127,12 @@ def parse_detail(data, listed: RawJob) -> RawJob:
 async def fetch(client, slug: str, known) -> list[RawJob]:
     listed: dict[str, RawJob] = {}
     total = None
+    try:
+        india = india_location((await client.get(list_url(slug, 0, facets=True))).json())
+    except ValueError as e:
+        raise ParseError(f"oracle: list is not JSON: {e}") from e
     for page in range(MAX_PAGES):
-        res = await client.get(list_url(slug, page * PAGE_SIZE))
+        res = await client.get(list_url(slug, page * PAGE_SIZE, india))
         try:
             jobs, count, rows = parse_list(res.json(), slug)
         except ValueError as e:

@@ -142,3 +142,22 @@ Netradyne,,https://boards.greenhouse.io/netradyne,Bengaluru,Karnataka,product,gr
 Sigmoid,,https://boards.greenhouse.io/sigmoid,Bengaluru,Karnataka,service,greenhouse,probed: 33 of 38 jobs in India; verify city and that the board is this company
 CloudThat,,https://cloudthat.keka.com/careers/,Bengaluru,Karnataka,service,keka,probed: 74 of 83 jobs in India; verify city and that the board is this company
 Zaggle,,https://zaggle.keka.com/careers/,Mumbai,Maharashtra,product,keka,probed: 18 of 19 jobs in India; verify city and that the board is this company
+Adidas,https://www.adidas-group.com,https://jobs.adidas-group.com/,Gurugram,Haryana,product,successfactors,verify: global HQ is in Germany; India HQ city
+Hilton,https://www.hilton.com,https://efet.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1,Bengaluru,Karnataka,service,oracle,verify: global HQ is in the US; hotels across India plus a Bengaluru centre
+Marriott,https://www.marriott.com,https://ejwl.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX,Delhi,Delhi,service,oracle,verify: global HQ is in the US; hotels across India
+AT&T,https://www.att.com,https://att.wd1.myworkdayjobs.com/ATTGeneral,Hyderabad,Telangana,service,workday,verify: global HQ is in the US; India centres Hyderabad and Bengaluru
+Telstra,https://www.telstra.com.au,https://telstra.wd3.myworkdayjobs.com/Telstra_Careers,Hyderabad,Telangana,service,workday,verify: global HQ is in Australia; India centre city
+Samsung,https://www.samsung.com,https://sec.wd3.myworkdayjobs.com/Samsung_Careers,Bengaluru,Karnataka,product,workday,verify: global HQ is in South Korea; India offices Bengaluru and Noida
+Zebra Technologies,https://www.zebra.com,https://zebra.wd501.myworkdayjobs.com/Zebra_careers,Bengaluru,Karnataka,product,workday,verify: global HQ is in the US; India office city
+Sandvik,https://www.home.sandvik,https://sandvik.wd3.myworkdayjobs.com/sandvik-jobs,Pune,Maharashtra,product,workday,verify: global HQ is in Sweden; Pune is the India office
+Kone,https://www.kone.com,https://kone.wd3.myworkdayjobs.com/Careers,Chennai,Tamil Nadu,product,workday,verify: global HQ is in Finland; Chennai is the India office
+Signify,https://www.signify.com,https://lighting.wd3.myworkdayjobs.com/jobs-and-careers,Gurugram,Haryana,product,workday,verify: global HQ is in the Netherlands; India office city
+Fortive,https://www.fortive.com,https://fortive.eightfold.ai/careers?domain=fortive.com,Bengaluru,Karnataka,product,eightfold,verify: global HQ is in the US; India office city
+Teradyne,https://www.teradyne.com,https://jobs.teradyne.com/,Bengaluru,Karnataka,product,successfactors,verify: global HQ is in the US; India office city
+onsemi,https://www.onsemi.com,https://hctz.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001,Bengaluru,Karnataka,product,oracle,verify: global HQ is in the US; Bengaluru is the India design centre
+DXC Technology,https://dxc.com,https://dxctechnology.wd1.myworkdayjobs.com/DXCJobs,Bengaluru,Karnataka,service,workday,verify: global HQ is in the US; India offices in several cities
+Kyndryl,https://www.kyndryl.com,https://kyndryl.wd5.myworkdayjobs.com/KyndrylEarlyCareers,Bengaluru,Karnataka,service,workday,verify: this is the early-careers site; global HQ is in the US
+Unisys,https://www.unisys.com,https://unisys.wd5.myworkdayjobs.com/External,Bengaluru,Karnataka,service,workday,verify: global HQ is in the US; Bengaluru is the India centre
+NTT Global Data Centers,https://www.nttdata.com,https://nttglobaldatacenters.wd501.myworkdayjobs.com/External,Mumbai,Maharashtra,service,workday,verify: data-centre arm of NTT; India office city
+EXL,https://www.exlservice.com,https://fa-ewjt-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2,Noida,Uttar Pradesh,service,oracle,verify: global HQ is in the US; Noida is the main India office
+Broadridge,https://www.broadridge.com,https://broadridge.wd5.myworkdayjobs.com/Careers,Hyderabad,Telangana,service,workday,verify: global HQ is in the US; India offices Hyderabad and Bengaluru

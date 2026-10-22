@@ -66,6 +66,7 @@ class FakeOracle:
             return httpx.Response(404)
         if path.endswith("/recruitingCEJobRequisitions"):
             finder = request.url.params["finder"]
+            self.finders = getattr(self, "finders", []) + [finder]
             offset = int(finder.split("offset=")[1].split(",")[0])
             rows = [{"Id": str(i), "Title": f"Role {i}", "PrimaryLocationCountry": "IN" if i % 2 == 0 else "US",
                      "PrimaryLocation": "Pune, Maharashtra, India"} for i in range(offset, min(offset + 25, self.n))]
@@ -86,3 +87,12 @@ async def test_fetch_pages_and_details_for_new_india_jobs():
     assert len(jobs) == 30  # even IDs are in India
     assert len(server.details) == 29
     assert server.details[0] == 'ById;Id="2",siteNumber=CX_1'
+
+
+def test_india_location_facet_and_url():
+    data = {"items": [{"locationsFacet": [{"Id": 5, "Name": "United States"}, {"Id": 300000000295773, "Name": "India"}]}]}
+    assert oracle.india_location(data) == 300000000295773
+    assert oracle.india_location({"items": [{}]}) is None
+    url = oracle.list_url(SLUG, 25, india=300000000295773)
+    assert "selectedLocationsFacet=300000000295773" in url and "offset=25" in url
+    assert "facetsList=LOCATIONS" in oracle.list_url(SLUG, 0, facets=True)
