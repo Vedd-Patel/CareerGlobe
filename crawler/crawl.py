@@ -67,7 +67,11 @@ async def crawl_source(conn, db_lock: asyncio.Lock, client: PoliteClient, run, s
         if adapter.fetch:
             async with db_lock:
                 known = await store.known_jobs(conn, src.company_id)
-            jobs, not_modified = await adapter.fetch(client, src.ats_slug, known), False
+            if adapter.name == "html":
+                jobs = await adapter.fetch(client, src.ats_slug, known, selectors=src.selectors)
+            else:
+                jobs = await adapter.fetch(client, src.ats_slug, known)
+            not_modified = False
         else:
             res = await client.get(adapter.board_url(src.ats_slug), etag=src.etag, last_modified=src.last_modified)
             etag, last_modified, not_modified = res.etag, res.last_modified, res.not_modified

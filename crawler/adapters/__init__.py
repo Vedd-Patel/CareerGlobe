@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Awaitable, Callable
 from urllib.parse import parse_qs, urlsplit
 
-from adapters import amazon, eightfold, greenhouse, jsonld, keka, lever, oracle, successfactors, workday
+from adapters import amazon, eightfold, greenhouse, html, jsonld, keka, lever, oracle, successfactors, workday
 from adapters.base import ParseError, RawJob
 
 
@@ -35,6 +35,7 @@ ADAPTERS = {
     "amazon": Adapter("amazon", fetch=amazon.fetch),
     "eightfold": Adapter("eightfold", fetch=eightfold.fetch),
     "oracle": Adapter("oracle", fetch=oracle.fetch),
+    "html": Adapter("html", fetch=html.fetch),
 }
 
 _SLUG = r"([A-Za-z0-9][A-Za-z0-9_.-]*)"
@@ -92,6 +93,8 @@ def source_for(careers_url: str, ats: str | None) -> tuple[str | None, str | Non
     detected = detect(careers_url)
     if detected:
         return detected
+    if ats == "html":
+        return ats, careers_url.strip()  # selectors are set in the admin console
     if ats == "successfactors":
         return ats, (urlsplit(careers_url.strip()).hostname or "").lower() or None
     if ats in (None, "", "jsonld"):

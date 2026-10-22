@@ -24,6 +24,7 @@ class Source:
     ats_slug: str | None
     etag: str | None
     last_modified: str | None
+    selectors: dict | None = None
 
 
 @dataclass
@@ -86,7 +87,8 @@ async def sources(conn, only: str | None = None, skip_attempted_since: datetime 
         where.append("(s.last_attempt_at IS NULL OR s.last_attempt_at < %s)")
         params.append(skip_attempted_since)
     cur = await conn.execute(
-        f"""SELECT s.id, s.company_id, c.name, s.careers_url, s.ats_type, s.ats_slug, s.etag, s.last_modified
+        f"""SELECT s.id, s.company_id, c.name, s.careers_url, s.ats_type, s.ats_slug, s.etag, s.last_modified,
+                   s.selectors
             FROM careers_sources s JOIN companies c ON c.id = s.company_id
             WHERE {' AND '.join(where)}
             ORDER BY s.last_ok_at ASC NULLS FIRST, c.name""",
