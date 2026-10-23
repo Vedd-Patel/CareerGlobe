@@ -30,6 +30,7 @@ NAME = "oracle"
 PAGE_SIZE = 25
 MAX_PAGES = 200
 MAX_NEW_DETAILS = 300
+MIN_GAP = 3.0  # Oracle Cloud answered 429 at the normal 1-2 s pace (Marriott, 2026-10-23)
 _SLUG = re.compile(r"^([a-z0-9.-]+\.oraclecloud\.com)\|([A-Za-z0-9_-]+)$")
 API = "https://{host}/hcmRestApi/resources/latest"
 
@@ -125,6 +126,8 @@ def parse_detail(data, listed: RawJob) -> RawJob:
 
 
 async def fetch(client, slug: str, known) -> list[RawJob]:
+    host, _ = parse_slug(slug)
+    client.min_gap(host, MIN_GAP)
     listed: dict[str, RawJob] = {}
     total = None
     try:

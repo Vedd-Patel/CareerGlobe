@@ -79,7 +79,8 @@ class FakeOracle:
 
 
 @pytest.mark.anyio
-async def test_fetch_pages_and_details_for_new_india_jobs():
+async def test_fetch_pages_and_details_for_new_india_jobs(monkeypatch):
+    monkeypatch.setattr(oracle, "MIN_GAP", 0.0)
     server = FakeOracle(60)
     async with PoliteClient("CareerGlobeBot/test", "CareerGlobeBot", 0, 0, backoff=0,
                             transport=httpx.MockTransport(server)) as c:
