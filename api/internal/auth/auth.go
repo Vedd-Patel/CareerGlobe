@@ -4,6 +4,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"strings"
 
 	firebase "firebase.google.com/go/v4"
 	fbauth "firebase.google.com/go/v4/auth"
@@ -76,4 +77,18 @@ func (s Static) Verify(_ context.Context, idToken string) (Identity, error) {
 		return id, nil
 	}
 	return Identity{}, ErrInvalidToken
+}
+
+// Dev accepts "dev:<uid>:<email>" tokens. For local development only: main
+// enables it when DEV_AUTH=1 and no Firebase project is configured, and the
+// API only ever listens on localhost.
+type Dev struct{}
+
+// Verify implements Verifier.
+func (Dev) Verify(_ context.Context, idToken string) (Identity, error) {
+	parts := strings.SplitN(idToken, ":", 3)
+	if len(parts) != 3 || parts[0] != "dev" || parts[1] == "" {
+		return Identity{}, ErrInvalidToken
+	}
+	return Identity{UID: "dev-" + parts[1], Email: parts[2], Name: parts[1], EmailVerified: true, Provider: "dev"}, nil
 }

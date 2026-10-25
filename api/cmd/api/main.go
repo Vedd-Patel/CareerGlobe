@@ -55,6 +55,9 @@ func run() error {
 			return err
 		}
 		verifier = fb
+	} else if os.Getenv("DEV_AUTH") == "1" {
+		slog.Warn("DEV_AUTH=1: accepting dev:<uid>:<email> tokens (local development only)")
+		verifier = auth.Dev{}
 	} else {
 		slog.Warn("FIREBASE_PROJECT_ID is not set: sign-in is off")
 	}
