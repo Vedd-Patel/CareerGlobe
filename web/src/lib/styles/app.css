@@ -119,3 +119,10 @@ h1,h2,h3,p{margin:0}
 .tile.on{border-color:var(--accent);background:var(--accent-soft)}
 .board{display:flex;gap:40px;align-items:flex-start;padding:48px}
 .web{display:flex;min-height:900px;background:var(--bg)}
+
+/* App pages */
+.page{max-width:960px;margin:0 auto;padding:24px 16px 32px;display:flex;flex-direction:column;gap:16px}
+.page-head{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:12px}
+.plain-link{color:inherit;text-decoration:none}
+@media(min-width:900px){.page{padding:40px 32px}}
