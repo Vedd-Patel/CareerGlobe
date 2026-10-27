@@ -115,6 +115,17 @@
 		<div class="chips"><a class="chip" href="/privacy">Privacy notice</a><a class="chip" href="/terms">Terms</a></div>
 	</section>
 
+	<section class="stack">
+		<h2 class="t-heading">About and data sources</h2>
+		<p class="t-body t-2">
+			CareerGlobe reads each company's own careers page or its official job board (Greenhouse, Lever, Workday and similar) once a night.
+			It follows each site's robots.txt, sends one request at a time, never logs in and keeps only job fields and the link back.
+			A job disappears after it is missing from two successful nightly reads in a row.
+		</p>
+		<p class="t-body t-2">Office locations come from the company's seed entry; city centres from Natural Earth. Map data © MapLibre, Natural Earth.</p>
+		<p class="t-caption t-3">To have a company removed or your data deleted, email the address in the <a href="/privacy">privacy notice</a>.</p>
+	</section>
+
 	<button class="btn btn-secondary" onclick={logOut}><Icon name="logout" size={18} />Log out</button>
 
 	<section class="stack danger">

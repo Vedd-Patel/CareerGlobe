@@ -1,6 +1,7 @@
 <script lang="ts">
 	// S19 Matches: ranked jobs with the one-line reason.
 	import { api, ApiError, type Schemas } from '$lib/api/client';
+	import Icon from '$lib/components/Icon.svelte';
 	import JobCard from '$lib/components/JobCard.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import SkeletonCards from '$lib/components/SkeletonCards.svelte';
@@ -58,7 +59,8 @@
 
 <main class="page">
 	<div class="page-head">
-		<h1 class="t-title">Your matches</h1>
+		<h1 class="t-title" style="flex: 1">Your matches</h1>
+		<button class="icon-btn refresh" aria-label="Refresh" onclick={() => load()}><Icon name="refresh" size={18} /></button>
 		<div class="segs">
 			<button class="seg {sort === 'best' ? 'on' : ''}" onclick={() => (sort = 'best')}>Best match</button>
 			<button class="seg {sort === 'newest' ? 'on' : ''}" onclick={() => (sort = 'newest')}>Newest</button>

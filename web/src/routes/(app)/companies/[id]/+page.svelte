@@ -1,6 +1,10 @@
 <script lang="ts">
 	// S18 Company detail: facts, offices, open jobs with your scores.
 	import { page } from '$app/state';
+	import maplibregl from 'maplibre-gl';
+	import 'maplibre-gl/dist/maplibre-gl.css';
+	import { mapStyle } from '$lib/map/style';
+	import { pinKind } from '$lib/globe';
 	import { api, ApiError, type Schemas } from '$lib/api/client';
 	import { ago } from '$lib/format';
 	import Icon from '$lib/components/Icon.svelte';
@@ -21,6 +25,36 @@
 	const id = $derived(Number(page.params.id));
 	const jobs = $derived(c?.open_jobs ?? []);
 	const shown = $derived(showAll ? jobs : jobs.slice(0, 20));
+	// Open roles grouped by category, best-scoring group first (S18).
+	const groups = $derived.by(() => {
+		const m = new Map<string, typeof jobs>();
+		for (const j of shown) {
+			const k = j.category ?? 'Other';
+			m.set(k, [...(m.get(k) ?? []), j]);
+		}
+		const best = (g: typeof jobs) => Math.max(...g.map((j) => j.score ?? 0));
+		return [...m.entries()].sort((a, b) => best(b[1]) - best(a[1]) || b[1].length - a[1].length);
+	});
+
+	// Small static map of the offices.
+	function officeMap(el: HTMLDivElement, locs: NonNullable<Company['locations']>) {
+		const pts = locs.map((l) => [l.lon ?? 0, l.lat ?? 0] as [number, number]);
+		const b = new maplibregl.LngLatBounds(pts[0], pts[0]);
+		for (const pt of pts) b.extend(pt);
+		const map = new maplibregl.Map({
+			container: el, style: mapStyle(), interactive: false, attributionControl: false,
+			...(pts.length > 1 ? { bounds: b, fitBoundsOptions: { padding: 40, maxZoom: 7 } } : { center: pts[0], zoom: 4.2 })
+		});
+		for (const pt of pts) {
+			const m = document.createElement('span');
+			m.className = 'pin-hit';
+			const dot = document.createElement('span');
+			dot.className = `pin ${pinKind({ open_jobs: jobs.length })}`;
+			m.append(dot);
+			new maplibregl.Marker({ element: m }).setLngLat(pt).addTo(map);
+		}
+		return { destroy: () => map.remove() };
+	}
 
 	$effect(() => {
 		void id;
@@ -78,6 +112,7 @@
 		{#if c.locations?.length}
 			<section class="stack">
 				<h2 class="t-heading">Offices in India</h2>
+				<div class="office-map" use:officeMap={c.locations} aria-label="Map of offices"></div>
 				<div class="chips">
 					{#each c.locations as l (l.id)}
 						<span class="chip"><Icon name="pin" size={14} />{l.city ?? l.state}{l.is_hq ? ' · HQ' : ''}{l.geo_approximate ? ' (approx.)' : ''}</span>
@@ -88,8 +123,11 @@
 
 		<section class="stack">
 			<h2 class="t-heading">Open jobs <span class="t-3">({jobs.length})</span></h2>
-			{#each shown as j (j.id)}
-				<JobCard job={{ ...j, job_id: j.id ?? 0, title: j.title ?? '', first_seen: j.posted_at ?? j.first_seen }} />
+			{#each groups as [cat, list] (cat)}
+				<h3 class="t-caption t-2">{cat.toUpperCase()} · {list.length}</h3>
+				{#each list as j (j.id)}
+					<JobCard job={{ ...j, job_id: j.id ?? 0, title: j.title ?? '', first_seen: j.posted_at ?? j.first_seen }} />
+				{/each}
 			{:else}
 				<EmptyState icon="box" title="No open jobs right now">
 					<p class="t-body t-2">Save this company and we'll tell you when it posts something new.</p>
@@ -115,3 +153,7 @@
 		{/if}
 	{/if}
 </main>
+
+<style>
+	.office-map { height: 200px; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); }
+</style>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	// S23 Tracker board (drag a card or use its menu to move it) and S25 stats.
 	import { api, ApiError, type Schemas } from '$lib/api/client';
-	import { ago } from '$lib/format';
+	import { ago, shortDate } from '$lib/format';
 	import Logo from '$lib/components/Logo.svelte';
 	import Banner from '$lib/components/Banner.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -22,6 +22,7 @@
 	let dragging = $state<number | null>(null);
 	let over = $state<Status | null>(null);
 	let tab = $state<Status>('saved');
+	let showClosed = $state(false);
 
 	async function load() {
 		try {
@@ -62,6 +63,28 @@
 	}
 </script>
 
+{#snippet tcard(card: Card)}
+<article class="tcard {dragging === card.id ? 'drag' : ''}" draggable="true"
+	ondragstart={() => (dragging = card.id ?? null)} ondragend={() => { dragging = null; over = null; }}>
+	<a class="plain-link" href="/tracker/{card.id}" style="display: flex; gap: 10px; align-items: center">
+		<Logo name={card.company_name ?? ''} url={card.logo_url} size="sm" />
+		<span style="min-width: 0">
+			<b class="t-heading" style="font-size: 14px; display: block">{card.title}</b>
+			<span class="t-caption t-3">{card.company_name}</span>
+		</span>
+	</a>
+	{#if card.job_status === 'closed'}<span class="t-caption" style="color: var(--rejected)">Job closed</span>{/if}
+	{#if card.next_step}<span class="t-caption t-2">Next: {card.next_step}{card.next_step_at ? ` · ${shortDate(card.next_step_at)}` : ''}</span>{/if}
+	<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+		<span class="t-caption t-3">{ago(card.updated_at)}</span>
+		<select class="move" aria-label="Move {card.title}" value={card.status}
+			onchange={(e) => move(card.id ?? 0, e.currentTarget.value as Status)}>
+			{#each COLUMNS as c (c.key)}<option value={c.key}>{c.label}</option>{/each}
+		</select>
+	</div>
+</article>
+{/snippet}
+
 <svelte:head><title>Tracker · CareerGlobe</title></svelte:head>
 
 <main class="page wide">
@@ -97,35 +120,31 @@
 
 		<div class="cols">
 			{#each COLUMNS as col (col.key)}
-				<section class="col {tab === col.key ? 'current' : ''} {over === col.key ? 'over' : ''}" aria-label={col.label}
-					ondragover={(e) => { e.preventDefault(); over = col.key; }}
-					ondragleave={() => over === col.key && (over = null)}
-					ondrop={(e) => { e.preventDefault(); drop(col.key); }}>
-					<h2 class="t-caption t-2 col-head">{col.label.toUpperCase()} · {byStatus(col.key).length}</h2>
-					{#each byStatus(col.key) as card (card.id)}
-						<article class="tcard {dragging === card.id ? 'drag' : ''}" draggable="true"
-							ondragstart={() => (dragging = card.id ?? null)} ondragend={() => { dragging = null; over = null; }}>
-							<a class="plain-link" href="/tracker/{card.id}" style="display: flex; gap: 10px; align-items: center">
-								<Logo name={card.company_name ?? ''} url={card.logo_url} size="sm" />
-								<span style="min-width: 0">
-									<b class="t-heading" style="font-size: 14px; display: block">{card.title}</b>
-									<span class="t-caption t-3">{card.company_name}</span>
-								</span>
-							</a>
-							{#if card.job_status === 'closed'}<span class="t-caption" style="color: var(--rejected)">Job closed</span>{/if}
-							{#if card.next_step}<span class="t-caption t-2">Next: {card.next_step}</span>{/if}
-							<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
-								<span class="t-caption t-3">{ago(card.updated_at)}</span>
-								<select class="move" aria-label="Move {card.title}" value={card.status}
-									onchange={(e) => move(card.id ?? 0, e.currentTarget.value as Status)}>
-									{#each COLUMNS as c (c.key)}<option value={c.key}>{c.label}</option>{/each}
-								</select>
-							</div>
-						</article>
-					{/each}
-				</section>
+				{@const closed = col.key === 'rejected' || col.key === 'withdrawn'}
+				{#if !closed || tab === col.key || showClosed}
+					<section class="col {tab === col.key ? 'current' : ''} {over === col.key ? 'over' : ''}" aria-label={col.label}
+						ondragover={(e) => { e.preventDefault(); over = col.key; }}
+						ondragleave={() => over === col.key && (over = null)}
+						ondrop={(e) => { e.preventDefault(); drop(col.key); }}>
+						<h2 class="t-caption t-2 col-head">{col.label.toUpperCase()} · {byStatus(col.key).length}</h2>
+						{#each byStatus(col.key) as card (card.id)}
+							{@render tcard(card)}
+						{/each}
+					</section>
+				{/if}
 			{/each}
+			{#if !showClosed}
+				<button class="col closed-group" onclick={() => (showClosed = true)}
+					ondragover={(e) => { e.preventDefault(); over = 'rejected'; }}
+					ondragleave={() => over === 'rejected' && (over = null)}
+					ondrop={(e) => { e.preventDefault(); drop('rejected'); }}>
+					<span class="t-caption t-2">REJECTED / WITHDRAWN</span>
+					<span class="num">{byStatus('rejected').length + byStatus('withdrawn').length}</span>
+					<span class="t-caption t-3">Show</span>
+				</button>
+			{/if}
 		</div>
+		{#if showClosed}<button class="btn btn-text hide-closed" onclick={() => (showClosed = false)}>Hide rejected and withdrawn</button>{/if}
 	{/if}
 </main>
 
@@ -137,6 +156,7 @@
 	.cols { display: grid; grid-template-columns: 1fr; gap: 12px; }
 	.col { display: none; }
 	.col.current { display: flex; }
+	.closed-group, .hide-closed { display: none; }
 	.col.over { outline: 2px dashed var(--accent); }
 	.col-head { padding: 2px 4px; }
 	.tcard { cursor: grab; }
@@ -144,7 +164,9 @@
 	@media (max-width: 600px) { .stats { grid-template-columns: repeat(3, 1fr); } }
 	@media (min-width: 900px) {
 		.tabs { display: none; }
-		.cols { grid-template-columns: repeat(6, minmax(180px, 1fr)); overflow-x: auto; }
+		.cols { grid-auto-flow: column; grid-auto-columns: minmax(200px, 1fr); grid-template-columns: none; overflow-x: auto; }
 		.col { display: flex; }
+		.hide-closed { display: inline-flex; align-self: flex-start; }
+		.closed-group { display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px dashed var(--line); cursor: pointer; font: inherit; color: inherit; max-width: 140px; }
 	}
 </style>

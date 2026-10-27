@@ -26,6 +26,9 @@
 	let reported = $state(false);
 
 	const id = $derived(Number(page.params.id));
+	// Mirrors api/internal/match: with too few skills listed, the skill points move to role and seniority.
+	const maxOf = (key: string, few: boolean) =>
+		!few ? PARTS.find((p) => p[0] === key)![2] : key === 'skills' ? 0 : key === 'role' ? 20 + (45 * 20) / 35 : key === 'seniority' ? 15 + (45 * 15) / 35 : PARTS.find((p) => p[0] === key)![2];
 
 	async function load() {
 		error = '';
@@ -112,16 +115,6 @@
 			{#if job.application}<StatusPill status={job.application.status ?? 'saved'} />{/if}
 		</header>
 
-		{#if job.status === 'open'}
-			<div style="display: flex; gap: 10px">
-				<a class="btn btn-primary" style="flex: 2" href={job.apply_url} target="_blank" rel="noopener noreferrer" onclick={apply}>
-					Apply on company site<Icon name="external" size={18} />
-				</a>
-				<button class="btn btn-secondary" style="flex: 1" disabled={!!job.application} onclick={() => setStatus('saved')}>
-					<Icon name="bookmark" size={18} fill={!!job.application} />{job.application ? 'In tracker' : 'Save'}
-				</button>
-			</div>
-		{/if}
 
 		{#if job.match}
 			<section class="card" style="flex-direction: column; align-items: stretch; gap: 14px">
@@ -132,11 +125,12 @@
 						<p class="t-body t-2">{job.match.reasons?.summary}</p>
 					</div>
 				</div>
-				{#each PARTS as [key, label, max] (key)}
+				{#each PARTS as [key, label] (key)}
 					{@const got = job.match.reasons?.parts?.[key] ?? 0}
+					{@const max = maxOf(key, !!job.match.reasons?.few_skills)}
 					<div>
-						<div style="display: flex; justify-content: space-between" class="t-caption"><span>{label}</span><span class="t-3">{Math.round(got)} / {max}</span></div>
-						<div class="progress"><i style="width: {(got / max) * 100}%"></i></div>
+						<div style="display: flex; justify-content: space-between" class="t-caption"><span>{label}</span><span class="t-3">{max ? `${Math.round(got)} / ${Math.round(max)}` : 'not scored'}</span></div>
+						<div class="progress"><i style="width: {max ? Math.min(100, (got / max) * 100) : 0}%"></i></div>
 					</div>
 				{/each}
 				{#if job.match.reasons?.skills_have?.length}
@@ -181,6 +175,16 @@
 		{:else}
 			<button class="btn btn-text" style="align-self: flex-start" onclick={() => (reporting = true)}><Icon name="alert" size={16} />Report wrong info</button>
 		{/if}
+		{#if job.status === 'open'}
+			<div class="apply-bar">
+				<a class="btn btn-primary" style="flex: 2" href={job.apply_url} target="_blank" rel="noopener noreferrer" onclick={apply}>
+					Apply on company site<Icon name="external" size={18} />
+				</a>
+				<button class="btn btn-secondary" style="flex: 1" disabled={!!job.application} onclick={() => setStatus('saved')}>
+					<Icon name="bookmark" size={18} fill={!!job.application} />{job.application ? 'In tracker' : 'Save'}
+				</button>
+			</div>
+		{/if}
 	{/if}
 </main>
 
@@ -198,6 +202,8 @@
 
 <style>
 	.progress { height: 6px; }
+	.apply-bar { position: sticky; bottom: 84px; z-index: 5; display: flex; gap: 10px; padding: 12px; margin: 0 -12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-sheet); }
+	@media (min-width: 900px) { .apply-bar { bottom: 16px; } }
 	.scrim { position: fixed; inset: 0; background: rgba(5, 8, 19, 0.5); z-index: 50; }
 	.ask { position: fixed; left: 0; right: 0; bottom: 0; z-index: 51; max-width: 520px; margin: 0 auto; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 12px; }
 </style>

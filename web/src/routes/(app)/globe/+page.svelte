@@ -32,6 +32,9 @@
 	let q = $state('');
 	let results = $state<SearchResults | null>(null);
 	let firstVisit = $state(false);
+	let clusterList = $state<Pin[] | null>(null);
+	let liveCount = $state<number | null>(null);
+	let recent = $state<string[]>([]);
 	const CATEGORIES = ['Software Engineering', 'Hardware & Semiconductor', 'Design', 'Product', 'Data & AI', 'QA & Testing',
 		'DevOps & IT', 'Sales', 'Marketing', 'Operations', 'Finance', 'Customer Support'];
 
@@ -41,13 +44,23 @@
 		timer = setTimeout(load, 250);
 	}
 
-	async function load() {
-		if (!map) return;
-		const b = map.getBounds();
-		const bounds = {
+	function viewBounds() {
+		const b = map!.getBounds();
+		return {
 			west: Math.max(-180, b.getWest()), south: Math.max(-90, b.getSouth()),
 			east: Math.min(180, b.getEast()), north: Math.min(90, b.getNorth())
 		};
+	}
+
+	// Pins (zoom 14 = never clustered) in the current view or a small box.
+	async function pinsIn(bounds: { west: number; south: number; east: number; north: number }, f: Filters): Promise<Pin[]> {
+		const g = await api.get<{ mode: string; items: Pin[] }>('/v1/globe', { ...bounds, zoom: 14, ...filtersToQuery(f) });
+		return g.mode === 'pins' ? g.items : [];
+	}
+
+	async function load() {
+		if (!map) return;
+		const bounds = viewBounds();
 		try {
 			const [g, list] = await Promise.all([
 				api.get<{ mode: 'pins' | 'clusters'; items: (Pin | Cluster)[]; updated_at?: string | null }>('/v1/globe', {
@@ -68,30 +81,78 @@
 		if (!map) return;
 		markers.forEach((m) => m.remove());
 		markers = [];
-		for (const it of items) {
+		if (mode === 'clusters') {
+			for (const c of items as Cluster[]) {
+				const el = bubble(c.companies ?? 0, c.matches ?? 0, c.open_jobs ?? 0, `${c.companies} companies, ${c.matches} matches. Zoom in.`);
+				el.onclick = () => openCluster(c);
+				add(el, c.lon, c.lat);
+			}
+			return;
+		}
+		// Companies placed at the same spot (often a city centre) share one bubble
+		// that opens a short list (S15); a lone company gets a pin.
+		const spots = new Map<string, Pin[]>();
+		for (const p of items as Pin[]) {
+			const k = `${(p.lat ?? 0).toFixed(4)},${(p.lon ?? 0).toFixed(4)}`;
+			spots.set(k, [...(spots.get(k) ?? []), p]);
+		}
+		for (const group of spots.values()) {
+			const p = group[0];
+			if (group.length > 1) {
+				const matches = group.reduce((n, g) => n + (g.matches ?? 0), 0);
+				const open = group.reduce((n, g) => n + (g.open_jobs ?? 0), 0);
+				const el = bubble(group.length, matches, open, `${group.length} companies here, ${matches} matches`);
+				el.onclick = () => {
+					clusterList = [...group].sort((a, b) => (b.matches ?? 0) - (a.matches ?? 0) || (b.open_jobs ?? 0) - (a.open_jobs ?? 0));
+					selected = null;
+					sheet = 'list';
+				};
+				add(el, p.lon, p.lat);
+				continue;
+			}
 			const el = document.createElement('button');
 			el.type = 'button';
-			if (mode === 'clusters') {
-				const c = it as Cluster;
-				el.className = `cluster ${clusterSize(c.companies ?? 0)}`;
-				el.textContent = String(c.companies ?? 0);
-				el.setAttribute('aria-label', `${c.companies} companies, ${c.matches} matches. Zoom in.`);
-				if (!(c.matches ?? 0)) el.style.background = (c.open_jobs ?? 0) > 0 ? 'var(--pin-hiring)' : 'var(--pin-idle)';
-				el.onclick = () => map?.easeTo({ center: [c.lon ?? 0, c.lat ?? 0], zoom: Math.min((map?.getZoom() ?? 3) + 2.5, 12), duration: 600 });
-				markers.push(new maplibregl.Marker({ element: el }).setLngLat([c.lon ?? 0, c.lat ?? 0]).addTo(map));
-			} else {
-				const p = it as Pin;
-				el.className = `pin ${pinKind(p)}${selected?.company_id === p.company_id ? ' sel' : ''}`;
-				el.style.position = 'static';
-				el.style.transform = 'none';
-				el.setAttribute('aria-label', `${p.name}, ${p.open_jobs} open jobs, ${p.matches} matches`);
-				el.onclick = () => select(p);
-				markers.push(new maplibregl.Marker({ element: el }).setLngLat([p.lon ?? 0, p.lat ?? 0]).addTo(map));
-			}
+			el.className = 'pin-hit';
+			const dot = document.createElement('span');
+			dot.className = `pin ${pinKind(p)}${selected?.company_id === p.company_id ? ' sel' : ''}`;
+			el.append(dot);
+			el.setAttribute('aria-label', `${p.name}, ${p.open_jobs} open jobs, ${p.matches} matches`);
+			el.onclick = () => select(p);
+			add(el, p.lon, p.lat);
 		}
 	}
 
+	function bubble(n: number, matches: number, open: number, label: string): HTMLButtonElement {
+		const el = document.createElement('button');
+		el.type = 'button';
+		el.className = `cluster ${clusterSize(n)}`;
+		el.textContent = String(n);
+		el.setAttribute('aria-label', label);
+		if (!matches) el.style.background = open > 0 ? 'var(--pin-hiring)' : 'var(--pin-idle)';
+		return el;
+	}
+
+	function add(el: HTMLElement, lon = 0, lat = 0) {
+		markers.push(new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map!));
+	}
+
+	async function openCluster(c: Cluster) {
+		if (!map) return;
+		const z = map.getZoom();
+		if (z < 9) {
+			map.easeTo({ center: [c.lon ?? 0, c.lat ?? 0], zoom: Math.min(z + 2.5, 12), duration: 600 });
+			return;
+		}
+		// Many companies at one address: show them as a short list (S15).
+		const d = 0.05;
+		const lat = c.lat ?? 0, lon = c.lon ?? 0;
+		clusterList = await pinsIn({ west: lon - d, south: lat - d, east: lon + d, north: lat + d }, filters).catch(() => []);
+		selected = null;
+		sheet = 'list';
+	}
+
 	function select(p: Pin) {
+		clusterList = null;
 		selected = p;
 		sheet = 'list';
 		refresh();
@@ -115,11 +176,22 @@
 		searchTimer = setTimeout(async () => {
 			try {
 				results = await api.get<SearchResults>('/v1/search', { q: text });
+				if (results.companies.length + results.jobs.length + results.cities.length) remember(text);
 			} catch {
 				results = null;
 			}
 		}, 200);
 	});
+
+	const RECENT = 'cg.recentSearches';
+	function remember(text: string) {
+		recent = [text, ...recent.filter((r) => r.toLowerCase() !== text.toLowerCase())].slice(0, 6);
+		try {
+			localStorage.setItem(RECENT, JSON.stringify(recent));
+		} catch {
+			/* ignore */
+		}
+	}
 
 	function flyToCity(lat?: number, lon?: number) {
 		if (lat == null || lon == null) return;
@@ -128,12 +200,29 @@
 		map?.flyTo({ center: [lon, lat], zoom: 10, duration: 900 });
 	}
 
+	let countTimer: ReturnType<typeof setTimeout> | undefined;
+	$effect(() => {
+		if (sheet !== 'filters' || !map) return;
+		const f = $state.snapshot(filters) as Filters;
+		clearTimeout(countTimer);
+		countTimer = setTimeout(async () => {
+			liveCount = (await pinsIn(viewBounds(), f).catch(() => [])).reduce(
+				(ids, p) => ids.add(p.company_id ?? 0), new Set<number>()
+			).size;
+		}, 250);
+	});
+
 	function applyFilters() {
 		sheet = 'list';
 		refresh();
 	}
 
 	onMount(() => {
+		try {
+			recent = JSON.parse(localStorage.getItem(RECENT) ?? '[]');
+		} catch {
+			recent = [];
+		}
 		try {
 			firstVisit = localStorage.getItem('cg.globeHint') !== '1';
 		} catch {
@@ -238,6 +327,22 @@
 			</section>
 		{/if}
 
+		{#if clusterList && sheet === 'list'}
+			<section class="preview" aria-label="Companies here">
+				<div style="display: flex; justify-content: space-between; align-items: center">
+					<h2 class="t-heading">{clusterList.length} companies here</h2>
+					<button class="icon-btn" aria-label="Close list" onclick={() => (clusterList = null)}><Icon name="x" /></button>
+				</div>
+				{#each clusterList as p (p.location_id)}
+					<button class="list-row plain" onclick={() => select(p)}>
+						<Logo name={p.name ?? ''} url={p.logo_url} size="sm" />
+						<span style="flex: 1; text-align: left"><b>{p.name}</b><br /><span class="t-caption t-3">{p.open_jobs} open</span></span>
+						<span class="num t-accent">{p.matches}</span>
+					</button>
+				{/each}
+			</section>
+		{/if}
+
 		{#if sheet === 'filters'}
 			<section class="sheet-body" aria-label="Filters">
 				<div style="display: flex; justify-content: space-between; align-items: center">
@@ -273,7 +378,7 @@
 					<span class="t-heading" style="font-size: 15px">Matches only</span>
 					<input type="checkbox" bind:checked={filters.matches} style="width: 22px; height: 22px; accent-color: var(--accent)" />
 				</label>
-				<button class="btn btn-primary btn-block" onclick={applyFilters}>Show companies</button>
+				<button class="btn btn-primary btn-block" onclick={applyFilters}>{liveCount == null ? 'Show companies' : `Show ${liveCount} ${liveCount === 1 ? 'company' : 'companies'}`}</button>
 			</section>
 		{:else if sheet === 'search'}
 			<section class="sheet-body" aria-label="Search">
@@ -282,6 +387,10 @@
 					<input class="input" placeholder="Companies, jobs, cities" bind:value={q} autofocus aria-label="Search" />
 					<button class="btn btn-text" onclick={() => { sheet = 'list'; q = ''; }}>Cancel</button>
 				</div>
+				{#if !results && recent.length}
+					<p class="t-caption t-2">RECENT</p>
+					<div class="chips">{#each recent as r (r)}<button class="chip" onclick={() => (q = r)}>{r}</button>{/each}</div>
+				{/if}
 				{#if results}
 					{#if results.cities.length}<p class="t-caption t-2">CITIES</p>{/if}
 					{#each results.cities as c (c.city)}
@@ -338,7 +447,7 @@
 	.plain { color: inherit; text-decoration: none; background: none; border-left: 0; border-right: 0; border-top: 0; width: 100%; font: inherit; cursor: pointer; }
 	.seg { border: 0; cursor: pointer; font: 700 13px var(--font); }
 	:global(.maplibregl-ctrl-attrib) { font-size: 10px; }
-	:global(.maplibregl-marker.cluster), :global(.maplibregl-marker.pin) { cursor: pointer; padding: 0; }
+	:global(.maplibregl-marker.cluster) { cursor: pointer; padding: 0; }
 	@media (min-width: 900px) {
 		.globe-page { flex-direction: row; height: 100vh; }
 		.panel { width: 440px; max-height: none; border-top: 0; border-left: 1px solid var(--line); }
