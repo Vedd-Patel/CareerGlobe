@@ -212,3 +212,20 @@ Jubilant FoodWorks,https://www.jubilantfoodworks.com,https://fa-exph-saasfaprod1
 QualityKiosk,https://qualitykiosk.com,https://qktech.com/careers/,Mumbai,Maharashtra,service,,
 Black Box,https://www.blackbox.com,https://eoje.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001,Mumbai,Maharashtra,service,oracle,verify: India office city
 Samsung R&D Institute India,https://research.samsung.com/sri-b,https://sec.wd3.myworkdayjobs.com/Samsung_Careers,Bengaluru,Karnataka,product,workday,verify: board is Samsung-wide; only India jobs are kept
+Wells Fargo,https://www.wellsfargo.com,https://www.wellsfargojobs.com,Hyderabad,Telangana,service,,verify: India offices in Hyderabad and Bengaluru; worldwide sitemap read for India URLs only
+Caterpillar,https://www.caterpillar.com,https://careers.caterpillar.com/en/,Chennai,Tamil Nadu,product,,verify: India office city; worldwide sitemap read for India URLs only
+Accor,https://group.accor.com,https://careers.accor.com/global/en/,Gurugram,Haryana,service,,verify: India office city; hotels across India
+Boston Consulting Group,https://www.bcg.com,https://careers.bcg.com/global/en,Mumbai,Maharashtra,service,,verify: India offices in Mumbai, Delhi, Bengaluru and Chennai
+Marsh McLennan,https://www.marshmclennan.com,https://careers.marsh.com/global/en,Mumbai,Maharashtra,service,,verify: India office city
+Nike,https://www.nike.com,https://careers.nike.com/,Bengaluru,Karnataka,product,,verify: India office city
+Trane Technologies,https://www.tranetechnologies.com,https://careers.tranetechnologies.com/global/en/home,Bengaluru,Karnataka,product,,verify: India office city
+Collins Aerospace,https://www.collinsaerospace.com,https://careers.rtx.com/global/en/collins-aerospace,Bengaluru,Karnataka,product,,verify: RTX-wide sitemap; India office city
+Thermo Fisher Scientific,https://www.thermofisher.com,https://jobs.thermofisher.com/global/en,Bengaluru,Karnataka,product,,verify: India office city
+Mihup,https://www.mihup.ai,https://mihup.keka.com/careers/,Bengaluru,Karnataka,product,keka,
+Mintifi,https://www.mintifi.com,https://mintifi.keka.com/careers/,Mumbai,Maharashtra,product,keka,verify: probed by name
+Loop Health,https://www.loophealth.com,https://loop.keka.com/careers/,Bengaluru,Karnataka,product,keka,verify: board name is just "loop"; check it is Loop Health
+Mosaic Wellness,https://www.mosaicwellness.in,https://mosaicwellness.keka.com/careers/,Mumbai,Maharashtra,product,keka,
+Zippee,https://zippee.delivery,https://zippee.keka.com/careers/,Gurugram,Haryana,product,keka,verify: website
+Unbox Robotics,https://unboxrobotics.com,https://unboxrobotics.keka.com/careers/,Pune,Maharashtra,product,keka,
+SolarSquare,https://www.solarsquare.in,https://solarsquare.keka.com/careers/,Mumbai,Maharashtra,product,keka,verify: city (most jobs are in Pune)
+Fourth Partner Energy,https://www.fourthpartner.co,https://fourthpartner.keka.com/careers/,Hyderabad,Telangana,product,keka,

@@ -1,0 +1,115 @@
+# Fourth batch of Indian companies to probe by name (see names.txt): SaaS, fintech, consumer,
+# health, edtech, logistics, gaming and media, deep tech and EV. Names already in any seed
+# list or discovered file were left out.
+
+
+# SaaS, developer and data tools
+Zipy
+Keploy
+Bureau ID
+Pagarbook
+Verloop
+Rezo.ai
+Mihup
+Fluid AI
+
+# Fintech and insurtech
+Uni
+Vayana
+CredAble
+Mintifi
+Progcap
+Fello
+Spenny
+Digit
+Loop
+Coverfox
+Zype
+Kiwi
+BankBazaar
+
+# Commerce, consumer and D2C
+Otipy
+Honasa
+Man Matters
+Mosaic Wellness
+Traya
+Bold Care
+Sleepyhead
+Titan Eye Plus
+Giva
+Melorra
+Chai Point
+Sirona
+Bummer
+XYXX
+Bombay Dyeing
+Hopscotch
+Tata Neu
+Vogo
+Drivezy
+Revv
+OLX India
+Quikr
+Housing
+Airbnb India
+Pickyourtrail
+TripFactory
+Goibibo
+
+# Health
+CloudPhysician
+Allo Health
+Gynoveda
+Kapiva
+Oziva
+Wellbeing Nutrition
+Agilus Diagnostics
+
+# Edtech and careers
+Embibe
+Masai
+Codingal
+Camp K12
+WhiteHat Jr
+Pesto
+Uplers
+Turing India
+
+# Logistics, mobility, supply chain
+Ekart
+TruckSuvidha
+Pidge
+Zippee
+Blitz
+BigHaat
+Arya Collateral
+WayCool
+Kisan Network
+
+# Gaming, media, social
+Gameskraft
+Junglee Games
+Loco
+Rooter
+Chingari
+FrontRow
+Koo
+
+# Deep tech, EV, space, climate
+Bolt.Earth
+Skyroot
+Bellatrix
+Tonbo
+Ati Motors
+Unbox Robotics
+Planys
+Niqo
+TagBox
+Sensegrass
+Stellapps
+SolarSquare
+Cleantech Solar
+Avaada
+Ampin
+Fourth Partner
