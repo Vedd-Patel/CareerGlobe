@@ -105,7 +105,7 @@ func (s *Server) preferences(w http.ResponseWriter, r *http.Request) error {
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ok(w, map[string]any{"categories": []string{}, "cities": []string{}, "anywhere": false,
 			"remote_ok": true, "seniority": []string{}, "min_salary": nil, "push_time": "08:00",
-			"push_enabled": true, "theme": "system", "saved": false})
+			"push_enabled": true, "theme": "light", "saved": false})
 	}
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (s *Server) updatePreferences(w http.ResponseWriter, r *http.Request) error
 	}
 	theme := in.Theme
 	if theme == "" {
-		theme = "system"
+		theme = "light"
 	}
 	if !slices.Contains([]string{"system", "light", "dark"}, theme) {
 		return badRequest("theme must be system, light or dark.")
