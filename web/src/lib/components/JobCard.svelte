@@ -12,7 +12,7 @@
 	const where = $derived([...(job.cities ?? []).slice(0, 2), workMode(job.work_mode)].filter(Boolean).join(' · ') || 'India');
 </script>
 
-<article class="card {job.closed ? 'closed-card' : ''}" style="align-items: flex-start">
+<article class="card lift {job.closed ? 'closed-card' : ''}" style="align-items: flex-start">
 	<ScoreRing score={job.score} size="sm" />
 	<a href="/jobs/{job.job_id}" style="flex: 1; min-width: 0; color: inherit; text-decoration: none; display: flex; flex-direction: column; gap: 4px">
 		<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
@@ -24,7 +24,7 @@
 	</a>
 	{#if onSave}
 		<button class="icon-btn" aria-label={job.saved ? 'Saved' : 'Save job'} aria-pressed={job.saved}
-			style={job.saved ? 'background: var(--accent); color: var(--on-accent); border-color: var(--accent)' : ''}
+			style={job.saved ? 'background: var(--accent-soft); color: var(--accent); border-color: transparent' : ''}
 			onclick={() => onSave?.(job.job_id)}>
 			<Icon name="bookmark" fill={job.saved} />
 		</button>

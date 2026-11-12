@@ -229,16 +229,22 @@
 			firstVisit = false;
 		}
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-		map = new maplibregl.Map({ container, style: mapStyle(), center: [79, 22], zoom: 3.2, attributionControl: { compact: true } });
+		// Start with all of India in view, whatever the screen shape.
+		map = new maplibregl.Map({
+			container, style: mapStyle(), bounds: [[67, 6], [98, 37]],
+			fitBoundsOptions: { padding: { top: 150, bottom: 24, left: 24, right: 24 } }, attributionControl: { compact: true }
+		});
 		map.on('style.load', () => map?.setProjection({ type: 'globe' }));
 		map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 		map.on('load', load);
 		map.on('moveend', refresh);
 		if (!reduced) {
-			// Slow idle spin (design: 1 turn / 120 s) until the first touch.
+			// Slow idle spin (design: 1 turn / 120 s) until the first touch, and only
+			// once zoomed out to the whole globe: the opening view of India stays put.
 			let spinning = true;
+			const home = map.getZoom();
 			const spin = () => {
-				if (!spinning || !map || map.getZoom() > 4) return;
+				if (!spinning || !map || map.getZoom() > home - 0.5) return;
 				const c = map.getCenter();
 				map.easeTo({ center: [c.lng + 3, c.lat], duration: 1000, easing: (t) => t });
 			};

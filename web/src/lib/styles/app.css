@@ -138,3 +138,14 @@ button.seg.on{background:var(--surface)}
 a.chip{text-decoration:none}
 select.chip{appearance:auto;padding-right:10px}
 .pin-hit{cursor:pointer;padding:6px;background:none;border:0;display:flex}.pin-hit .pin{position:static;transform:none}
+
+/* Motion: cards that open something lift a little; loading blocks shimmer; pages fade in. */
+.card,.tcard,.tile{transition:border-color .15s,box-shadow .15s,transform .15s}
+.card.lift:hover,a.card:hover,a .card:hover,.tcard:hover{border-color:color-mix(in srgb,var(--accent) 35%,var(--line));box-shadow:var(--shadow-raised);transform:translateY(-1px)}
+.chip,.icon-btn,.tab,.seg{transition:background-color .12s,color .12s,border-color .12s}
+.btn:active:not([disabled]),.icon-btn:active,.chip:active{transform:scale(.97)}
+.sk{background:linear-gradient(90deg,var(--skeleton) 25%,color-mix(in srgb,var(--skeleton) 55%,var(--surface)) 50%,var(--skeleton) 75%);background-size:200% 100%;animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{from{background-position:100% 0}to{background-position:-100% 0}}
+.page{animation:page-in .22s ease-out}
+@keyframes page-in{from{opacity:0;transform:translateY(6px)}}
+::selection{background:var(--accent-soft)}

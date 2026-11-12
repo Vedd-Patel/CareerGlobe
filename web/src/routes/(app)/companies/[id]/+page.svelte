@@ -43,7 +43,7 @@
 		for (const pt of pts) b.extend(pt);
 		const map = new maplibregl.Map({
 			container: el, style: mapStyle(), interactive: false, attributionControl: false,
-			...(pts.length > 1 ? { bounds: b, fitBoundsOptions: { padding: 40, maxZoom: 7 } } : { center: pts[0], zoom: 4.2 })
+			...(pts.length > 1 ? { bounds: b, fitBoundsOptions: { padding: 40, maxZoom: 7 } } : { center: pts[0], zoom: 3.4 })
 		});
 		for (const pt of pts) {
 			const m = document.createElement('span');
