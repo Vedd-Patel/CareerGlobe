@@ -40,7 +40,6 @@ DEFAULT_OUT = config.REPO_ROOT / "seeds" / "discovered.csv"
 # Job boards without an adapter yet: (ats name, link pattern). Supported boards
 # are found with adapters.detect().
 OTHER_BOARDS = [
-    ("ashby", re.compile(r"^https?://jobs\.ashbyhq\.com/[^/?#]+", re.I)),
     ("smartrecruiters", re.compile(r"^https?://(careers|jobs)\.smartrecruiters\.com/[^/?#]+", re.I)),
     ("recruitee", re.compile(r"^https?://[a-z0-9-]+\.recruitee\.com", re.I)),
     ("darwinbox", re.compile(r"^https?://[a-z0-9-]+\.darwinbox\.(in|com)", re.I)),
@@ -154,7 +153,7 @@ async def _try(client: PoliteClient, url: str) -> Found | None:
 def _board_url(link: str, ats: str) -> str:
     """A board link trimmed to the board itself (not one job on it)."""
     parts = urlsplit(link)
-    if ats in ("greenhouse", "lever", "lever_eu"):
+    if ats in ("greenhouse", "lever", "lever_eu", "ashby"):
         first = parts.path.strip("/").split("/")[0]
         if parts.path.startswith("/embed/"):
             return link

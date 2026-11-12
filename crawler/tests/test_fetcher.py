@@ -4,7 +4,7 @@ import time
 import httpx
 import pytest
 
-from fetcher import FetchError, PoliteClient, RobotsDisallowed
+from fetcher import BlockedHost, FetchError, PoliteClient, RobotsDisallowed, is_private_host
 
 UA = "CareerGlobeBot/0.1 (+https://github.com/Vedd-Patel/CareerGlobe)"
 pytestmark = pytest.mark.anyio
@@ -209,3 +209,34 @@ async def test_redirect_loop_becomes_fetch_error():
     async with client(server) as c:
         with pytest.raises(FetchError, match="TooManyRedirects"):
             await c.get("https://h.com/loop")
+
+
+def test_private_hosts_are_recognised():
+    for host in ["localhost", "127.0.0.1", "10.1.2.3", "192.168.0.10", "169.254.169.254", "[::1]", "db.internal",
+                 "printer.local", "0.0.0.0", "172.16.5.4"]:
+        assert is_private_host(host), host
+    for host in ["boards.greenhouse.io", "careers.example.com", "8.8.8.8", "internal.example.com"]:
+        assert not is_private_host(host), host
+
+
+async def test_never_fetches_a_private_address():
+    server = Server(lambda r: httpx.Response(200, json=[]))
+    async with client(server) as c:
+        with pytest.raises(BlockedHost):
+            await c.get("http://127.0.0.1:8080/healthz")
+        with pytest.raises(BlockedHost):
+            await c.get("http://169.254.169.254/latest/meta-data/")
+    assert server.requests == []  # not even robots.txt
+
+
+async def test_a_redirect_to_a_private_address_is_refused():
+    def handler(request):
+        if request.url.host == "careers.example.com":
+            return httpx.Response(302, headers={"Location": "http://localhost:5432/"})
+        return httpx.Response(200, text="secret")
+
+    server = Server(handler)
+    async with client(server) as c:
+        with pytest.raises(BlockedHost):
+            await c.get("https://careers.example.com/jobs")
+    assert "localhost/" not in server.paths()

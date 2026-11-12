@@ -10,9 +10,12 @@
 - Retries only on network errors, 429 and 5xx; a 429's Retry-After (up to
   MAX_RETRY_AFTER seconds) is waited out before the next request to that host.
 - An adapter can ask for a longer gap on a host that rate-limits (min_gap).
+- Never this machine or a private network: localhost, private and link-local
+  addresses are refused on every request, including each redirect hop.
 """
 
 import asyncio
+import ipaddress
 import logging
 import random
 import time
@@ -38,6 +41,30 @@ class FetchError(Exception):
 
 class RobotsDisallowed(FetchError):
     """robots.txt forbids this URL; skip and flag the company."""
+
+
+class BlockedHost(FetchError):
+    """The URL (or a redirect) points at this machine or a private network."""
+
+
+_LOCAL_SUFFIXES = (".localhost", ".local", ".internal", ".lan", ".home", ".corp")
+
+
+def is_private_host(host: str) -> bool:
+    """True for localhost, *.internal and the like, and for IP addresses that are
+    not public (loopback, private, link-local, reserved)."""
+    host = host.lower().rstrip(".").strip("[]")
+    if host == "localhost" or host.endswith(_LOCAL_SUFFIXES):
+        return True
+    try:
+        return not ipaddress.ip_address(host).is_global
+    except ValueError:
+        return False
+
+
+async def _refuse_private(request: httpx.Request) -> None:
+    if is_private_host(request.url.host):
+        raise BlockedHost(f"refused: {request.url.host} is not a public host")
 
 
 class _Retryable(Exception):
@@ -94,6 +121,7 @@ class PoliteClient:
             timeout=timeout,
             follow_redirects=True,
             transport=transport,
+            event_hooks={"request": [_refuse_private]},  # runs for every redirect hop too
         )
 
     async def __aenter__(self) -> "PoliteClient":
@@ -163,6 +191,8 @@ class PoliteClient:
     async def _load_robots(self, host: _Host, origin: str) -> Robots:
         try:
             resp = await self._request(host, "GET", f"{origin}/robots.txt", {})
+        except BlockedHost:
+            raise
         except FetchError as e:
             # Unreachable robots.txt: don't guess, fail this company tonight.
             raise FetchError(f"robots.txt unavailable for {origin}: {e}") from e

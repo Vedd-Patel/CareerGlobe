@@ -1,0 +1,105 @@
+# Third batch of Indian companies to probe by name (see names.txt): AI and developer tools,
+# deep tech, EV and space, fintech, consumer brands, logistics, edtech, SaaS, IT services.
+# Names already in names.txt, names2.txt or seeds/companies.csv were left out.
+
+
+# AI and developer tools
+Composio
+LambdaTest
+Murf AI
+Ema
+Giga ML
+Maxim AI
+Portkey
+Lyzr
+Neysa
+Locus
+Atomicwork
+SuperOps
+Facilio
+Toplyne
+Factors.ai
+Nektar
+Zuddl
+Airmeet
+Wingman
+Clientell
+Pepper Content
+Fittr
+Agnikul
+BluSmart
+Zypp Electric
+
+# Fintech
+MoneyView
+Lentra
+Nova Benefits
+
+# Consumer, commerce, D2C
+EatClub
+Snabbit
+Pronto
+The Sleep Company
+InShorts
+Zupee
+Kutumb
+STAGE
+
+# Logistics, mobility, travel
+LetsTransport
+Shipsy
+FarEye
+LogiNext
+Cleartrip
+redBus
+AbhiBus
+Namma Yatri
+
+# Edtech and HR tech
+PhysicsWallah
+Leverage Edu
+AlmaBetter
+Crio.Do
+Keka
+Awign
+Betterplace
+Vahan
+
+# SaaS and enterprise
+Innovapptive
+Amagi
+Cohesity India
+Rubrik India
+Nutanix India
+Securonix
+Scrut
+AppsForBharat
+Absolute
+
+# Semiconductors, hardware, deep tech
+Mindgrove
+Sankhya Labs
+Newgen Software
+Intellect Design Arena
+Ramco Systems
+Tanla Platforms
+eMudhra
+LTIMindtree
+Thoughtworks India
+Bridgei2i
+Lumiq
+Addverb
+GreyOrange
+Systemantics
+CynLr
+Niqo Robotics
+Miko
+NewSpace Research
+Sedemac
+Matter
+Raptee
+Emotorad
+Zenatix
+SenseHawk
+Ecozen
+Oorja

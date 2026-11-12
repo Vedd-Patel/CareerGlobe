@@ -1,9 +1,9 @@
-"""Find job boards by company name on the ATSs with public APIs.
+"""Find job boards by company name on the ATSs with public boards.
 
-    python probe_boards.py --names ../seeds/names.txt [--out ../seeds/discovered_boards.csv]
+    python probe_boards.py --names ../seeds/names.txt [--out ../seeds/discovered_boards.csv] [--ats ashby]
 
 Input: one company name per line ("Name" or "Name,website"). For each name a few
-slug spellings are tried on Greenhouse, Lever, Workable and Keka (one request
+slug spellings are tried on Greenhouse, Lever, Workable, Keka and Ashby (one request
 each, through the polite client: robots.txt, 1-2 s per host). A board is kept
 only when it has jobs and at least MIN_INDIA_SHARE of its located jobs are in
 India, so a foreign company with the same name is not picked up. Output rows
@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import config
-from adapters import ADAPTERS
+from adapters import ADAPTERS, ashby
 from fetcher import FetchError, PoliteClient
 
 log = logging.getLogger("probe")
@@ -32,8 +32,9 @@ PUBLIC_URL = {
     "lever": "https://jobs.lever.co/{slug}",
     "workable": "https://apply.workable.com/{slug}/",
     "keka": "https://{slug}.keka.com/careers/",
+    "ashby": "https://jobs.ashbyhq.com/{slug}",
 }
-ORDER = ["greenhouse", "lever", "workable", "keka"]
+ORDER = ["greenhouse", "lever", "workable", "keka", "ashby"]
 
 
 @dataclass
@@ -63,8 +64,12 @@ def slugs(name: str) -> list[str]:
 async def try_board(client: PoliteClient, ats: str, slug: str) -> Hit | None:
     adapter = ADAPTERS[ats]
     try:
-        res = await client.get(adapter.board_url(slug))
-        jobs = adapter.parse(res.json(), slug)
+        if ats == "ashby":  # a page, not a JSON API
+            res = await client.get(ashby.board_page(slug))
+            jobs = ashby.parse_list(res.content.decode("utf-8", "replace"), slug)
+        else:
+            res = await client.get(adapter.board_url(slug))
+            jobs = adapter.parse(res.json(), slug)
     except (FetchError, ValueError, Exception) as e:  # 404s and odd pages mean "no board here"
         log.debug("%s %s: %s", ats, slug, type(e).__name__)
         return None
@@ -76,8 +81,8 @@ async def try_board(client: PoliteClient, ats: str, slug: str) -> Hit | None:
     return Hit(ats, slug, len(jobs), len(india), cities.most_common(1)[0][0] if cities else "")
 
 
-async def probe(client: PoliteClient, name: str) -> Hit | None:
-    for ats in ORDER:
+async def probe(client: PoliteClient, name: str, order: list[str] = ORDER) -> Hit | None:
+    for ats in order:
         for slug in slugs(name):
             hit = await try_board(client, ats, slug)
             if hit:
@@ -104,10 +109,15 @@ async def main(argv=None) -> int:
     p.add_argument("--out", type=Path, default=config.REPO_ROOT / "seeds" / "discovered_boards.csv")
     p.add_argument("--seeds", type=Path, default=config.REPO_ROOT / "seeds" / "companies.csv",
                    help="names already in this file are skipped")
+    p.add_argument("--ats", default=",".join(ORDER),
+                   help="comma-separated boards to try, in order (default: all)")
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     logging.getLogger("httpx").setLevel(logging.WARNING)
     settings = config.load()
+    order = [a.strip() for a in args.ats.split(",") if a.strip()]
+    if unknown := [a for a in order if a not in ORDER]:
+        p.error(f"unknown board(s): {', '.join(unknown)}; choose from {', '.join(ORDER)}")
     skip = {r["name"].lower() for r in csv.DictReader(args.seeds.open())} if args.seeds.exists() else set()
     names = read_names(args.names, skip)
     log.info("probing %d names", len(names))
@@ -117,7 +127,7 @@ async def main(argv=None) -> int:
                             settings.max_gap_seconds, timeout=20, max_attempts=2) as client:
         async def one(name, site):
             async with slots:
-                hit = await probe(client, name)
+                hit = await probe(client, name, order)
                 if hit:
                     log.info("%-28s %-10s %-24s %4d jobs, %d in India", name, hit.ats, hit.slug, hit.jobs, hit.india)
                 return name, site, hit
