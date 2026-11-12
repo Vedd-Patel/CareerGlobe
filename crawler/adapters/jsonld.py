@@ -6,7 +6,9 @@ careers URL itself.
 1. The careers page: any JobPosting objects in its JSON-LD are jobs already.
 2. The careers host's sitemaps (robots.txt Sitemap: lines, else /sitemap.xml;
    indexes followed, same host only): URLs under the careers path or with a
-   job-like path segment are candidate job pages.
+   job-like path segment are candidate job pages. A worldwide sitemap with more
+   than MAX_JOB_URLS of them is narrowed to URLs whose path names India, an
+   Indian state or a known Indian city (/job/bengaluru/..., /in/en/...-pune-...).
 3. A candidate page is fetched only when it is new to us or its <lastmod>
    changed (at most MAX_NEW_DETAILS a night); unchanged ones are kept as
    partial. A fetched page counts as a job only if it has a JobPosting that
@@ -28,7 +30,7 @@ from urllib.parse import urljoin, urlsplit
 from selectolax.lexbor import LexborHTMLParser
 
 from adapters.base import ParseError, RawJob
-from clean import annual_inr, cities_from, clean_html, work_mode_from
+from clean import CITY_RE, INDIAN_STATES, annual_inr, cities_from, clean_html, work_mode_from
 from fetcher import FetchError
 from urls import canonicalize
 
@@ -42,6 +44,7 @@ _JOBISH = re.compile(r"/(jobs?|careers?|openings?|positions?|vacanc\w*|requisiti
 _INDIA = {"in", "ind", "india"}
 _PERIODS = {"YEAR": "year", "MONTH": "month"}
 _URL_BLOCK = re.compile(r"<(url|sitemap)>(.*?)</\1>", re.S | re.IGNORECASE)
+_INDIA_PATH = re.compile(rf"\b(india|{INDIAN_STATES})\b", re.IGNORECASE)
 _TAG = {k: re.compile(rf"<{k}>\s*(.*?)\s*</{k}>", re.S | re.IGNORECASE) for k in ("loc", "lastmod")}
 
 
@@ -178,8 +181,19 @@ async def sitemap_pages(client, careers_url: str) -> list[tuple[str, str | None]
         preferred = [c for c in children if re.search(r"job|career|position|vacanc", c, re.IGNORECASE)]
         queue += preferred or children
     if len(pages) > MAX_JOB_URLS:
-        raise ParseError(f"jsonld: {len(pages)} job-like sitemap URLs (> {MAX_JOB_URLS}); path filter too loose?")
+        india = {u: m for u, m in pages.items() if india_path(u)}
+        if not india or len(india) > MAX_JOB_URLS:
+            raise ParseError(f"jsonld: {len(pages)} job-like sitemap URLs (> {MAX_JOB_URLS}), "
+                             f"{len(india)} with India in the path; path filter too loose?")
+        log.info("jsonld %s: %d of %d sitemap job URLs name an Indian place", parts.netloc, len(india), len(pages))
+        pages = india
     return list(pages.items())
+
+
+def india_path(url: str) -> bool:
+    """The URL path names India, an Indian state or a known Indian city."""
+    path = re.sub(r"[-_/+.]+|%20", " ", urlsplit(url).path)
+    return bool(_INDIA_PATH.search(path) or CITY_RE.search(path))
 
 
 # --- One company --------------------------------------------------------------------------

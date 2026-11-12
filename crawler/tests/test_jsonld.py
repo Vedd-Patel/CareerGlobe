@@ -178,3 +178,42 @@ async def test_one_job_url_listed_per_city_becomes_one_job():
     async with client(site) as c:
         jobs = await jsonld.fetch(c, CAREERS, {})
     assert [(j.title, j.cities) for j in jobs] == [("Account Manager", ["Noida", "Kolkata"])]
+
+
+@pytest.mark.parametrize("url, want", [
+    ("https://jobs.acme.example/job/bengaluru/software-engineer/123", True),
+    ("https://acme.example/en/jobs/R1-pune-maharashtra-india", True),
+    ("https://acme.example/jobs/gurgaon_hr/9", True),
+    ("https://acme.example/careers/job/chennai%20office/2", True),
+    ("https://acme.example/job/new-york/sre/1", False),
+    ("https://acme.example/job/indianapolis/1", False),  # not India
+    ("https://acme.example/job/paris/7", False),
+])
+def test_india_path(url, want):
+    assert jsonld.india_path(url) == want
+
+
+def worldwide_sitemap(cities):
+    urls = "".join(f"<url><loc>https://acme.example/careers/jobs/{c}-{i}</loc></url>" for i, c in enumerate(cities))
+    return f'<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
+
+
+@pytest.mark.anyio
+async def test_a_worldwide_sitemap_over_the_cap_keeps_india_urls(monkeypatch):
+    monkeypatch.setattr(jsonld, "MAX_JOB_URLS", 4)
+    site = FakeSite()
+    site.sitemap = worldwide_sitemap(["london", "austin", "pune", "dublin", "bengaluru", "tokyo"])
+    async with client(site) as c:
+        pages = await jsonld.sitemap_pages(c, CAREERS)
+    assert sorted(u for u, _ in pages) == ["https://acme.example/careers/jobs/bengaluru-4",
+                                           "https://acme.example/careers/jobs/pune-2"]
+
+
+@pytest.mark.anyio
+async def test_a_sitemap_over_the_cap_without_india_urls_still_fails(monkeypatch):
+    monkeypatch.setattr(jsonld, "MAX_JOB_URLS", 2)
+    site = FakeSite()
+    site.sitemap = worldwide_sitemap(["london", "austin", "dublin", "tokyo"])
+    async with client(site) as c:
+        with pytest.raises(ParseError, match="0 with India in the path"):
+            await jsonld.sitemap_pages(c, CAREERS)
