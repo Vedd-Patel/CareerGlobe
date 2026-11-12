@@ -63,5 +63,7 @@ sw.addEventListener('push', (event) => {
 
 sw.addEventListener('notificationclick', (event) => {
 	event.notification.close();
-	event.waitUntil(sw.clients.openWindow(event.notification.data?.link ?? '/matches'));
+	// Only ever open a page of this app, whatever the push message says.
+	const link = String(event.notification.data?.link ?? '');
+	event.waitUntil(sw.clients.openWindow(/^\/[a-z0-9]/i.test(link) ? link : '/matches'));
 });

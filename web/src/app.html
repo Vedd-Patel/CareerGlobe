@@ -10,13 +10,7 @@
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/icon-192.png" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
-		<script>
-			try {
-				const t = localStorage.getItem('cg.theme');
-				// Light unless the member picked dark or system in Settings (S29).
-				if (t !== 'system') document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
-			} catch {}
-		</script>
+		<script src="%sveltekit.assets%/theme.js"></script>
 		<title>CareerGlobe</title>
 		%sveltekit.head%
 	</head>

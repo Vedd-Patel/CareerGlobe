@@ -17,6 +17,8 @@ import {
 } from 'firebase/auth';
 import { DEV_AUTH, FIREBASE, firebaseConfigured } from '$lib/config';
 import { setTokenSource } from '$lib/api/client';
+import { account } from '$lib/account.svelte';
+import { prefs } from '$lib/prefs.svelte';
 
 export type SessionUser = { uid: string; email: string | null; name: string | null; emailVerified: boolean };
 
@@ -118,6 +120,31 @@ export async function signOut(): Promise<void> {
 		/* ignore */
 	}
 	session.user = null;
+	await forgetPrivateData();
+}
+
+// Device settings that are not about a person and survive sign-out.
+const KEPT_KEYS = ['cg.theme', 'cg.device', 'cg.globeHint'];
+
+/** Drops everything kept on this device about the signed-out person: what is
+ * in memory, the service worker's offline copies of API answers, and recent
+ * searches, so the next person to use this browser cannot read them. */
+export async function forgetPrivateData(): Promise<void> {
+	prefs.value = null;
+	account.me = null;
+	account.state = 'signed_out';
+	try {
+		if (typeof caches !== 'undefined') await caches.delete('data-v1');
+	} catch {
+		/* ignore */
+	}
+	try {
+		for (const k of Object.keys(localStorage)) {
+			if (k.startsWith('cg.') && !KEPT_KEYS.includes(k)) localStorage.removeItem(k);
+		}
+	} catch {
+		/* ignore */
+	}
 }
 
 /** Firebase error codes in words. */
