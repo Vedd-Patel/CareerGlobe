@@ -67,8 +67,8 @@ func (s *Server) adminUpdateSource(w http.ResponseWriter, r *http.Request) error
 	if err := decode(r, &in); err != nil {
 		return err
 	}
-	if !strings.HasPrefix(in.CareersURL, "https://") && !strings.HasPrefix(in.CareersURL, "http://") {
-		return badRequest("careers_url must be an http(s) URL.")
+	if !publicURL(in.CareersURL) {
+		return badRequest("careers_url must be an http(s) URL on a public host.")
 	}
 	if !slices.Contains(sourceStatuses, in.Status) {
 		return badRequest("Unknown status.")
@@ -111,8 +111,11 @@ func (s *Server) adminCreateCompany(w http.ResponseWriter, r *http.Request) erro
 		return err
 	}
 	name := strings.TrimSpace(in.Name)
-	if name == "" || !strings.HasPrefix(in.CareersURL, "http") {
-		return badRequest("name and careers_url are required.")
+	if name == "" || len(name) > 200 || !publicURL(in.CareersURL) {
+		return badRequest("name and a public http(s) careers_url are required.")
+	}
+	if in.Website != nil && *in.Website != "" && !publicURL(*in.Website) {
+		return badRequest("website must be an http(s) URL on a public host.")
 	}
 	if in.Type != nil && !slices.Contains([]string{"product", "service", "both"}, *in.Type) {
 		return badRequest("type must be product, service or both.")

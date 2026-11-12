@@ -2,7 +2,7 @@
 //
 // Who can call what:
 //   - public: GET /healthz, GET /v1/public/stats (landing page counters, no
-//     user data), POST /v1/access/verify (rate limited)
+//     user data), POST /v1/access/verify (5 failed tries per 15 minutes)
 //   - signed in with Firebase, no code yet: POST /v1/access/redeem
 //   - members (Firebase token AND a non-revoked access code): everything else under /v1
 //   - admins (member + UID on ADMIN_FIREBASE_UIDS): /v1/admin/...
@@ -40,17 +40,25 @@ type Config struct {
 	Origins       []string
 	IPHeader      string
 	PolicyVersion string
+	// RatePerMinute is the request budget per client IP (0 = no limit; tests).
+	RatePerMinute int
 }
 
 // Server is the API.
 type Server struct {
-	cfg Config
-	q   *db.Queries
+	cfg     Config
+	q       *db.Queries
+	limit   *limiter // every request, per client IP
+	uploads *limiter // resume uploads, per member
+	reports *limiter // "report a problem", per member
 }
 
 // New returns the API's root handler.
 func New(cfg Config) http.Handler {
-	s := &Server{cfg: cfg}
+	s := &Server{cfg: cfg, uploads: newLimiter(1, 10), reports: newLimiter(2, 20)}
+	if cfg.RatePerMinute > 0 {
+		s.limit = newLimiter(cfg.RatePerMinute, cfg.RatePerMinute/2)
+	}
 	if cfg.Pool != nil {
 		s.q = db.New(cfg.Pool)
 	}
@@ -59,7 +67,7 @@ func New(cfg Config) http.Handler {
 	if s.q != nil {
 		s.routes(mux)
 	}
-	return s.logged(s.cors(mux))
+	return s.logged(s.secured(s.cors(s.throttled(mux))))
 }
 
 func (s *Server) routes(mux *http.ServeMux) {
@@ -81,7 +89,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	member("DELETE /v1/companies/{id}/save", s.unsaveCompany)
 	member("GET /v1/jobs/{id}", s.job)
 	member("GET /v1/search", s.search)
-	member("POST /v1/reports", s.report)
+	member("POST /v1/reports", s.perUser(s.reports, s.report))
 
 	member("GET /v1/matches", s.matches)
 	member("POST /v1/matches/{job_id}/seen", s.matchSeen)
@@ -102,7 +110,7 @@ func (s *Server) routes(mux *http.ServeMux) {
 	member("GET /v1/preferences", s.preferences)
 	member("PUT /v1/preferences", s.updatePreferences)
 	member("GET /v1/resume", s.resumeInfo)
-	member("POST /v1/resume", s.uploadResume)
+	member("POST /v1/resume", s.perUser(s.uploads, s.uploadResume))
 	member("GET /v1/consents", s.consents)
 	member("POST /v1/push-tokens", s.addPushToken)
 	member("DELETE /v1/push-tokens", s.deletePushToken)

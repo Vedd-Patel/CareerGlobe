@@ -55,7 +55,7 @@ func run() error {
 			return err
 		}
 		verifier = fb
-	} else if os.Getenv("DEV_AUTH") == "1" {
+	} else if cfg.DevAuth {
 		slog.Warn("DEV_AUTH=1: accepting dev:<uid>:<email> tokens (local development only)")
 		verifier = auth.Dev{}
 	} else {
@@ -79,7 +79,7 @@ func run() error {
 		Handler: server.New(server.Config{
 			DB: pool, Pool: pool, Access: access.NewService(pool, hasher), Verifier: verifier, Resumes: resumes,
 			Admins: cfg.AdminUIDs, OpsToken: cfg.OpsToken, Origins: cfg.WebOrigins, IPHeader: cfg.TrustProxyHeader,
-			PolicyVersion: cfg.PolicyVersion,
+			PolicyVersion: cfg.PolicyVersion, RatePerMinute: cfg.RatePerMinute,
 		}),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       30 * time.Second,

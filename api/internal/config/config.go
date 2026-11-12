@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -24,6 +26,8 @@ type Config struct {
 	PolicyVersion    string
 	HealthMatchURL   string
 	TrustProxyHeader string // header with the client IP set by Cloudflare
+	RatePerMinute    int    // RATE_LIMIT_PER_MINUTE: requests per client IP (default 600, 0 = off)
+	DevAuth          bool   // DEV_AUTH=1: local development sign-in
 }
 
 // Load reads the environment. Required: a database URL and the access-code
@@ -40,6 +44,27 @@ func Load() (Config, error) {
 		PolicyVersion:    first(os.Getenv("PRIVACY_POLICY_VERSION"), "2026-10-01"),
 		HealthMatchURL:   os.Getenv("HEALTHCHECK_MATCH_URL"),
 		TrustProxyHeader: first(os.Getenv("CLIENT_IP_HEADER"), "CF-Connecting-IP"),
+	}
+	c.RatePerMinute = 600
+	if v := os.Getenv("RATE_LIMIT_PER_MINUTE"); v != "" {
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 0 {
+			return c, errors.New("RATE_LIMIT_PER_MINUTE must be a number (0 turns the limit off)")
+		}
+		c.RatePerMinute = n
+	}
+	if os.Getenv("DEV_AUTH") == "1" {
+		// The dev sign-in accepts any name, so it must never run where the
+		// public can reach it: only with no Firebase project and local web origins.
+		if c.FirebaseProject != "" {
+			return c, errors.New("DEV_AUTH=1 cannot be combined with FIREBASE_PROJECT_ID")
+		}
+		for _, o := range c.WebOrigins {
+			if !localOrigin(o) {
+				return c, fmt.Errorf("DEV_AUTH=1 is for local development only, but WEB_ORIGINS has %s", o)
+			}
+		}
+		c.DevAuth = true
 	}
 	if c.DatabaseURL == "" {
 		return c, errors.New("API_DATABASE_URL or DATABASE_URL must be set")
@@ -72,6 +97,15 @@ func decode(name string, minLen int) ([]byte, error) {
 		return nil, fmt.Errorf("%s must decode to at least %d bytes", name, minLen)
 	}
 	return b, nil
+}
+
+func localOrigin(origin string) bool {
+	u, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+	h := u.Hostname()
+	return h == "localhost" || h == "127.0.0.1" || h == "::1"
 }
 
 func first(vals ...string) string {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -35,6 +36,13 @@ type handler func(w http.ResponseWriter, r *http.Request) error
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := h(w, r)
 	if err == nil {
+		return
+	}
+	var re *rateError
+	if errors.As(err, &re) {
+		w.Header().Set("Retry-After", strconv.Itoa(max(1, int(math.Ceil(re.wait.Seconds())))))
+		writeJSON(w, http.StatusTooManyRequests, map[string]string{"error": "rate_limited",
+			"message": "Too many requests. Slow down and try again."})
 		return
 	}
 	var ae *apiError
