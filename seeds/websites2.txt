@@ -1,0 +1,152 @@
+# Second batch of company websites for discover.py: large Indian groups, banks and
+# insurers, pharma and hospitals, energy, retail, IT services, global capability centres, PSUs.
+# Run: crawler/.venv/bin/python crawler/discover.py --websites seeds/websites2.txt
+
+
+# Large Indian groups and listed companies
+Tata Digital,https://www.tatadigital.com
+Aditya Birla Group,https://www.adityabirla.com
+Grasim,https://www.grasim.com
+Godrej & Boyce,https://www.godrej.com
+Hyundai Motor India,https://www.hyundai.com/in/en
+Apollo Tyres,https://www.apollotyres.com
+MRF,https://www.mrftyres.com
+CEAT,https://www.ceat.com
+Varun Beverages,https://www.varunbeverages.com
+United Breweries,https://www.unitedbreweries.com
+Crompton,https://www.crompton.co.in
+Blue Star,https://www.bluestarindia.com
+Dr. Reddy's Laboratories,https://www.drreddys.com
+Aurobindo Pharma,https://www.aurobindo.com
+Serum Institute of India,https://www.seruminstitute.com
+Bharat Biotech,https://www.bharatbiotech.com
+Piramal,https://www.piramal.com
+Manipal Hospitals,https://www.manipalhospitals.com
+Narayana Health,https://www.narayanahealth.org
+Aster DM Healthcare,https://www.asterdmhealthcare.com
+
+# Banks, insurance, financial services
+Federal Bank,https://www.federalbank.co.in
+RBL Bank,https://www.rblbank.com
+AU Small Finance Bank,https://www.aubank.in
+Bandhan Bank,https://bandhanbank.com
+State Bank of India,https://sbi.co.in
+ICICI Prudential Life,https://www.iciciprulife.com
+SBI Life,https://www.sbilife.co.in
+Max Life Insurance,https://www.maxlifeinsurance.com
+Star Health Insurance,https://www.starhealth.in
+Tata AIA Life,https://www.tataaia.com
+Tata AIG,https://www.tataaig.com
+HDFC ERGO,https://www.hdfcergo.com
+Niva Bupa,https://www.nivabupa.com
+Care Health Insurance,https://www.careinsurance.com
+Shriram Finance,https://www.shriramfinance.in
+Cholamandalam,https://www.cholamandalam.com
+L&T Finance,https://www.ltfs.com
+Tata Capital,https://www.tatacapital.com
+Piramal Finance,https://www.piramalfinance.com
+Poonawalla Fincorp,https://poonawallafincorp.com
+IIFL,https://www.iifl.com
+Motilal Oswal,https://www.motilaloswal.com
+Nuvama,https://www.nuvama.com
+360 ONE,https://www.360.one
+NPCI,https://www.npci.org.in
+CAMS,https://www.camsonline.com
+KFintech,https://www.kfintech.com
+
+# Telecom, media, energy, infrastructure
+Vodafone Idea,https://www.myvi.in
+Indus Towers,https://www.industowers.com
+Sterlite Technologies,https://stl.tech
+HFCL,https://www.hfcl.com
+Zee Entertainment,https://www.zee.com
+Sony Pictures Networks India,https://www.sonypicturesnetworks.com
+HT Media,https://www.htmedia.in
+The Hindu Group,https://www.thehindugroup.com
+Saregama,https://www.saregama.com
+PVR INOX,https://www.pvrcinemas.com
+Power Grid,https://www.powergrid.in
+ONGC,https://ongcindia.com
+Indian Oil,https://iocl.com
+BPCL,https://www.bharatpetroleum.in
+HPCL,https://www.hindustanpetroleum.com
+GAIL,https://gailonline.com
+ReNew,https://www.renew.com
+DLF,https://www.dlf.in
+Godrej Properties,https://www.godrejproperties.com
+Prestige Group,https://www.prestigeconstructions.com
+Lodha,https://www.lodhagroup.com
+Brigade Group,https://www.brigadegroup.com
+Sobha,https://www.sobha.com
+IndiGo,https://www.goindigo.in
+Akasa Air,https://www.akasaair.com
+SpiceJet,https://www.spicejet.com
+Blue Dart,https://www.bluedart.com
+Gati,https://www.gati.com
+TCI,https://www.tcil.com
+Mahindra Logistics,https://mahindralogistics.com
+Safexpress,https://www.safexpress.com
+DTDC,https://www.dtdc.in
+
+# Retail, consumer
+Aditya Birla Fashion and Retail,https://www.abfrl.com
+Arvind,https://www.arvind.com
+Page Industries,https://pageind.com
+Bata India,https://www.bata.com/in
+Metro Brands,https://metrobrands.com
+Jubilant FoodWorks,https://www.jubilantfoodworks.com
+Devyani International,https://dil-rjcorp.com
+Westlife Foodworld,https://www.westlife.co.in
+Croma,https://www.croma.com
+Vijay Sales,https://www.vijaysales.com
+Decathlon India,https://www.decathlon.in
+
+# IT services, consulting, GCCs
+Cognizant,https://www.cognizant.com/in/en
+Infosys BPM,https://www.infosysbpm.com
+UST,https://www.ust.com
+GlobalLogic,https://www.globallogic.com
+Xoriant,https://www.xoriant.com
+Harbinger Group,https://www.harbingergroup.com
+Altimetrik,https://www.altimetrik.com
+Incedo,https://www.incedoinc.com
+Brillio,https://www.brillio.com
+Ness Digital Engineering,https://www.ness.com
+Kellton,https://www.kellton.com
+Aspire Systems,https://www.aspiresys.com
+Kanini,https://kanini.com
+Bounteous x Accolite,https://www.bounteous.com
+Nisum,https://www.nisum.com
+Encora,https://www.encora.com
+Apexon,https://www.apexon.com
+Innominds,https://www.innominds.com
+ValueLabs,https://www.valuelabs.com
+Technogen,https://www.technogeninc.com
+Cigniti,https://www.cigniti.com
+QualityKiosk,https://qualitykiosk.com
+Datamatics,https://www.datamatics.com
+Aurionpro,https://www.aurionpro.com
+Black Box,https://www.blackbox.com
+Rategain,https://rategain.com
+MapmyIndia,https://www.mapmyindia.com
+CE Info Systems,https://www.mappls.com
+Target in India,https://india.target.com
+Tesco Bengaluru,https://www.tescobengaluru.com
+Fidelity Investments India,https://www.fidelity.co.in
+Standard Chartered GBS,https://www.sc.com/in
+Samsung R&D Institute India,https://research.samsung.com/sri-b
+MediaTek India,https://www.mediatek.com
+NXP India,https://www.nxp.com
+Collins Aerospace India,https://www.collinsaerospace.com
+Rolls-Royce India,https://www.rolls-royce.com/country-sites/india.aspx
+Thermo Fisher India,https://www.thermofisher.com/in/en
+
+# Defence, PSU technology, research
+ISRO,https://www.isro.gov.in
+C-DOT,https://www.cdot.in
+C-DAC,https://www.cdac.in
+Bharat Dynamics,https://bdl-india.in
+Mazagon Dock,https://mazagondock.in
+BHEL,https://www.bhel.com
+RailTel,https://www.railtel.in
+TCIL,https://www.tcil.net.in

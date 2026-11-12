@@ -195,3 +195,20 @@ Zuddl,https://www.zuddl.com,https://zuddl.keka.com/careers/,Hyderabad,Telangana,
 Shipsy,https://shipsy.io,https://shipsy.keka.com/careers/,Gurugram,Haryana,product,keka,
 Scrut Automation,https://www.scrut.io,https://scrut.keka.com/careers/,Bengaluru,Karnataka,product,keka,verify: probed by name
 Rubrik,https://www.rubrik.com,https://boards.greenhouse.io/rubrik,Bengaluru,Karnataka,product,greenhouse,verify: global HQ is in the US; Bengaluru is the main India office
+Bugcrowd,https://www.bugcrowd.com,https://boards.greenhouse.io/bugcrowd,Bengaluru,Karnataka,product,greenhouse,verify: global HQ is in the US; Bengaluru is the India office
+Nirmata,https://nirmata.com,https://boards.greenhouse.io/nirmata,Bengaluru,Karnataka,product,greenhouse,verify: global HQ is in the US
+Dun & Bradstreet,https://www.dnb.com,https://jobs.lever.co/dnb,Mumbai,Maharashtra,service,lever,verify: India office city
+Renesas,https://www.renesas.com,https://jobs.renesas.com,Bengaluru,Karnataka,product,,verify: global HQ is in Japan; India office city
+Experian,https://www.experian.com,https://jobs.experian.com/jobs,Hyderabad,Telangana,product,,verify: India office city
+Veeam,https://www.veeam.com,https://careers.veeam.com,Bengaluru,Karnataka,product,,verify: India office city
+Okta,https://www.okta.com,https://www.okta.com/company/careers/,Bengaluru,Karnataka,product,,verify: global HQ is in the US; India office city
+Chevron,https://www.chevron.com,https://careers.chevron.com,Bengaluru,Karnataka,both,,verify: Bengaluru is the engineering and innovation centre
+Optiver,https://www.optiver.com,https://www.optiver.com/join-us/jobs/,Mumbai,Maharashtra,product,,verify: global HQ is in the Netherlands; India office city
+Varun Beverages,https://www.varunbeverages.com,https://rjcorphcm-iacbiz.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1,Gurugram,Haryana,both,oracle,
+Narayana Health,https://www.narayanahealth.org,https://jobs.narayanahealth.org/,Bengaluru,Karnataka,service,successfactors,
+Aster DM Healthcare,https://www.asterdmhealthcare.com,https://hcdtgccprod-iayeqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX,Bengaluru,Karnataka,service,oracle,verify: listed HQ is Dubai; Bengaluru is the India headquarters
+Tata Capital,https://www.tatacapital.com,https://eofh.fa.em2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX,Mumbai,Maharashtra,service,oracle,
+Jubilant FoodWorks,https://www.jubilantfoodworks.com,https://fa-exph-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/jubilant,Noida,Uttar Pradesh,service,oracle,
+QualityKiosk,https://qualitykiosk.com,https://qktech.com/careers/,Mumbai,Maharashtra,service,,
+Black Box,https://www.blackbox.com,https://eoje.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001,Mumbai,Maharashtra,service,oracle,verify: India office city
+Samsung R&D Institute India,https://research.samsung.com/sri-b,https://sec.wd3.myworkdayjobs.com/Samsung_Careers,Bengaluru,Karnataka,product,workday,verify: board is Samsung-wide; only India jobs are kept
