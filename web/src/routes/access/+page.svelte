@@ -59,7 +59,7 @@
 	<div class="space side" aria-hidden="true">
 		<div class="globe" style="width: 520px; height: 520px; left: -60px; top: 80px"></div>
 		<div class="landmass" style="width: 150px; height: 190px; left: 200px; top: 260px; transform: rotate(18deg)"></div>
-		<div class="side-copy"><p class="t-title">Private, invite-only</p><p class="t-body" style="color: #a6b0c9">Your code is checked again on every request, so access stays private.</p></div>
+		<div class="side-copy"><p class="t-title">Private, invite-only</p><p class="t-body t-2">Your code is checked again on every request, so access stays private.</p></div>
 	</div>
 	<div class="panel">
 		{#if step === 1}
@@ -100,7 +100,7 @@
 
 <style>
 	.wrap { min-height: 100vh; display: flex; flex-wrap: wrap; background: var(--bg); }
-	.side { flex: 1 1 480px; min-height: 360px; display: flex; flex-direction: column; justify-content: flex-end; padding: 48px; color: #e9edf7; }
+	.side { flex: 1 1 480px; min-height: 360px; display: flex; flex-direction: column; justify-content: flex-end; padding: 48px; color: var(--text); border-right: 1px solid var(--line); }
 	.side-copy { position: relative; display: flex; flex-direction: column; gap: 8px; max-width: 460px; }
 	.panel { flex: 1 1 420px; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
 	.form { width: 440px; max-width: 100%; flex-direction: column; gap: 16px; padding: 32px; }

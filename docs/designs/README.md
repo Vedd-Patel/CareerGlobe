@@ -1,4 +1,4 @@
-# Designs (draft v1, awaiting approval)
+# Designs (draft v2: light, Nextdoor-inspired look)
 
 The design system and screens for CareerGlobe, made on a Claude Design canvas. Review them
 there (zoom, comment, switch Light / Dark in each board's Tweaks), then approve or ask for
@@ -18,3 +18,8 @@ settings (S26–S29) · G admin (S30) · screen states (loading, empty, error, o
 Phone boards show one shared layout; the iOS app uses Apple's controls (HIG) and the Android
 app Material 3 controls on top of it, as the spec asks. Names and numbers in the boards are
 examples; counts on S01 and S30 are from the real crawl of 22 Oct 2026.
+
+**v2 (Nov 2026):** `tokens.json` and `careerglobe.css` now use a light, neighbourhood-style look
+(warm off-white background, forest-green accent, pill buttons, flatter bordered cards, a light
+globe, and a labelled left sidebar on wide web screens). Light is the default; dark still exists.
+The PNG/canvas boards still show v1 colours: follow the tokens where they differ.

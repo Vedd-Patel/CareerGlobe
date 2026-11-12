@@ -25,9 +25,12 @@ const shared = [
 		([k, v]) => `--font-${k}: ${v.weight} ${v.size}px/${v.line ?? v.size + 6}px var(--font);`
 	),
 	`--pin-match: ${g.pinMatch};`, `--pin-hiring: ${g.pinHiring};`, `--pin-idle: ${g.pinIdle};`,
-	`--ocean: ${g.ocean};`, `--land: ${g.land};`, `--border-geo: ${g.border};`,
+	`--pin-stroke: ${g.pinStroke};`, `--cluster: ${g.cluster};`, `--cluster-text: ${g.clusterText};`,
+	`--ocean: ${g.ocean};`, `--land: ${g.land};`, `--land-focus: ${g.landFocus};`, `--border-geo: ${g.border};`,
 	`--space-1: ${g.space[0]};`, `--space-2: ${g.space[1]};`, `--space-3: ${g.space[2]};`,
-	`--shadow: ${tokens.elevation.card};`, `--shadow-sheet: ${tokens.elevation.sheet};`
+	`--brand-mark: radial-gradient(circle at 35% 35%, ${tokens.brand.mark[0]}, ${tokens.brand.mark[1]});`,
+	`--shadow: ${tokens.elevation.card};`, `--shadow-raised: ${tokens.elevation.raised};`,
+	`--shadow-sheet: ${tokens.elevation.sheet};`
 ].join('\n\t');
 
 const light = colors(tokens.color.light);

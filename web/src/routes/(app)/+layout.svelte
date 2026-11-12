@@ -31,7 +31,8 @@
 <style>
 	.app-main { min-height: 100vh; padding-bottom: 84px; }
 	@media (min-width: 900px) { .app-main { padding-bottom: 0; padding-left: 88px; } }
+	@media (min-width: 1200px) { .app-main { padding-left: 244px; } }
 	.boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-	.globe-dot { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3dd6c6, #0e2150); animation: pulse 1.2s ease-in-out infinite; }
+	.globe-dot { width: 48px; height: 48px; border-radius: 50%; background: var(--brand-mark); animation: pulse 1.2s ease-in-out infinite; }
 	@keyframes pulse { 50% { transform: scale(0.85); opacity: 0.6; } }
 </style>

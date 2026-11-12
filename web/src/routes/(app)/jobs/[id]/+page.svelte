@@ -204,6 +204,6 @@
 	.progress { height: 6px; }
 	.apply-bar { position: sticky; bottom: 84px; z-index: 5; display: flex; gap: 10px; padding: 12px; margin: 0 -12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-sheet); }
 	@media (min-width: 900px) { .apply-bar { bottom: 16px; } }
-	.scrim { position: fixed; inset: 0; background: rgba(5, 8, 19, 0.5); z-index: 50; }
+	.scrim { position: fixed; inset: 0; background: rgba(27, 31, 28, 0.45); z-index: 50; }
 	.ask { position: fixed; left: 0; right: 0; bottom: 0; z-index: 51; max-width: 520px; margin: 0 auto; padding: 12px 20px 28px; display: flex; flex-direction: column; gap: 12px; }
 </style>

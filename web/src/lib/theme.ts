@@ -1,4 +1,4 @@
-// Light / dark / system theme (S29), applied as data-theme on <html>.
+// Light / dark / system theme (S29), applied as data-theme on <html>. Light is the default.
 export type Theme = 'system' | 'light' | 'dark';
 const KEY = 'cg.theme';
 
@@ -16,8 +16,8 @@ export function applyTheme(t: Theme): void {
 export function savedTheme(): Theme {
 	try {
 		const t = localStorage.getItem(KEY);
-		return t === 'light' || t === 'dark' ? t : 'system';
+		return t === 'dark' || t === 'system' ? t : 'light';
 	} catch {
-		return 'system';
+		return 'light';
 	}
 }

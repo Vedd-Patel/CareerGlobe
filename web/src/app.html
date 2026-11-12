@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-		<meta name="theme-color" content="#0A0F1E" />
+		<meta name="theme-color" content="#FFFFFF" />
 		<meta name="description" content="Every company in India on one globe, with jobs from their own careers pages. Private, invite-only." />
 		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
 		<link rel="icon" href="%sveltekit.assets%/icon.svg" type="image/svg+xml" />
@@ -13,7 +13,8 @@
 		<script>
 			try {
 				const t = localStorage.getItem('cg.theme');
-				if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+				// Light unless the member picked dark or system in Settings (S29).
+				if (t !== 'system') document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
 			} catch {}
 		</script>
 		<title>CareerGlobe</title>

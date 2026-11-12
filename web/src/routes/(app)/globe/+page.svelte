@@ -296,7 +296,7 @@
 		{#if firstVisit}
 			<div class="hint glass" role="dialog" aria-label="How to use the globe">
 				<p class="t-heading">Pinch to zoom, drag to spin</p>
-				<p class="t-body" style="color: #a6b0c9">Glowing teal pins have jobs that match you. Tap a pin to see the company.</p>
+				<p class="t-body t-2">Green pins have jobs that match you. Tap a pin to see the company.</p>
 				<button class="btn btn-primary" onclick={dismissHint}>Got it</button>
 			</div>
 		{/if}
@@ -433,15 +433,15 @@
 	.top { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px; z-index: 2; pointer-events: none; }
 	.top > * { pointer-events: auto; }
 	.row { display: flex; gap: 10px; max-width: 560px; }
-	.search { color: #a6b0c9; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; }
-	.icon-btn.glass { color: #e9edf7; cursor: pointer; }
+	.search { color: var(--text-3); cursor: pointer; }
+	.icon-btn.glass { cursor: pointer; }
 	.nowrap { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 	.chip { cursor: pointer; }
-	.chip.glass { border-color: rgba(255, 255, 255, 0.1); }
-	.updated { align-self: flex-start; color: #a6b0c9; }
+	.updated { align-self: flex-start; color: var(--text-2); }
 	.err { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 3; }
 	.hint { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); width: min(340px, 90%); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; text-align: center; z-index: 4; }
 	.panel { background: var(--surface); border-top: 1px solid var(--line); max-height: 45vh; overflow-y: auto; }
+	:global(.maplibregl-ctrl-group) { border-radius: var(--r-md); box-shadow: var(--shadow-raised); }
 	.preview, .sheet-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 	.preview { border-bottom: 1px solid var(--line); }
 	.plain { color: inherit; text-decoration: none; background: none; border-left: 0; border-right: 0; border-top: 0; width: 100%; font: inherit; cursor: pointer; }
