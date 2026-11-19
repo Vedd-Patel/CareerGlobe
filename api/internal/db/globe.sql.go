@@ -11,23 +11,40 @@ import (
 )
 
 const clustersInView = `-- name: ClustersInView :many
-WITH filtered AS (
-  SELECT j.company_id,
+WITH job_cities AS (
+  -- One row per job and city it is in (a job with no city counts once, with a NULL city).
+  SELECT j.id AS job_id, j.company_id, jc.city
+  FROM jobs j
+  CROSS JOIN LATERAL unnest(CASE WHEN cardinality(j.cities) = 0 THEN ARRAY[NULL]::text[] ELSE j.cities END) AS jc(city)
+  WHERE j.status = 'open'
+    AND ($3::text IS NULL OR j.category = $3 OR j.category_2 = $3)
+    AND (NOT $4::bool OR j.work_mode = 'remote')
+    AND ($5::timestamptz IS NULL OR j.first_seen >= $5)
+), placed AS (
+  -- Each job counts at the company location in its own city; one with no city, or
+  -- in a city that has no pin, counts at the company's headquarters.
+  SELECT jc.job_id, COALESCE(here.id, hq.id) AS location_id
+  FROM job_cities jc
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND lower(l.city) = lower(jc.city)
+                     ORDER BY l.id LIMIT 1) here ON true
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND l.is_hq
+                     ORDER BY l.id LIMIT 1) hq ON true
+), filtered AS (
+  SELECT p.location_id,
          count(*)::int AS open_jobs,
          count(*) FILTER (WHERE m.score >= 60)::int AS matches
-  FROM jobs j
-  LEFT JOIN matches m ON m.job_id = j.id AND m.user_id = $3::bigint
-  WHERE j.status = 'open'
-    AND ($4::text IS NULL OR j.category = $4 OR j.category_2 = $4)
-    AND (NOT $5::bool OR j.work_mode = 'remote')
-    AND ($6::timestamptz IS NULL OR j.first_seen >= $6)
-  GROUP BY j.company_id
+  FROM placed p
+  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = $6::bigint
+  WHERE p.location_id IS NOT NULL
+  GROUP BY p.location_id
 ), pins AS (
   SELECT c.id AS company_id, l.geo::geometry AS g,
          COALESCE(f.open_jobs, 0) AS open_jobs, COALESCE(f.matches, 0) AS matches
   FROM company_locations l
   JOIN companies c ON c.id = l.company_id
-  LEFT JOIN filtered f ON f.company_id = c.id
+  LEFT JOIN filtered f ON f.location_id = l.id
   WHERE l.geo IS NOT NULL
     AND l.geo::geometry && ST_MakeEnvelope($7::float8, $8::float8,
                                            $9::float8, $10::float8, 4326)
@@ -51,10 +68,10 @@ LIMIT $2::int
 type ClustersInViewParams struct {
 	Cell        float64    `json:"cell"`
 	MaxPins     int32      `json:"max_pins"`
-	UserID      int64      `json:"user_id"`
 	Category    *string    `json:"category"`
 	RemoteOnly  bool       `json:"remote_only"`
 	PostedSince *time.Time `json:"posted_since"`
+	UserID      int64      `json:"user_id"`
 	West        float64    `json:"west"`
 	South       float64    `json:"south"`
 	East        float64    `json:"east"`
@@ -79,10 +96,10 @@ func (q *Queries) ClustersInView(ctx context.Context, arg ClustersInViewParams) 
 	rows, err := q.db.Query(ctx, clustersInView,
 		arg.Cell,
 		arg.MaxPins,
-		arg.UserID,
 		arg.Category,
 		arg.RemoteOnly,
 		arg.PostedSince,
+		arg.UserID,
 		arg.West,
 		arg.South,
 		arg.East,
@@ -197,17 +214,34 @@ func (q *Queries) CompaniesInView(ctx context.Context, arg CompaniesInViewParams
 
 const pinsInView = `-- name: PinsInView :many
 
-WITH filtered AS (
-  SELECT j.company_id,
+WITH job_cities AS (
+  -- One row per job and city it is in (a job with no city counts once, with a NULL city).
+  SELECT j.id AS job_id, j.company_id, jc.city
+  FROM jobs j
+  CROSS JOIN LATERAL unnest(CASE WHEN cardinality(j.cities) = 0 THEN ARRAY[NULL]::text[] ELSE j.cities END) AS jc(city)
+  WHERE j.status = 'open'
+    AND ($10::text IS NULL OR j.category = $10 OR j.category_2 = $10)
+    AND (NOT $11::bool OR j.work_mode = 'remote')
+    AND ($12::timestamptz IS NULL OR j.first_seen >= $12)
+), placed AS (
+  -- Each job counts at the company location in its own city; one with no city, or
+  -- in a city that has no pin, counts at the company's headquarters.
+  SELECT jc.job_id, COALESCE(here.id, hq.id) AS location_id
+  FROM job_cities jc
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND lower(l.city) = lower(jc.city)
+                     ORDER BY l.id LIMIT 1) here ON true
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND l.is_hq
+                     ORDER BY l.id LIMIT 1) hq ON true
+), filtered AS (
+  SELECT p.location_id,
          count(*)::int AS open_jobs,
          count(*) FILTER (WHERE m.score >= 60)::int AS matches
-  FROM jobs j
-  LEFT JOIN matches m ON m.job_id = j.id AND m.user_id = $10::bigint
-  WHERE j.status = 'open'
-    AND ($11::text IS NULL OR j.category = $11 OR j.category_2 = $11)
-    AND (NOT $12::bool OR j.work_mode = 'remote')
-    AND ($13::timestamptz IS NULL OR j.first_seen >= $13)
-  GROUP BY j.company_id
+  FROM placed p
+  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = $13::bigint
+  WHERE p.location_id IS NOT NULL
+  GROUP BY p.location_id
 )
 SELECT c.id AS company_id, c.name, c.slug, c.type, c.logo_url,
        l.id AS location_id, l.city, l.state, l.is_hq,
@@ -215,7 +249,7 @@ SELECT c.id AS company_id, c.name, c.slug, c.type, c.logo_url,
        COALESCE(f.open_jobs, 0)::int AS open_jobs, COALESCE(f.matches, 0)::int AS matches
 FROM company_locations l
 JOIN companies c ON c.id = l.company_id
-LEFT JOIN filtered f ON f.company_id = c.id
+LEFT JOIN filtered f ON f.location_id = l.id
 WHERE l.geo IS NOT NULL
   AND l.geo::geometry && ST_MakeEnvelope($1::float8, $2::float8,
                                          $3::float8, $4::float8, 4326)
@@ -237,10 +271,10 @@ type PinsInViewParams struct {
 	MatchesOnly bool       `json:"matches_only"`
 	JobFilters  bool       `json:"job_filters"`
 	MaxPins     int32      `json:"max_pins"`
-	UserID      int64      `json:"user_id"`
 	Category    *string    `json:"category"`
 	RemoteOnly  bool       `json:"remote_only"`
 	PostedSince *time.Time `json:"posted_since"`
+	UserID      int64      `json:"user_id"`
 }
 
 type PinsInViewRow struct {
@@ -273,10 +307,10 @@ func (q *Queries) PinsInView(ctx context.Context, arg PinsInViewParams) ([]PinsI
 		arg.MatchesOnly,
 		arg.JobFilters,
 		arg.MaxPins,
-		arg.UserID,
 		arg.Category,
 		arg.RemoteOnly,
 		arg.PostedSince,
+		arg.UserID,
 	)
 	if err != nil {
 		return nil, err

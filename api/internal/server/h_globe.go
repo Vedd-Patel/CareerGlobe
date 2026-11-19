@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	maxPins     = 500 // spec: a view never ships more than 500 pins
+	maxPins     = 2000 // the web client clusters pins itself, so a view ships every location (spec said 500)
 	clusterZoom = 7.0 // below this zoom, pins are clustered on a grid
 )
 

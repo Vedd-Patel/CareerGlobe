@@ -3,17 +3,34 @@
 -- (or, with no job filters and hiring_only off, always).
 
 -- name: PinsInView :many
-WITH filtered AS (
-  SELECT j.company_id,
-         count(*)::int AS open_jobs,
-         count(*) FILTER (WHERE m.score >= 60)::int AS matches
+WITH job_cities AS (
+  -- One row per job and city it is in (a job with no city counts once, with a NULL city).
+  SELECT j.id AS job_id, j.company_id, jc.city
   FROM jobs j
-  LEFT JOIN matches m ON m.job_id = j.id AND m.user_id = sqlc.arg(user_id)::bigint
+  CROSS JOIN LATERAL unnest(CASE WHEN cardinality(j.cities) = 0 THEN ARRAY[NULL]::text[] ELSE j.cities END) AS jc(city)
   WHERE j.status = 'open'
     AND (sqlc.narg(category)::text IS NULL OR j.category = sqlc.narg(category) OR j.category_2 = sqlc.narg(category))
     AND (NOT sqlc.arg(remote_only)::bool OR j.work_mode = 'remote')
     AND (sqlc.narg(posted_since)::timestamptz IS NULL OR j.first_seen >= sqlc.narg(posted_since))
-  GROUP BY j.company_id
+), placed AS (
+  -- Each job counts at the company location in its own city; one with no city, or
+  -- in a city that has no pin, counts at the company's headquarters.
+  SELECT jc.job_id, COALESCE(here.id, hq.id) AS location_id
+  FROM job_cities jc
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND lower(l.city) = lower(jc.city)
+                     ORDER BY l.id LIMIT 1) here ON true
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND l.is_hq
+                     ORDER BY l.id LIMIT 1) hq ON true
+), filtered AS (
+  SELECT p.location_id,
+         count(*)::int AS open_jobs,
+         count(*) FILTER (WHERE m.score >= 60)::int AS matches
+  FROM placed p
+  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = sqlc.arg(user_id)::bigint
+  WHERE p.location_id IS NOT NULL
+  GROUP BY p.location_id
 )
 SELECT c.id AS company_id, c.name, c.slug, c.type, c.logo_url,
        l.id AS location_id, l.city, l.state, l.is_hq,
@@ -21,7 +38,7 @@ SELECT c.id AS company_id, c.name, c.slug, c.type, c.logo_url,
        COALESCE(f.open_jobs, 0)::int AS open_jobs, COALESCE(f.matches, 0)::int AS matches
 FROM company_locations l
 JOIN companies c ON c.id = l.company_id
-LEFT JOIN filtered f ON f.company_id = c.id
+LEFT JOIN filtered f ON f.location_id = l.id
 WHERE l.geo IS NOT NULL
   AND l.geo::geometry && ST_MakeEnvelope(sqlc.arg(west)::float8, sqlc.arg(south)::float8,
                                          sqlc.arg(east)::float8, sqlc.arg(north)::float8, 4326)
@@ -34,23 +51,40 @@ LIMIT sqlc.arg(max_pins)::int;
 
 -- name: ClustersInView :many
 -- Zoomed out: pins snapped to a grid of `cell` degrees, one row per occupied cell.
-WITH filtered AS (
-  SELECT j.company_id,
-         count(*)::int AS open_jobs,
-         count(*) FILTER (WHERE m.score >= 60)::int AS matches
+WITH job_cities AS (
+  -- One row per job and city it is in (a job with no city counts once, with a NULL city).
+  SELECT j.id AS job_id, j.company_id, jc.city
   FROM jobs j
-  LEFT JOIN matches m ON m.job_id = j.id AND m.user_id = sqlc.arg(user_id)::bigint
+  CROSS JOIN LATERAL unnest(CASE WHEN cardinality(j.cities) = 0 THEN ARRAY[NULL]::text[] ELSE j.cities END) AS jc(city)
   WHERE j.status = 'open'
     AND (sqlc.narg(category)::text IS NULL OR j.category = sqlc.narg(category) OR j.category_2 = sqlc.narg(category))
     AND (NOT sqlc.arg(remote_only)::bool OR j.work_mode = 'remote')
     AND (sqlc.narg(posted_since)::timestamptz IS NULL OR j.first_seen >= sqlc.narg(posted_since))
-  GROUP BY j.company_id
+), placed AS (
+  -- Each job counts at the company location in its own city; one with no city, or
+  -- in a city that has no pin, counts at the company's headquarters.
+  SELECT jc.job_id, COALESCE(here.id, hq.id) AS location_id
+  FROM job_cities jc
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND lower(l.city) = lower(jc.city)
+                     ORDER BY l.id LIMIT 1) here ON true
+  LEFT JOIN LATERAL (SELECT l.id FROM company_locations l
+                     WHERE l.company_id = jc.company_id AND l.geo IS NOT NULL AND l.is_hq
+                     ORDER BY l.id LIMIT 1) hq ON true
+), filtered AS (
+  SELECT p.location_id,
+         count(*)::int AS open_jobs,
+         count(*) FILTER (WHERE m.score >= 60)::int AS matches
+  FROM placed p
+  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = sqlc.arg(user_id)::bigint
+  WHERE p.location_id IS NOT NULL
+  GROUP BY p.location_id
 ), pins AS (
   SELECT c.id AS company_id, l.geo::geometry AS g,
          COALESCE(f.open_jobs, 0) AS open_jobs, COALESCE(f.matches, 0) AS matches
   FROM company_locations l
   JOIN companies c ON c.id = l.company_id
-  LEFT JOIN filtered f ON f.company_id = c.id
+  LEFT JOIN filtered f ON f.location_id = l.id
   WHERE l.geo IS NOT NULL
     AND l.geo::geometry && ST_MakeEnvelope(sqlc.arg(west)::float8, sqlc.arg(south)::float8,
                                            sqlc.arg(east)::float8, sqlc.arg(north)::float8, 4326)
