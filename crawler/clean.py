@@ -28,6 +28,9 @@ CITY_ALIASES = {
     "nagpur": "Nagpur", "vadodara": "Vadodara", "baroda": "Vadodara", "surat": "Surat",
     "mysuru": "Mysuru", "mysore": "Mysuru", "mangaluru": "Mangaluru", "mangalore": "Mangaluru",
     "visakhapatnam": "Visakhapatnam", "vizag": "Visakhapatnam", "goa": "Goa",
+    "bangaluru": "Bengaluru", "banglore": "Bengaluru", "bhubaneshwar": "Bhubaneswar",
+    "calicut": "Kozhikode", "kozhikode": "Kozhikode", "trichy": "Tiruchirappalli",
+    "rajamundry": "Rajahmundry", "rajahmundry": "Rajahmundry",
 }
 # Longest first, so "new delhi" wins over "delhi" and "navi mumbai" over "mumbai".
 CITY_RE = _CITY_RE = re.compile(
@@ -41,9 +44,25 @@ NOT_A_CITY = {
     # countries and regions
     "us", "usa", "united states", "uk", "united kingdom", "europe", "eu", "emea", "apac",
     "global", "globally", "worldwide", "canada", "germany", "france", "uae", "australia",
+    # states on their own, and filler that job boards put in a location field
+    "uttar pradesh", "maharashtra", "haryana", "karnataka", "telangana", "rajasthan", "gujarat", "tamil nadu",
+    "andhra pradesh", "kerala", "odisha", "chhattisgarh", "sikkim", "punjab", "bihar", "assam", "jharkhand",
+    "west bengal", "madhya pradesh", "uttarakhand", "himachal pradesh", "mh", "ka", "gj", "tn", "up", "dl",
+    "na", "n/a", "virtual", "onshore", "offshore", "offsite", "xxxxx", "0000", ".", "field", "latam",
 }
 # "Hybrid in Santa Clara, CA", "Remote - Bengaluru", "Onsite: Pune"
 _MODE_PREFIX = re.compile(r"^\s*(hybrid|remote|on-?site|in[- ]office|wfh)\s*(in\b|[-–:])\s*", re.IGNORECASE)
+
+
+def _place(text: str) -> str:
+    """The place in a location part: "Bhopal RO" -> Bhopal, "INDIA - ASSAM - GUWAHATI" -> GUWAHATI,
+    and "" for plot numbers, remote and the like."""
+    t = re.sub(r"\s+RO$", "", text.strip(), flags=re.IGNORECASE)
+    t = re.sub(r"^india\b\s*", "", t, flags=re.IGNORECASE)
+    t = re.split(r"\s*[-–>:]\s*", t)[-1].strip() if re.match(r"(?i)india\b", text.strip()) else t
+    if not t or t[0].isdigit() or re.search(r"(?i)\b(plot no|remote|offsite|offshore)\b", t):
+        return ""
+    return t.title() if t.isupper() else t  # "GUWAHATI" -> "Guwahati"
 
 
 def cities_from(locations: list[str]) -> list[str]:
@@ -57,8 +76,8 @@ def cities_from(locations: list[str]) -> list[str]:
         loc = loc.replace("_", " ")  # "Pune_RD, MH, IN"
         hits = [CITY_ALIASES[m.lower()] for m in _CITY_RE.findall(loc)]
         if not hits:
-            first = re.split(r"[,(]", _MODE_PREFIX.sub("", loc), maxsplit=1)[0].strip()
-            if first.lower() not in NOT_A_CITY and not first.lower().startswith(("remote", "anywhere")):
+            first = _place(re.split(r"[,(]", _MODE_PREFIX.sub("", loc), maxsplit=1)[0])
+            if first and first.lower() not in NOT_A_CITY and not first.lower().startswith(("remote", "anywhere")):
                 hits = [first]
         for city in hits:
             if city not in found:

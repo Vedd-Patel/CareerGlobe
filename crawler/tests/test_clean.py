@@ -114,3 +114,21 @@ def test_cities_country_code_and_underscores():
 def test_in_india(locations, want):
     from clean import in_india
     assert in_india(locations) is want
+
+
+@pytest.mark.parametrize("location, want", [
+    ("Bhopal RO", ["Bhopal"]),
+    ("INDIA - ASSAM - GUWAHATI", ["Guwahati"]),
+    ("India > Village Mauza : Baddi", ["Baddi"]),
+    ("India Kancheepuram", ["Kancheepuram"]),
+    ("India - Patna", ["Patna"]),
+    ("Bangaluru Karnataka India", ["Bengaluru"]),
+    ("Banglore", ["Bengaluru"]),
+    ("Calicut", ["Kozhikode"]),
+    ("Uttar Pradesh", []), ("MH", []), ("Virtual", []), ("NA", []), ("XXXXX", []), ("1/124", []),
+    ("PLOT NO-1", []), ("India Remote", []), ("India - Remote", []), ("India Offsite", []),
+    ("Roorkee", ["Roorkee"]),
+])
+def test_filler_and_regional_offices(location, want):
+    assert cities_from([location]) == want
+
