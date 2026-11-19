@@ -135,31 +135,46 @@ func (q *Queries) ClustersInView(ctx context.Context, arg ClustersInViewParams) 
 }
 
 const companiesInView = `-- name: CompaniesInView :many
-SELECT c.id, c.name, c.slug, c.type, c.logo_url,
-       (SELECT l2.city FROM company_locations l2 WHERE l2.company_id = c.id ORDER BY l2.is_hq DESC LIMIT 1) AS city,
-       (SELECT count(*) FROM jobs j WHERE j.company_id = c.id AND j.status = 'open')::int AS open_jobs,
-       (SELECT count(*) FROM matches m JOIN jobs j ON j.id = m.job_id
-        WHERE j.company_id = c.id AND j.status = 'open' AND m.user_id = $1::bigint AND m.score >= 60)::int AS matches
-FROM companies c
-WHERE EXISTS (
-  SELECT 1 FROM company_locations l
-  WHERE l.company_id = c.id AND l.geo IS NOT NULL
-    AND l.geo::geometry && ST_MakeEnvelope($2::float8, $3::float8,
-                                           $4::float8, $5::float8, 4326))
-  AND ($6::text IS NULL OR c.type = $6 OR c.type = 'both')
-ORDER BY matches DESC, open_jobs DESC, c.name
-LIMIT $8::int OFFSET $7::int
+SELECT t.id, t.name, t.slug, t.type, t.logo_url, t.city, t.address, t.open_jobs, t.matches FROM (
+  SELECT c.id, c.name, c.slug, c.type, c.logo_url,
+         (SELECT l2.city FROM company_locations l2 WHERE l2.company_id = c.id ORDER BY l2.is_hq DESC LIMIT 1) AS city,
+         (SELECT l2.address FROM company_locations l2 WHERE l2.company_id = c.id AND l2.address IS NOT NULL
+            ORDER BY l2.is_hq DESC LIMIT 1) AS address,
+         (SELECT count(*) FROM jobs j WHERE j.company_id = c.id AND j.status = 'open')::int AS open_jobs,
+         (SELECT count(*) FROM matches m JOIN jobs j ON j.id = m.job_id
+          WHERE j.company_id = c.id AND j.status = 'open' AND m.user_id = $1::bigint AND m.score >= 60)::int AS matches,
+         d.km AS km
+  FROM companies c
+  LEFT JOIN LATERAL (
+    SELECT min(ST_Distance(l3.geo, ST_SetSRID(ST_MakePoint($2::float8, $3::float8), 4326)::geography))
+             / 1000.0 AS km
+    FROM company_locations l3
+    WHERE l3.company_id = c.id AND l3.geo IS NOT NULL
+      AND $3::float8 IS NOT NULL AND $2::float8 IS NOT NULL
+  ) d ON true
+  WHERE EXISTS (
+    SELECT 1 FROM company_locations l
+    WHERE l.company_id = c.id AND l.geo IS NOT NULL
+      AND l.geo::geometry && ST_MakeEnvelope($4::float8, $5::float8,
+                                             $6::float8, $7::float8, 4326))
+    AND ($8::text IS NULL OR c.type = $8 OR c.type = 'both')
+) t
+ORDER BY CASE WHEN $9::bool THEN t.km END ASC NULLS LAST, t.matches DESC, t.open_jobs DESC, t.name
+LIMIT $11::int OFFSET $10::int
 `
 
 type CompaniesInViewParams struct {
-	UserID      int64   `json:"user_id"`
-	West        float64 `json:"west"`
-	South       float64 `json:"south"`
-	East        float64 `json:"east"`
-	North       float64 `json:"north"`
-	CompanyType *string `json:"company_type"`
-	Skip        int32   `json:"skip"`
-	MaxRows     int32   `json:"max_rows"`
+	UserID      int64    `json:"user_id"`
+	NearLon     *float64 `json:"near_lon"`
+	NearLat     *float64 `json:"near_lat"`
+	West        float64  `json:"west"`
+	South       float64  `json:"south"`
+	East        float64  `json:"east"`
+	North       float64  `json:"north"`
+	CompanyType *string  `json:"company_type"`
+	Nearest     bool     `json:"nearest"`
+	Skip        int32    `json:"skip"`
+	MaxRows     int32    `json:"max_rows"`
 }
 
 type CompaniesInViewRow struct {
@@ -169,19 +184,24 @@ type CompaniesInViewRow struct {
 	Type     *string `json:"type"`
 	LogoUrl  *string `json:"logo_url"`
 	City     *string `json:"city"`
+	Address  *string `json:"address"`
 	OpenJobs int32   `json:"open_jobs"`
 	Matches  int32   `json:"matches"`
 }
 
-// The "Companies in view" list beside the globe, sorted by matches.
+// The "Companies in view" list beside the globe: best matches first, or nearest first
+// to a point (the map centre or the member's position) when `nearest` is set.
 func (q *Queries) CompaniesInView(ctx context.Context, arg CompaniesInViewParams) ([]CompaniesInViewRow, error) {
 	rows, err := q.db.Query(ctx, companiesInView,
 		arg.UserID,
+		arg.NearLon,
+		arg.NearLat,
 		arg.West,
 		arg.South,
 		arg.East,
 		arg.North,
 		arg.CompanyType,
+		arg.Nearest,
 		arg.Skip,
 		arg.MaxRows,
 	)
@@ -199,9 +219,50 @@ func (q *Queries) CompaniesInView(ctx context.Context, arg CompaniesInViewParams
 			&i.Type,
 			&i.LogoUrl,
 			&i.City,
+			&i.Address,
 			&i.OpenJobs,
 			&i.Matches,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const companyDistances = `-- name: CompanyDistances :many
+SELECT l.company_id,
+       (min(ST_Distance(l.geo, ST_SetSRID(ST_MakePoint($1::float8, $2::float8), 4326)::geography)) / 1000.0)::float8 AS km
+FROM company_locations l
+WHERE l.company_id = ANY($3::bigint[]) AND l.geo IS NOT NULL
+GROUP BY l.company_id
+`
+
+type CompanyDistancesParams struct {
+	Lon        float64 `json:"lon"`
+	Lat        float64 `json:"lat"`
+	CompanyIds []int64 `json:"company_ids"`
+}
+
+type CompanyDistancesRow struct {
+	CompanyID int64   `json:"company_id"`
+	Km        float64 `json:"km"`
+}
+
+// Distance in km from a point to each company's nearest office.
+func (q *Queries) CompanyDistances(ctx context.Context, arg CompanyDistancesParams) ([]CompanyDistancesRow, error) {
+	rows, err := q.db.Query(ctx, companyDistances, arg.Lon, arg.Lat, arg.CompanyIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CompanyDistancesRow{}
+	for rows.Next() {
+		var i CompanyDistancesRow
+		if err := rows.Scan(&i.CompanyID, &i.Km); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -244,7 +305,7 @@ WITH job_cities AS (
   GROUP BY p.location_id
 )
 SELECT c.id AS company_id, c.name, c.slug, c.type, c.logo_url,
-       l.id AS location_id, l.city, l.state, l.is_hq,
+       l.id AS location_id, l.city, l.state, l.is_hq, l.address,
        ST_Y(l.geo::geometry)::float8 AS lat, ST_X(l.geo::geometry)::float8 AS lon,
        COALESCE(f.open_jobs, 0)::int AS open_jobs, COALESCE(f.matches, 0)::int AS matches
 FROM company_locations l
@@ -287,6 +348,7 @@ type PinsInViewRow struct {
 	City       *string `json:"city"`
 	State      *string `json:"state"`
 	IsHq       bool    `json:"is_hq"`
+	Address    *string `json:"address"`
 	Lat        float64 `json:"lat"`
 	Lon        float64 `json:"lon"`
 	OpenJobs   int32   `json:"open_jobs"`
@@ -329,6 +391,7 @@ func (q *Queries) PinsInView(ctx context.Context, arg PinsInViewParams) ([]PinsI
 			&i.City,
 			&i.State,
 			&i.IsHq,
+			&i.Address,
 			&i.Lat,
 			&i.Lon,
 			&i.OpenJobs,

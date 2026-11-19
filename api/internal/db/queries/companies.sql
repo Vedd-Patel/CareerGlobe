@@ -7,7 +7,7 @@ SELECT c.*,
 FROM companies c WHERE c.id = sqlc.arg(id)::bigint;
 
 -- name: CompanyLocations :many
-SELECT id, city, state, country, is_hq, geo_approximate,
+SELECT id, city, state, country, is_hq, geo_approximate, address,
        ST_Y(geo::geometry)::float8 AS lat, ST_X(geo::geometry)::float8 AS lon
 FROM company_locations WHERE company_id = $1 AND geo IS NOT NULL
 ORDER BY is_hq DESC, city;

@@ -187,13 +187,16 @@ paths:
     get:
       operationId: getCompaniesInView
       tags: [globe]
-      summary: The "Companies in view" list, sorted by matches
+      summary: The "Companies in view" list, sorted by matches or by distance
       parameters:
         - $ref: "#/components/parameters/West"
         - $ref: "#/components/parameters/South"
         - $ref: "#/components/parameters/East"
         - $ref: "#/components/parameters/North"
         - $ref: "#/components/parameters/CompanyType"
+        - { name: lat, in: query, description: Point to measure distance from (the map centre or the member's position), schema: { type: number } }
+        - { name: lon, in: query, schema: { type: number } }
+        - { name: sort, in: query, description: "nearest orders by distance from lat, lon", schema: { type: string, enum: [matches, nearest] } }
         - $ref: "#/components/parameters/Limit"
         - $ref: "#/components/parameters/Offset"
       responses:
@@ -1137,6 +1140,7 @@ components:
         city: { type: [string, "null"] }
         state: { type: [string, "null"] }
         is_hq: { type: boolean }
+        address: { type: [string, "null"] }
         lat: { type: number }
         lon: { type: number }
         open_jobs: { type: integer }
@@ -1169,8 +1173,10 @@ components:
               - type: object
                 properties:
                   city: { type: [string, "null"] }
+                  address: { type: [string, "null"] }
                   open_jobs: { type: integer }
                   matches: { type: integer }
+                  distance_km: { type: [number, "null"] }
     SavedCompany:
       allOf:
         - $ref: "#/components/schemas/CompanyRef"
@@ -1221,6 +1227,7 @@ components:
               country: { type: string }
               is_hq: { type: boolean }
               geo_approximate: { type: boolean }
+              address: { type: [string, "null"] }
               lat: { type: number }
               lon: { type: number }
         open_jobs:

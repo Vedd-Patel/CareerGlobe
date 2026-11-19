@@ -1,9 +1,10 @@
 """Load seeds/companies.csv into Postgres (companies, locations, careers sources).
 
-Columns: name,website,careers_url,city,state,type,ats[,note][,lat,lon]
+Columns: name,website,careers_url,city,state,type,ats[,note][,lat,lon][,address]
 lat and lon are optional: the office's exact position (decimal degrees, inside
 India). With them the map points at the office itself; without them the pin is
-the city centre and is marked approximate.
+the city centre and is marked approximate. address is the office's street address,
+shown beside its pin.
 careers_url is an ATS board (detected from the URL), a SuccessFactors site
 (ats=successfactors), or any other careers page, read for JSON-LD JobPostings.
 
@@ -41,6 +42,7 @@ class SeedRow:
     do_not_crawl: bool = False
     lat: float | None = None
     lon: float | None = None
+    address: str | None = None
 
 
 INDIA_BOX = (6.0, 38.0, 67.0, 98.0)  # south, north, west, east
@@ -100,6 +102,7 @@ def read(path: Path) -> list[SeedRow]:
                 careers_url=url, city=(r.get("city") or "").strip() or None,
                 state=(r.get("state") or "").strip() or None, type=ctype, ats=ats, ats_slug=ats_slug,
                 do_not_crawl=do_not_crawl, lat=lat, lon=lon,
+                address=(r.get("address") or "").strip()[:300] or None,
             ))
     return rows
 
@@ -124,6 +127,12 @@ async def load(conn: psycopg.AsyncConnection, path: Path) -> int:
                        VALUES (%s, %s, %s, true) ON CONFLICT DO NOTHING""",
                     (company_id, s.city, s.state),
                 )
+                if s.address:
+                    await conn.execute(
+                        """UPDATE company_locations SET address = %s
+                           WHERE company_id = %s AND city IS NOT DISTINCT FROM %s AND state IS NOT DISTINCT FROM %s""",
+                        (s.address, company_id, s.city, s.state),
+                    )
                 if s.lat is not None and s.lon is not None:
                     # An exact position from the seed file replaces the city-centre pin.
                     await conn.execute(

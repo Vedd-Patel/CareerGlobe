@@ -94,6 +94,15 @@ func queryInt(r *http.Request, name string, def, min, max int) int {
 	return clamp(v, min, max)
 }
 
+// queryFloat is nil when the parameter is missing or not a finite number.
+func queryFloat(r *http.Request, name string) *float64 {
+	v, err := strconv.ParseFloat(r.URL.Query().Get(name), 64)
+	if err != nil || math.IsNaN(v) || math.IsInf(v, 0) {
+		return nil
+	}
+	return &v
+}
+
 func clamp(v, min, max int) int {
 	if v < min {
 		return min

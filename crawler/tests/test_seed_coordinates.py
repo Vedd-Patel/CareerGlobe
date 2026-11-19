@@ -39,3 +39,13 @@ def test_seed_file_without_the_columns_still_loads(tmp_path):
     path = tmp_path / "companies.csv"
     path.write_text("name,website,careers_url,city,state,type,ats\nAcme,,https://boards.greenhouse.io/acme,Pune,Maharashtra,product,\n")
     assert seeds.read(path)[0].lat is None
+
+
+def test_address_column_is_read_and_trimmed(tmp_path):
+    path = tmp_path / "companies.csv"
+    path.write_text("name,website,careers_url,city,state,type,ats,address\n"
+                    "Acme,,https://boards.greenhouse.io/acme,Pune,Maharashtra,product,,\"  Plot 4, Kharadi, Pune 411014 \"\n"
+                    "Beta,,https://boards.greenhouse.io/beta,Pune,Maharashtra,product,,\n", encoding="utf-8")
+    rows = seeds.read(path)
+    assert rows[0].address == "Plot 4, Kharadi, Pune 411014"
+    assert rows[1].address is None

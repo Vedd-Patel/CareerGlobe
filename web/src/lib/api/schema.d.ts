@@ -136,7 +136,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The "Companies in view" list, sorted by matches */
+        /** The "Companies in view" list, sorted by matches or by distance */
         get: operations["getCompaniesInView"];
         put?: never;
         post?: never;
@@ -878,6 +878,7 @@ export interface components {
             city?: string | null;
             state?: string | null;
             is_hq?: boolean;
+            address?: string | null;
             lat?: number;
             lon?: number;
             open_jobs?: number;
@@ -903,8 +904,10 @@ export interface components {
         CompanyListResponse: {
             items?: (components["schemas"]["CompanyRef"] & {
                 city?: string | null;
+                address?: string | null;
                 open_jobs?: number;
                 matches?: number;
+                distance_km?: number | null;
             })[];
         };
         SavedCompany: components["schemas"]["CompanyRef"] & {
@@ -958,6 +961,7 @@ export interface components {
                 country?: string;
                 is_hq?: boolean;
                 geo_approximate?: boolean;
+                address?: string | null;
                 lat?: number;
                 lon?: number;
             }[];
@@ -1533,6 +1537,11 @@ export interface operations {
                 east: components["parameters"]["East"];
                 north: components["parameters"]["North"];
                 type?: components["parameters"]["CompanyType"];
+                /** @description Point to measure distance from (the map centre or the member's position) */
+                lat?: number;
+                lon?: number;
+                /** @description nearest orders by distance from lat, lon */
+                sort?: "matches" | "nearest";
                 limit?: components["parameters"]["Limit"];
                 offset?: components["parameters"]["Offset"];
             };

@@ -89,30 +89,33 @@ type CityAlias struct {
 }
 
 type Company struct {
-	ID          int64      `json:"id"`
-	Name        string     `json:"name"`
-	Slug        string     `json:"slug"`
-	Website     *string    `json:"website"`
-	LogoUrl     *string    `json:"logo_url"`
-	Type        *string    `json:"type"`
-	Stage       *string    `json:"stage"`
-	SizeBand    *string    `json:"size_band"`
-	Industry    *string    `json:"industry"`
-	Description *string    `json:"description"`
-	VerifiedAt  *time.Time `json:"verified_at"`
-	CreatedAt   time.Time  `json:"created_at"`
-	Origin      string     `json:"origin"`
+	ID            int64      `json:"id"`
+	Name          string     `json:"name"`
+	Slug          string     `json:"slug"`
+	Website       *string    `json:"website"`
+	LogoUrl       *string    `json:"logo_url"`
+	Type          *string    `json:"type"`
+	Stage         *string    `json:"stage"`
+	SizeBand      *string    `json:"size_band"`
+	Industry      *string    `json:"industry"`
+	Description   *string    `json:"description"`
+	VerifiedAt    *time.Time `json:"verified_at"`
+	CreatedAt     time.Time  `json:"created_at"`
+	Origin        string     `json:"origin"`
+	LogoCheckedAt *time.Time `json:"logo_checked_at"`
 }
 
 type CompanyLocation struct {
-	ID             int64   `json:"id"`
-	CompanyID      int64   `json:"company_id"`
-	City           *string `json:"city"`
-	State          *string `json:"state"`
-	Country        string  `json:"country"`
-	Geo            *string `json:"geo"`
-	GeoApproximate bool    `json:"geo_approximate"`
-	IsHq           bool    `json:"is_hq"`
+	ID             int64      `json:"id"`
+	CompanyID      int64      `json:"company_id"`
+	City           *string    `json:"city"`
+	State          *string    `json:"state"`
+	Country        string     `json:"country"`
+	Geo            *string    `json:"geo"`
+	GeoApproximate bool       `json:"geo_approximate"`
+	IsHq           bool       `json:"is_hq"`
+	GeoCheckedAt   *time.Time `json:"geo_checked_at"`
+	Address        *string    `json:"address"`
 }
 
 type Consent struct {

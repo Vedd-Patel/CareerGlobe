@@ -35,10 +35,12 @@
 	let results = $state<SearchResults | null>(null);
 	type Detail = {
 		careers_url?: string | null;
-		locations: { id?: number; city?: string | null; lat?: number; lon?: number; geo_approximate?: boolean }[];
+		locations: { id?: number; city?: string | null; address?: string | null; lat?: number; lon?: number; geo_approximate?: boolean }[];
 		open_jobs: { id: number; title: string; cities?: string[]; work_mode?: string | null; first_seen?: string; score?: number | null }[];
 	};
 	let detail = $state<Detail | null>(null);
+	let sortBy = $state<'matches' | 'nearest'>('matches');
+	let userPos: { lat: number; lon: number } | null = null; // set once the browser has found the member
 	let pageEl: HTMLDivElement;
 	let panelEl: HTMLElement;
 	let snap = $state(0); // bottom sheet on phones: 0 peek, 1 half, 2 full
@@ -51,6 +53,12 @@
 
 	const cleanups: (() => void)[] = [];
 	let timer: ReturnType<typeof setTimeout> | undefined;
+	// Distance is measured from the member when the browser has found them, else from the map centre.
+	function nearParams() {
+		const c = userPos ?? (map ? { lat: map.getCenter().lat, lon: map.getCenter().lng } : null);
+		return c ? { lat: c.lat.toFixed(5), lon: c.lon.toFixed(5), sort: sortBy } : {};
+	}
+
 	function refresh() {
 		clearTimeout(timer);
 		timer = setTimeout(load, 250);
@@ -84,7 +92,9 @@
 				api.get<{ mode: 'pins' | 'clusters'; items: Pin[]; updated_at?: string | null }>('/v1/globe', {
 					...wide, zoom: 14, ...filtersToQuery(filters)
 				}),
-				api.get<Schemas['CompanyListResponse']>('/v1/companies/in-view', { ...bounds, type: filters.type, limit: 40 })
+				api.get<Schemas['CompanyListResponse']>('/v1/companies/in-view', {
+					...bounds, type: filters.type, limit: 40, ...nearParams()
+				})
 			]);
 			error = '';
 			updated = g.updated_at ?? null;
@@ -236,6 +246,8 @@
 		const here = d.open_jobs.filter((j) => (j.cities ?? []).some((c) => c.toLowerCase() === city) || (!j.cities?.length && p.is_hq));
 		return here.length ? here : d.open_jobs;
 	}
+
+	const km = (d: number) => (d < 1 ? `${Math.round(d * 1000)} m` : d < 10 ? `${d.toFixed(1)} km` : `${Math.round(d)} km`);
 
 	function closePreview() {
 		selected = null;
@@ -426,7 +438,10 @@
 				? 'Location is blocked for this site. Allow it from the lock icon in the address bar, then try again.'
 				: e.code === 3 ? 'Finding your location took too long. Try again.' : 'Your browser could not find your location.';
 		});
-		geolocate.on('geolocate', () => (error = ''));
+		geolocate.on('geolocate', (e: GeolocationPosition) => {
+			error = '';
+			userPos = { lat: e.coords.latitude, lon: e.coords.longitude };
+		});
 		map.addControl(geolocate, 'bottom-right');
 		map.on('load', load);
 		const fit = () => (mobile() ? settle(snap, true) : (panelEl.style.transform = ''));
@@ -531,6 +546,7 @@
 				</div>
 				{#if detail}
 					{@const loc = detail.locations.find((l) => l.id === selected?.location_id)}
+					{#if loc?.address}<p class="t-body address">{loc.address}</p>{/if}
 					<p class="t-caption t-3 where">
 						{loc?.geo_approximate === false
 							? 'Pinned at the office.'
@@ -651,11 +667,14 @@
 			</section>
 		{:else}
 			<section class="sheet-body" aria-label="Companies in view">
-				<div style="display: flex; justify-content: space-between; align-items: baseline"><h2 class="t-heading">Companies in view</h2><span class="t-caption t-3">by matches</span></div>
+				<div style="display: flex; justify-content: space-between; align-items: baseline"><h2 class="t-heading">Companies in view</h2><span class="segs sort" role="group" aria-label="Sort companies">
+						<button type="button" class="seg {sortBy === 'matches' ? 'on' : ''}" aria-pressed={sortBy === 'matches'} onclick={() => { sortBy = 'matches'; refresh(); }}>Best match</button>
+						<button type="button" class="seg {sortBy === 'nearest' ? 'on' : ''}" aria-pressed={sortBy === 'nearest'} onclick={() => { sortBy = 'nearest'; refresh(); }}>Nearest</button>
+					</span></div>
 				{#each inView as c (c.id)}
 					<a class="list-row plain" href="/companies/{c.id}">
 						<Logo name={c.name ?? ''} url={c.logo_url} size="sm" />
-						<span style="flex: 1; min-width: 0"><b class="t-heading" style="font-size: 15px">{c.name}</b><br /><span class="t-caption t-3">{[c.type, c.city, `${c.open_jobs} open`].filter(Boolean).join(' · ')}</span></span>
+						<span style="flex: 1; min-width: 0"><b class="t-heading" style="font-size: 15px">{c.name}</b><br /><span class="t-caption t-3">{[c.type, c.city, `${c.open_jobs} open`, c.distance_km != null ? km(c.distance_km) : ''].filter(Boolean).join(' · ')}</span>{#if c.address}<br /><span class="t-caption t-3 addr-line">{c.address}</span>{/if}</span>
 						<span class="num t-accent">{c.matches}</span>
 					</a>
 				{:else}
@@ -690,6 +709,10 @@
 	.grab:active { cursor: grabbing; }
 	.grabber { width: 38px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--text-3) 45%, transparent); }
 	.where { margin-top: -6px; }
+	.address { color: var(--text); font-weight: 600; }
+	.addr-line { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 24rem; }
+	.sort { width: auto; padding: 3px; }
+	.sort .seg { height: 28px; padding: 0 10px; font-size: 12px; }
 	.openings { display: flex; flex-direction: column; }
 	.openings > p { padding-bottom: 4px; letter-spacing: 0.06em; }
 	:global(.addr) { display: flex; flex-direction: column; align-items: center; pointer-events: none; animation: addr-in 0.45s cubic-bezier(0.2, 0.9, 0.25, 1); }

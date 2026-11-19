@@ -11,7 +11,7 @@ import (
 )
 
 const companyLocations = `-- name: CompanyLocations :many
-SELECT id, city, state, country, is_hq, geo_approximate,
+SELECT id, city, state, country, is_hq, geo_approximate, address,
        ST_Y(geo::geometry)::float8 AS lat, ST_X(geo::geometry)::float8 AS lon
 FROM company_locations WHERE company_id = $1 AND geo IS NOT NULL
 ORDER BY is_hq DESC, city
@@ -24,6 +24,7 @@ type CompanyLocationsRow struct {
 	Country        string  `json:"country"`
 	IsHq           bool    `json:"is_hq"`
 	GeoApproximate bool    `json:"geo_approximate"`
+	Address        *string `json:"address"`
 	Lat            float64 `json:"lat"`
 	Lon            float64 `json:"lon"`
 }
@@ -44,6 +45,7 @@ func (q *Queries) CompanyLocations(ctx context.Context, companyID int64) ([]Comp
 			&i.Country,
 			&i.IsHq,
 			&i.GeoApproximate,
+			&i.Address,
 			&i.Lat,
 			&i.Lon,
 		); err != nil {
@@ -138,7 +140,7 @@ func (q *Queries) CreateReport(ctx context.Context, arg CreateReportParams) erro
 }
 
 const getCompany = `-- name: GetCompany :one
-SELECT c.id, c.name, c.slug, c.website, c.logo_url, c.type, c.stage, c.size_band, c.industry, c.description, c.verified_at, c.created_at, c.origin,
+SELECT c.id, c.name, c.slug, c.website, c.logo_url, c.type, c.stage, c.size_band, c.industry, c.description, c.verified_at, c.created_at, c.origin, c.logo_checked_at,
        (SELECT s.careers_url FROM careers_sources s WHERE s.company_id = c.id ORDER BY s.id LIMIT 1) AS careers_url,
        (SELECT s.last_ok_at FROM careers_sources s WHERE s.company_id = c.id AND s.last_ok_at IS NOT NULL
         ORDER BY s.last_ok_at DESC LIMIT 1) AS last_checked_at,
@@ -165,6 +167,7 @@ type GetCompanyRow struct {
 	VerifiedAt    *time.Time `json:"verified_at"`
 	CreatedAt     time.Time  `json:"created_at"`
 	Origin        string     `json:"origin"`
+	LogoCheckedAt *time.Time `json:"logo_checked_at"`
 	CareersUrl    string     `json:"careers_url"`
 	LastCheckedAt *time.Time `json:"last_checked_at"`
 	Saved         bool       `json:"saved"`
@@ -187,6 +190,7 @@ func (q *Queries) GetCompany(ctx context.Context, arg GetCompanyParams) (GetComp
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.Origin,
+		&i.LogoCheckedAt,
 		&i.CareersUrl,
 		&i.LastCheckedAt,
 		&i.Saved,

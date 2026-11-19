@@ -18,7 +18,7 @@ import (
 
 const (
 	maxPins     = 2000 // the web client clusters pins itself, so a view ships every location (spec said 500)
-	clusterZoom = 7.0 // below this zoom, pins are clustered on a grid
+	clusterZoom = 7.0  // below this zoom, pins are clustered on a grid
 )
 
 type jobFilters struct {
@@ -113,7 +113,7 @@ func (s *Server) lastCrawl(r *http.Request) *time.Time {
 	return st.LastCrawlAt
 }
 
-// GET /v1/companies/in-view: the list beside the globe, sorted by matches.
+// GET /v1/companies/in-view: the list beside the globe, sorted by matches (or nearest to lat, lon).
 func (s *Server) companiesInView(w http.ResponseWriter, r *http.Request) error {
 	b, err := bboxFrom(r)
 	if err != nil {
@@ -121,14 +121,44 @@ func (s *Server) companiesInView(w http.ResponseWriter, r *http.Request) error {
 	}
 	f := filtersFrom(r)
 	limit := queryInt(r, "limit", 50, 1, 100)
+	// lat and lon (the map centre or the member's position) add a distance to each company;
+	// sort=nearest orders by it.
+	var nearLat, nearLon *float64
+	if la, lo := queryFloat(r, "lat"), queryFloat(r, "lon"); la != nil && lo != nil && *la >= -90 && *la <= 90 && *lo >= -180 && *lo <= 180 {
+		nearLat, nearLon = la, lo
+	}
 	rows, err := s.q.CompaniesInView(r.Context(), db.CompaniesInViewParams{
 		UserID: account(r).UserID, West: b.west, South: b.south, East: b.east, North: b.north,
 		CompanyType: f.CompanyType, MaxRows: int32(limit), Skip: int32(queryInt(r, "offset", 0, 0, 10_000)),
+		NearLat: nearLat, NearLon: nearLon, Nearest: nearLat != nil && r.URL.Query().Get("sort") == "nearest",
 	})
 	if err != nil {
 		return err
 	}
-	return ok(w, map[string]any{"items": rows})
+	if nearLat == nil {
+		return ok(w, map[string]any{"items": rows})
+	}
+	ids := make([]int64, len(rows))
+	for i, c := range rows {
+		ids[i] = c.ID
+	}
+	dist, err := s.q.CompanyDistances(r.Context(), db.CompanyDistancesParams{Lat: *nearLat, Lon: *nearLon, CompanyIds: ids})
+	if err != nil {
+		return err
+	}
+	km := map[int64]float64{}
+	for _, d := range dist {
+		km[d.CompanyID] = d.Km
+	}
+	items := make([]map[string]any, len(rows))
+	for i, c := range rows {
+		items[i] = map[string]any{"id": c.ID, "name": c.Name, "slug": c.Slug, "type": c.Type, "logo_url": c.LogoUrl,
+			"city": c.City, "address": c.Address, "open_jobs": c.OpenJobs, "matches": c.Matches}
+		if d, found := km[c.ID]; found {
+			items[i]["distance_km"] = d
+		}
+	}
+	return ok(w, map[string]any{"items": items})
 }
 
 // GET /v1/companies/{id}: company detail (S18).

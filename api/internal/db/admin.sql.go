@@ -64,7 +64,7 @@ func (q *Queries) AdminAddSource(ctx context.Context, arg AdminAddSourceParams) 
 }
 
 const adminCreateCompany = `-- name: AdminCreateCompany :one
-INSERT INTO companies (name, slug, website, type, origin) VALUES ($1, $2, $3, $4, 'admin') RETURNING id, name, slug, website, logo_url, type, stage, size_band, industry, description, verified_at, created_at, origin
+INSERT INTO companies (name, slug, website, type, origin) VALUES ($1, $2, $3, $4, 'admin') RETURNING id, name, slug, website, logo_url, type, stage, size_band, industry, description, verified_at, created_at, origin, logo_checked_at
 `
 
 type AdminCreateCompanyParams struct {
@@ -96,6 +96,7 @@ func (q *Queries) AdminCreateCompany(ctx context.Context, arg AdminCreateCompany
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.Origin,
+		&i.LogoCheckedAt,
 	)
 	return i, err
 }
