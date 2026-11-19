@@ -17,10 +17,15 @@ sw.addEventListener('install', (event) => {
 
 sw.addEventListener('activate', (event) => {
 	event.waitUntil(
-		caches
-			.keys()
-			.then((keys) => Promise.all(keys.filter((k) => k !== SHELL && k !== DATA).map((k) => caches.delete(k))))
-			.then(() => sw.clients.claim())
+		(async () => {
+			const keys = await caches.keys();
+			const upgraded = keys.some((k) => k.startsWith('shell-') && k !== SHELL);
+			await Promise.all(keys.filter((k) => k !== SHELL && k !== DATA).map((k) => caches.delete(k)));
+			await sw.clients.claim();
+			// A new release replaced an old one: reload the open tabs once, so nobody keeps
+			// looking at the previous version until they think to refresh.
+			if (upgraded) for (const tab of await sw.clients.matchAll({ type: 'window' })) (tab as WindowClient).navigate(tab.url).catch(() => {});
+		})()
 	);
 });
 
