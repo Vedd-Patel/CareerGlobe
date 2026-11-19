@@ -12,7 +12,7 @@ const origin = (url) => {
 	}
 };
 const api = origin(env.VITE_API_URL) ?? 'http://127.0.0.1:8080';
-const map = origin(env.VITE_MAP_STYLE_URL) ?? 'https://demotiles.maplibre.org';
+const map = origin(env.VITE_MAP_STYLE_URL) ?? 'https://tiles.openfreemap.org';
 const extra = (env.VITE_CSP_CONNECT_SRC ?? '').split(/[\s,]+/).filter(Boolean); // e.g. a separate map tile host
 const authDomain = env.VITE_FIREBASE_AUTH_DOMAIN ? [`https://${env.VITE_FIREBASE_AUTH_DOMAIN}`] : [];
 
