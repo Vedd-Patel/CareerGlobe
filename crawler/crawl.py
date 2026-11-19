@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 import config
 import geocode
 import locate
+import logos
 import seeds
 import store
 from heartbeat import Heartbeat
@@ -137,7 +138,7 @@ async def crawl(conn, client: PoliteClient, settings: config.Settings, run, sour
 
 
 async def place_on_map(conn, client) -> None:
-    """After a crawl: a location per job city, pins for them, then exact offices where OpenStreetMap has them.
+    """After a crawl: a location per job city, pins for them, exact offices where OpenStreetMap has them, and logos.
     The map is a nice-to-have, so a failure here never fails the night."""
     try:
         added = await geocode.add_job_cities(conn)
@@ -147,6 +148,9 @@ async def place_on_map(conn, client) -> None:
         checked, found = await locate.run(conn, client)
         if checked:
             log.info("office lookups: %d checked, %d moved to an exact office", checked, found)
+        checked, found = await logos.run(conn, client)
+        if checked:
+            log.info("logos: %d companies looked at, %d logos found", checked, found)
     except Exception:
         log.exception("placing companies on the map failed; the crawl itself is unaffected")
 
