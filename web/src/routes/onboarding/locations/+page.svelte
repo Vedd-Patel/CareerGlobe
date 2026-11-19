@@ -29,7 +29,7 @@
 </script>
 
 <h1 class="t-title">Where do you want to work?</h1>
-<div class="search"><Icon name="search" size={18} /><input aria-label="Search a city" placeholder="Search a city" bind:value={q} style="border: 0; outline: 0; background: none; flex: 1; font: inherit; color: var(--text)" /></div>
+<div class="search city-search"><Icon name="search" size={18} /><input aria-label="Search a city" placeholder="Search a city" bind:value={q} style="border: 0; outline: 0; background: none; flex: 1; font: inherit; color: var(--text)" /></div>
 {#if suggestions.length}
 	<div class="chips">{#each suggestions as s (s)}<button class="chip" onclick={() => { toggle(s); q = ''; }}>+ {s}</button>{/each}</div>
 {/if}
@@ -47,3 +47,12 @@
 	<input type="checkbox" bind:checked={anywhere} style="width: 22px; height: 22px; accent-color: var(--accent)" />
 </label>
 <button class="btn btn-primary btn-block" onclick={next}>Continue</button>
+
+<style>
+	.city-search {
+		flex: none;
+		height: 44px;
+		align-self: stretch;
+		border-radius: 12px;
+	}
+</style>
