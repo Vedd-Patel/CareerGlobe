@@ -34,7 +34,7 @@
 	let results = $state<SearchResults | null>(null);
 	type Detail = {
 		careers_url?: string | null;
-		locations: { city?: string | null; lat?: number; lon?: number; geo_approximate?: boolean }[];
+		locations: { id?: number; city?: string | null; lat?: number; lon?: number; geo_approximate?: boolean }[];
 		open_jobs: { id: number; title: string; cities?: string[]; work_mode?: string | null; first_seen?: string; score?: number | null }[];
 	};
 	let detail = $state<Detail | null>(null);
@@ -229,6 +229,13 @@
 		}
 	}
 
+	// The company's openings in the picked pin's city (a job with no city belongs to headquarters).
+	function openingsHere(d: Detail, p: Pin) {
+		const city = (p.city ?? '').toLowerCase();
+		const here = d.open_jobs.filter((j) => (j.cities ?? []).some((c) => c.toLowerCase() === city) || (!j.cities?.length && p.is_hq));
+		return here.length ? here : d.open_jobs;
+	}
+
 	function closePreview() {
 		selected = null;
 		detail = null;
@@ -243,7 +250,7 @@
 		addr?.remove();
 		addr = null;
 		if (!p || !map) return;
-		const loc = d?.locations?.find((l) => l.lat != null) ?? null;
+		const loc = d?.locations?.find((l) => l.id === p.location_id) ?? null;
 		const approx = loc ? loc.geo_approximate !== false : true;
 		const el = document.createElement('div');
 		el.className = `addr${approx ? ' approx' : ''}`;
@@ -498,15 +505,16 @@
 					<div><p class="num t-accent" style="font-size: 24px">{selected.matches}</p><p class="t-caption t-3">your matches</p></div>
 				</div>
 				{#if detail}
-					{@const loc = detail.locations.find((l) => l.lat != null)}
+					{@const loc = detail.locations.find((l) => l.id === selected?.location_id)}
 					<p class="t-caption t-3 where">
 						{loc?.geo_approximate === false
 							? 'Pinned at the office.'
 							: `Pinned at the centre of ${loc?.city ?? 'the city'}: the exact office address is not on file yet.`}
 					</p>
+					{@const here = openingsHere(detail, selected)}
 					<div class="openings" aria-label="Openings">
-						<p class="t-caption t-2">OPENINGS</p>
-						{#each detail.open_jobs.slice(0, 6) as j (j.id)}
+						<p class="t-caption t-2">OPENINGS{selected.city ? ` IN ${selected.city.toUpperCase()}` : ''}</p>
+						{#each here.slice(0, 6) as j (j.id)}
 							<a class="list-row plain" href="/jobs/{j.id}">
 								<ScoreRing score={j.score} size="sm" />
 								<span style="flex: 1; min-width: 0; text-align: left">
@@ -517,7 +525,9 @@
 						{:else}
 							<p class="t-body t-2">No open roles right now.</p>
 						{/each}
-						{#if detail.open_jobs.length > 6}<a class="btn btn-text" href="/companies/{selected.company_id}">See all {detail.open_jobs.length} openings</a>{/if}
+						{#if detail.open_jobs.length > Math.min(6, here.length) || here.length > 6}
+							<a class="btn btn-text" href="/companies/{selected.company_id}">See all {detail.open_jobs.length} openings at {selected.name}</a>
+						{/if}
 					</div>
 				{:else}
 					<div class="sk" style="height: 120px"></div>
