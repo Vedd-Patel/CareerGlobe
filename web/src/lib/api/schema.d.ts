@@ -1311,6 +1311,13 @@ export interface components {
         Remote: boolean;
         CompanyType: "product" | "service";
         Posted: "24h" | "7d" | "30d";
+        /** @description Comma list of job types: intern, full_time, part_time, contract */
+        Employment: string;
+        /** @description With exp_max: years of experience; jobs whose asked-for range meets it (or states none) pass */
+        ExpMin: number;
+        ExpMax: number;
+        /** @description Yearly rupees; only jobs that list a salary at least this high pass */
+        MinSalary: number;
         Limit: number;
         Offset: number;
     };
@@ -1498,6 +1505,13 @@ export interface operations {
                 zoom?: number;
                 category?: components["parameters"]["Category"];
                 remote?: components["parameters"]["Remote"];
+                /** @description Comma list of job types: intern, full_time, part_time, contract */
+                employment?: components["parameters"]["Employment"];
+                /** @description With exp_max: years of experience; jobs whose asked-for range meets it (or states none) pass */
+                exp_min?: components["parameters"]["ExpMin"];
+                exp_max?: components["parameters"]["ExpMax"];
+                /** @description Yearly rupees; only jobs that list a salary at least this high pass */
+                min_salary?: components["parameters"]["MinSalary"];
                 type?: components["parameters"]["CompanyType"];
                 posted?: components["parameters"]["Posted"];
                 /** @description Only companies with open jobs */
@@ -1723,6 +1737,13 @@ export interface operations {
                 sort?: "best" | "newest";
                 category?: components["parameters"]["Category"];
                 remote?: components["parameters"]["Remote"];
+                /** @description Comma list of job types: intern, full_time, part_time, contract */
+                employment?: components["parameters"]["Employment"];
+                /** @description With exp_max: years of experience; jobs whose asked-for range meets it (or states none) pass */
+                exp_min?: components["parameters"]["ExpMin"];
+                exp_max?: components["parameters"]["ExpMax"];
+                /** @description Yearly rupees; only jobs that list a salary at least this high pass */
+                min_salary?: components["parameters"]["MinSalary"];
                 type?: components["parameters"]["CompanyType"];
                 city?: string;
                 min_score?: number;

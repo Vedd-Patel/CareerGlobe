@@ -6,7 +6,9 @@
 	import { api, ApiError, type Schemas } from '$lib/api/client';
 	import { mapStyle } from '$lib/map/style';
 	import { clusterPoints, compact, type ClusterPoint } from '$lib/cluster';
-	import { activeCount, clusterSize, emptyFilters, filtersToQuery, pinKind, type Filters } from '$lib/globe';
+	import {
+		activeCount, clusterSize, emptyFilters, EMPLOYMENT, EXPERIENCE, filtersToQuery, pinKind, SALARY_LPA, type Filters
+	} from '$lib/globe';
 	import { updatedLabel } from '$lib/format';
 	import Icon from '$lib/components/Icon.svelte';
 	import Logo from '$lib/components/Logo.svelte';
@@ -486,6 +488,11 @@
 		}
 	}
 
+	function toggleEmployment(id: string) {
+		filters.employment = filters.employment.includes(id) ? filters.employment.filter((x) => x !== id) : [...filters.employment, id];
+		refresh();
+	}
+
 	function toggle(key: 'matches' | 'remote' | 'hiring') {
 		filters[key] = !filters[key];
 		refresh();
@@ -506,6 +513,10 @@
 				<button class="chip glass" onclick={() => geolocate?.trigger()}><Icon name="globe" size={16} />Near me</button>
 				<button class="chip {filters.matches ? 'on' : 'glass'}" aria-pressed={filters.matches} onclick={() => toggle('matches')}>Matches only</button>
 				<button class="chip {filters.remote ? 'on' : 'glass'}" aria-pressed={filters.remote} onclick={() => toggle('remote')}>Remote</button>
+				<button class="chip {filters.employment.includes('intern') ? 'on' : 'glass'}" aria-pressed={filters.employment.includes('intern')}
+					onclick={() => toggleEmployment('intern')}>Internships</button>
+				<button class="chip {filters.employment.includes('full_time') ? 'on' : 'glass'}" aria-pressed={filters.employment.includes('full_time')}
+					onclick={() => toggleEmployment('full_time')}>Full-time</button>
 				<button class="chip {filters.category === 'Software Engineering' ? 'on' : 'glass'}"
 					onclick={() => { filters.category = filters.category === 'Software Engineering' ? '' : 'Software Engineering'; refresh(); }}>Software</button>
 				<button class="chip {filters.type === 'product' ? 'on' : 'glass'}"
@@ -612,6 +623,29 @@
 							onclick={() => (filters.category = filters.category === c ? '' : c)}>{c}</button>
 					{/each}
 				</div>
+				<p class="t-caption t-2">JOB TYPE</p>
+				<div class="chips">
+					{#each EMPLOYMENT as t (t.id)}
+						<button class="chip {filters.employment.includes(t.id) ? 'on' : ''}" aria-pressed={filters.employment.includes(t.id)}
+							onclick={() => (filters.employment = filters.employment.includes(t.id) ? filters.employment.filter((x) => x !== t.id) : [...filters.employment, t.id])}>{t.label}</button>
+					{/each}
+				</div>
+				<p class="t-caption t-2">YEARS OF EXPERIENCE</p>
+				<div class="chips">
+					<button class="chip {filters.exp === '' ? 'on' : ''}" onclick={() => (filters.exp = '')}>Any</button>
+					{#each EXPERIENCE as b (b.id)}
+						<button class="chip {filters.exp === b.id ? 'on' : ''}" aria-pressed={filters.exp === b.id} onclick={() => (filters.exp = b.id)}>{b.label}</button>
+					{/each}
+				</div>
+				<p class="t-caption t-3">Jobs that do not state the years they want are always shown.</p>
+				<p class="t-caption t-2">MINIMUM SALARY (LPA)</p>
+				<div class="chips">
+					<button class="chip {filters.minSalaryLpa === 0 ? 'on' : ''}" onclick={() => (filters.minSalaryLpa = 0)}>Any</button>
+					{#each SALARY_LPA as n (n)}
+						<button class="chip {filters.minSalaryLpa === n ? 'on' : ''}" aria-pressed={filters.minSalaryLpa === n} onclick={() => (filters.minSalaryLpa = n)}>₹{n}+</button>
+					{/each}
+				</div>
+				{#if filters.minSalaryLpa > 0}<p class="t-caption t-3">Only jobs that list a salary are shown: most postings do not.</p>{/if}
 				<p class="t-caption t-2">WORK MODE</p>
 				<div class="segs">
 					<button class="seg {filters.remote ? '' : 'on'}" onclick={() => (filters.remote = false)}>Any</button>

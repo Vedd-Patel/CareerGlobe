@@ -6,6 +6,7 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import SkeletonCards from '$lib/components/SkeletonCards.svelte';
 	import Banner from '$lib/components/Banner.svelte';
+	import { EMPLOYMENT, EXPERIENCE, SALARY_LPA, jobTypeQuery } from '$lib/globe';
 
 	type Match = Schemas['MatchCard'];
 	const PAGE = 30;
@@ -14,6 +15,9 @@
 	let remote = $state(false);
 	let type = $state<'' | 'product' | 'service'>('');
 	let category = $state('');
+	let employment = $state<string[]>([]);
+	let exp = $state('');
+	let minSalaryLpa = $state(0);
 	let items = $state<Match[]>([]);
 	let loading = $state(true);
 	let more = $state(false);
@@ -26,6 +30,7 @@
 		try {
 			const res = await api.get<{ items?: Match[] }>('/v1/matches', {
 				sort, remote: remote || undefined, type: type || undefined, category: category || undefined,
+				...jobTypeQuery({ employment, exp, minSalaryLpa }),
 				limit: PAGE, offset: append ? items.length : 0
 			});
 			const got = res.items ?? [];
@@ -39,7 +44,7 @@
 	}
 
 	$effect(() => {
-		void [sort, remote, type, category];
+		void [sort, remote, type, category, employment.length, exp, minSalaryLpa];
 		load();
 	});
 
@@ -70,6 +75,18 @@
 		<button class="chip {remote ? 'on' : ''}" aria-pressed={remote} onclick={() => (remote = !remote)}>Remote</button>
 		<button class="chip {type === 'product' ? 'on' : ''}" onclick={() => (type = type === 'product' ? '' : 'product')}>Product</button>
 		<button class="chip {type === 'service' ? 'on' : ''}" onclick={() => (type = type === 'service' ? '' : 'service')}>Service</button>
+		{#each EMPLOYMENT as t (t.id)}
+			<button class="chip {employment.includes(t.id) ? 'on' : ''}" aria-pressed={employment.includes(t.id)}
+				onclick={() => (employment = employment.includes(t.id) ? employment.filter((x) => x !== t.id) : [...employment, t.id])}>{t.label}</button>
+		{/each}
+		<select class="chip" bind:value={exp} aria-label="Years of experience">
+			<option value="">Any experience</option>
+			{#each EXPERIENCE as b (b.id)}<option value={b.id}>{b.label}</option>{/each}
+		</select>
+		<select class="chip" bind:value={minSalaryLpa} aria-label="Minimum salary">
+			<option value={0}>Any salary</option>
+			{#each SALARY_LPA as n (n)}<option value={n}>₹{n}+ LPA</option>{/each}
+		</select>
 		<select class="chip" bind:value={category} aria-label="Category">
 			<option value="">All categories</option>
 			{#each categories as c (c)}<option value={c}>{c}</option>{/each}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeCount, clusterSize, emptyFilters, pinKind } from './globe';
+import { activeCount, clusterSize, emptyFilters, filtersToQuery, jobTypeQuery, pinKind } from './globe';
 import { salary, scoreBand, updatedLabel, initials, logoClass } from './format';
 
 describe('globe helpers', () => {
@@ -12,6 +12,15 @@ describe('globe helpers', () => {
 	it('counts active filters', () => {
 		expect(activeCount(emptyFilters())).toBe(0);
 		expect(activeCount({ ...emptyFilters(), remote: true, category: 'Design' })).toBe(2);
+		expect(activeCount({ ...emptyFilters(), employment: ['intern'], exp: '1-3', minSalaryLpa: 10 })).toBe(3);
+	});
+	it('turns type, experience and salary into query parameters', () => {
+		expect(jobTypeQuery(emptyFilters())).toEqual({ employment: '', exp_min: '', exp_max: '', min_salary: '' });
+		expect(jobTypeQuery({ employment: ['intern', 'contract'], exp: 'fresher', minSalaryLpa: 12 })).toEqual({
+			employment: 'intern,contract', exp_min: '0', exp_max: '1', min_salary: '1200000'
+		});
+		expect(jobTypeQuery({ employment: [], exp: '8+', minSalaryLpa: 0 }).exp_max).toBe('60');
+		expect(filtersToQuery({ ...emptyFilters(), exp: '3-5' })).toMatchObject({ exp_min: '3', exp_max: '5', remote: false });
 	});
 });
 
