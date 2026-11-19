@@ -5,6 +5,7 @@
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { api, ApiError, type Schemas } from '$lib/api/client';
 	import { mapStyle } from '$lib/map/style';
+	import { clusterPoints, compact, type ClusterPoint } from '$lib/cluster';
 	import { activeCount, clusterSize, emptyFilters, filtersToQuery, pinKind, type Filters } from '$lib/globe';
 	import { updatedLabel } from '$lib/format';
 	import Icon from '$lib/components/Icon.svelte';
@@ -12,7 +13,6 @@
 	import Banner from '$lib/components/Banner.svelte';
 
 	type Pin = Schemas['Pin'];
-	type Cluster = Schemas['Cluster'];
 	type Row = NonNullable<Schemas['CompanyListResponse']['items']>[number];
 	type SearchResults = {
 		companies: Schemas['CompanyRef'][];
@@ -22,7 +22,6 @@
 
 	let container: HTMLDivElement;
 	let map: maplibregl.Map | null = null;
-	let markers: maplibregl.Marker[] = [];
 	let filters = $state<Filters>(emptyFilters());
 	let inView = $state<Row[]>([]);
 	let updated = $state<string | null>(null);
@@ -62,93 +61,139 @@
 		if (!map) return;
 		const bounds = viewBounds();
 		try {
+			// Ask for a wider box than the screen so panning shows pins at once.
+			const padLon = (bounds.east - bounds.west) * 0.5, padLat = (bounds.north - bounds.south) * 0.5;
+			const wide = {
+				west: Math.max(-180, bounds.west - padLon), east: Math.min(180, bounds.east + padLon),
+				south: Math.max(-90, bounds.south - padLat), north: Math.min(90, bounds.north + padLat)
+			};
 			const [g, list] = await Promise.all([
-				api.get<{ mode: 'pins' | 'clusters'; items: (Pin | Cluster)[]; updated_at?: string | null }>('/v1/globe', {
-					...bounds, zoom: map.getZoom().toFixed(2), ...filtersToQuery(filters)
+				api.get<{ mode: 'pins' | 'clusters'; items: Pin[]; updated_at?: string | null }>('/v1/globe', {
+					...wide, zoom: 14, ...filtersToQuery(filters)
 				}),
 				api.get<Schemas['CompanyListResponse']>('/v1/companies/in-view', { ...bounds, type: filters.type, limit: 40 })
 			]);
 			error = '';
 			updated = g.updated_at ?? null;
 			inView = list.items ?? [];
-			draw(g.mode, g.items);
+			pins = g.mode === 'pins' ? g.items : [];
+			update();
 		} catch (e) {
 			error = e instanceof ApiError ? e.message : 'Could not load the map.';
 		}
 	}
 
-	function draw(mode: 'pins' | 'clusters', items: (Pin | Cluster)[]) {
-		if (!map) return;
-		markers.forEach((m) => m.remove());
-		markers = [];
-		if (mode === 'clusters') {
-			for (const c of items as Cluster[]) {
-				const el = bubble(c.companies ?? 0, c.matches ?? 0, c.open_jobs ?? 0, `${c.companies} companies, ${c.matches} matches. Zoom in.`);
-				el.onclick = () => openCluster(c);
-				add(el, c.lon, c.lat);
-			}
-			return;
-		}
-		// Companies placed at the same spot (often a city centre) share one bubble
-		// that opens a short list (S15); a lone company gets a pin.
-		const spots = new Map<string, Pin[]>();
-		for (const p of items as Pin[]) {
-			const k = `${(p.lat ?? 0).toFixed(4)},${(p.lon ?? 0).toFixed(4)}`;
-			spots.set(k, [...(spots.get(k) ?? []), p]);
-		}
-		for (const group of spots.values()) {
-			const p = group[0];
-			if (group.length > 1) {
-				const matches = group.reduce((n, g) => n + (g.matches ?? 0), 0);
-				const open = group.reduce((n, g) => n + (g.open_jobs ?? 0), 0);
-				const el = bubble(group.length, matches, open, `${group.length} companies here, ${matches} matches`);
-				el.onclick = () => {
-					clusterList = [...group].sort((a, b) => (b.matches ?? 0) - (a.matches ?? 0) || (b.open_jobs ?? 0) - (a.open_jobs ?? 0));
-					selected = null;
-					sheet = 'list';
-				};
-				add(el, p.lon, p.lat);
-				continue;
-			}
-			const el = document.createElement('button');
-			el.type = 'button';
-			el.className = 'pin-hit';
-			const dot = document.createElement('span');
-			dot.className = `pin ${pinKind(p)}${selected?.company_id === p.company_id ? ' sel' : ''}`;
-			el.append(dot);
-			el.setAttribute('aria-label', `${p.name}, ${p.open_jobs} open jobs, ${p.matches} matches`);
-			el.onclick = () => select(p);
-			add(el, p.lon, p.lat);
-		}
+	// Pins are clustered on screen on every map frame (see $lib/cluster): bubbles
+	// show their total open jobs, merge into a neighbour as you zoom out and slide
+	// back out as you zoom in.
+	type Entry = { marker: maplibregl.Marker; inner: HTMLDivElement; members: Pin[]; sig: string };
+	const CLUSTER_PX = 46;
+	let pins: Pin[] = [];
+	let live = new Map<string, Entry>();
+	let owner = new Map<string, string>();
+	let raf = 0;
+	const keyOf = (p: Pin) => String(p.location_id ?? p.company_id);
+
+	function schedule() {
+		if (!raf) raf = requestAnimationFrame(() => ((raf = 0), update()));
 	}
 
-	function bubble(n: number, matches: number, open: number, label: string): HTMLButtonElement {
+	function update() {
+		if (!map) return;
+		const byKey = new Map(pins.map((p) => [keyOf(p), p]));
+		const screen = new Map<string, ClusterPoint>();
+		for (const p of pins) {
+			const s = map.project([p.lon ?? 0, p.lat ?? 0]);
+			screen.set(keyOf(p), { key: keyOf(p), x: s.x, y: s.y, open: p.open_jobs ?? 0, matches: p.matches ?? 0 });
+		}
+		const groups = clusterPoints([...screen.values()], CLUSTER_PX);
+		const nextOwner = new Map<string, string>();
+		for (const g of groups) for (const m of g.members) nextOwner.set(m, g.seed);
+		const seen = new Set<string>();
+		for (const g of groups) {
+			seen.add(g.seed);
+			let e = live.get(g.seed);
+			if (!e) {
+				e = create(byKey.get(g.seed)!);
+				live.set(g.seed, e);
+				// A bubble that just split off starts on top of the one it came from.
+				const from = owner.get(g.seed);
+				const par = from && from !== g.seed ? screen.get(from) : undefined;
+				const me = screen.get(g.seed)!;
+				const dx = par ? par.x - me.x : 0, dy = par ? par.y - me.y : 0;
+				e.inner.style.transform = `translate(${dx}px, ${dy}px) scale(0.6)`;
+				e.inner.style.opacity = '0';
+				const inner = e.inner;
+				requestAnimationFrame(() => requestAnimationFrame(() => ((inner.style.transform = ''), (inner.style.opacity = ''))));
+			}
+			e.members = g.members.map((k) => byKey.get(k)!);
+			render(e);
+		}
+		for (const [k, e] of live) {
+			if (seen.has(k)) continue;
+			live.delete(k);
+			// A bubble that merged slides into the one that absorbed it, then goes.
+			const to = screen.get(nextOwner.get(k) ?? ''), me = screen.get(k);
+			const dx = to && me ? to.x - me.x : 0, dy = to && me ? to.y - me.y : 0;
+			e.inner.style.transform = `translate(${dx}px, ${dy}px) scale(0.6)`;
+			e.inner.style.opacity = '0';
+			setTimeout(() => e.marker.remove(), 320);
+		}
+		owner = nextOwner;
+	}
+
+	function create(seed: Pin): Entry {
+		const wrap = document.createElement('div');
+		wrap.className = 'mk';
+		const inner = document.createElement('div');
+		inner.className = 'mk-in';
+		wrap.append(inner);
+		const marker = new maplibregl.Marker({ element: wrap }).setLngLat([seed.lon ?? 0, seed.lat ?? 0]).addTo(map!);
+		return { marker, inner, members: [seed], sig: '' };
+	}
+
+	function render(e: Entry) {
+		const m = e.members;
+		const open = m.reduce((n, p) => n + (p.open_jobs ?? 0), 0);
+		const matches = m.reduce((n, p) => n + (p.matches ?? 0), 0);
+		const sel = m.length === 1 && selected?.company_id === m[0].company_id;
+		const sig = `${m.length}|${open}|${matches > 0}|${m.length === 1 ? pinKind(m[0]) : ''}|${sel}`;
+		if (sig === e.sig) return;
+		const grew = e.sig !== '' && !e.sig.startsWith(`${m.length}|${open}|`);
+		e.sig = sig;
 		const el = document.createElement('button');
 		el.type = 'button';
-		el.className = `cluster ${clusterSize(n)}`;
-		el.textContent = String(n);
-		el.setAttribute('aria-label', label);
-		if (!matches) el.style.background = open > 0 ? 'var(--pin-hiring)' : 'var(--pin-idle)';
-		return el;
+		el.onclick = () => openGroup(e);
+		if (m.length === 1) {
+			const p = m[0];
+			el.className = 'pin-hit';
+			const dot = document.createElement('span');
+			dot.className = `pin ${pinKind(p)}${sel ? ' sel' : ''}`;
+			el.append(dot);
+			el.setAttribute('aria-label', `${p.name}, ${p.open_jobs} open jobs, ${p.matches} matches`);
+		} else {
+			el.className = `cluster ${clusterSize(m.length)}${grew ? ' pop' : ''}`;
+			el.textContent = compact(open);
+			el.setAttribute('aria-label', `${m.length} companies, ${open} open jobs, ${matches} matches. Zoom in.`);
+			if (!matches) el.style.background = open > 0 ? 'var(--pin-hiring)' : 'var(--pin-idle)';
+		}
+		e.inner.replaceChildren(el);
 	}
 
-	function add(el: HTMLElement, lon = 0, lat = 0) {
-		markers.push(new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map!));
-	}
-
-	async function openCluster(c: Cluster) {
+	function openGroup(e: Entry) {
 		if (!map) return;
-		const z = map.getZoom();
-		if (z < 9) {
-			map.easeTo({ center: [c.lon ?? 0, c.lat ?? 0], zoom: Math.min(z + 2.5, 12), duration: 600 });
+		const m = e.members;
+		if (m.length === 1) return select(m[0]);
+		const lons = m.map((p) => p.lon ?? 0), lats = m.map((p) => p.lat ?? 0);
+		const [w, so, ea, n] = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
+		if (Math.max(ea - w, n - so) < 1e-4 || map.getZoom() >= 14) {
+			// Many companies at one address: show them as a short list (S15).
+			clusterList = [...m].sort((a, b) => (b.matches ?? 0) - (a.matches ?? 0) || (b.open_jobs ?? 0) - (a.open_jobs ?? 0));
+			selected = null;
+			sheet = 'list';
 			return;
 		}
-		// Many companies at one address: show them as a short list (S15).
-		const d = 0.05;
-		const lat = c.lat ?? 0, lon = c.lon ?? 0;
-		clusterList = await pinsIn({ west: lon - d, south: lat - d, east: lon + d, north: lat + d }, filters).catch(() => []);
-		selected = null;
-		sheet = 'list';
+		map.fitBounds([[w, so], [ea, n]], { padding: 110, maxZoom: 15, duration: 650 });
 	}
 
 	function select(p: Pin) {
@@ -157,6 +202,11 @@
 		sheet = 'list';
 		refresh();
 	}
+
+	$effect(() => {
+		void selected?.company_id;
+		schedule();
+	});
 
 	let savedIds = $state<number[]>([]);
 	async function toggleSave(id: number) {
@@ -238,6 +288,7 @@
 		map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 		map.on('load', load);
 		map.on('moveend', refresh);
+		map.on('move', schedule);
 		if (!reduced) {
 			// Slow idle spin (design: 1 turn / 120 s) until the first touch, and only
 			// once zoomed out to the whole globe: the opening view of India stays put.
@@ -259,6 +310,7 @@
 	onDestroy(() => {
 		clearTimeout(timer);
 		clearTimeout(searchTimer);
+		cancelAnimationFrame(raf);
 		map?.remove();
 	});
 
@@ -454,6 +506,15 @@
 	.seg { border: 0; cursor: pointer; font: 700 13px var(--font); }
 	:global(.maplibregl-ctrl-attrib) { font-size: 10px; }
 	:global(.maplibregl-marker.cluster) { cursor: pointer; padding: 0; }
+	:global(.mk) { display: grid; place-items: center; }
+	:global(.mk-in) { display: grid; place-items: center; transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.28s ease; }
+	:global(.mk-in .cluster) { position: static; transform: none; cursor: pointer; padding: 0; }
+	:global(.mk-in .cluster.pop) { animation: cg-pop 0.28s ease-out; }
+	@keyframes cg-pop { 0% { transform: scale(0.82); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+	@media (prefers-reduced-motion: reduce) {
+		:global(.mk-in) { transition: none; }
+		:global(.mk-in .cluster.pop) { animation: none; }
+	}
 	@media (min-width: 900px) {
 		.globe-page { flex-direction: row; height: 100vh; }
 		.panel { width: 440px; max-height: none; border-top: 0; border-left: 1px solid var(--line); }
