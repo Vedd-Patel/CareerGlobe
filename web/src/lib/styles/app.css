@@ -149,3 +149,51 @@ select.chip{appearance:auto;padding-right:10px}
 .page{animation:page-in .22s ease-out}
 @keyframes page-in{from{opacity:0;transform:translateY(6px)}}
 ::selection{background:var(--accent-soft)}
+
+/* ---- Apple-style layer: system type, translucent materials, instant and springy feedback ---- */
+:root{
+  /* The platform's own font first: it ships optical sizing and tracking tuned per size. */
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",system-ui,sans-serif;
+  --ease-out:cubic-bezier(.22,1,.36,1);        /* critically damped: settles without overshoot */
+  --ease-spring:cubic-bezier(.34,1.4,.5,1);    /* a little overshoot, only for things that were flicked */
+  --material:color-mix(in srgb,var(--surface) 68%,transparent);
+  --material-edge:color-mix(in srgb,#fff 70%,transparent);
+}
+/* Tracking and leading follow size: tight when large, open when small. */
+.t-display{letter-spacing:-.034em;line-height:1.08}
+.t-title{letter-spacing:-.024em;line-height:1.18}
+.t-heading{letter-spacing:-.012em}
+.t-body{letter-spacing:-.003em}
+.t-caption{letter-spacing:.012em}
+h1.t-title{text-wrap:balance}
+/* Materials: a blurred, saturated layer with a bright top edge, so content shows through. */
+.glass{background:var(--material);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);box-shadow:inset 0 1px 0 var(--material-edge),0 8px 28px rgba(27,31,28,.12),0 1px 3px rgba(27,31,28,.08)}
+.sheet{background:var(--material);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%)}
+.maplibregl-ctrl-group{backdrop-filter:blur(20px) saturate(180%);background:var(--material)!important}
+/* Feedback is on the press and instant; the release settles on a gentle curve. */
+.btn,.icon-btn,.chip,.tab,.seg,.tile,.list-row.plain{transition:background-color .3s var(--ease-out),color .3s var(--ease-out),border-color .3s var(--ease-out),box-shadow .3s var(--ease-out),transform .4s var(--ease-out)}
+.btn:active:not([disabled]),.icon-btn:active,.chip:active,.tab:active,.seg:active,.tile:active{transform:scale(.96);transition-duration:.08s}
+a.card:active,a .card:active,.card.lift:active{transform:scale(.985);transition-duration:.08s}
+.card,.tcard{border-radius:var(--r-xl);box-shadow:0 1px 2px rgba(27,31,28,.05),0 6px 20px rgba(27,31,28,.06)}
+.card.lift:hover,a.card:hover,a .card:hover,.tcard:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(27,31,28,.06),0 14px 34px rgba(27,31,28,.1)}
+.btn{font-weight:650;letter-spacing:-.006em}
+.input{border-radius:14px;transition:border-color .25s var(--ease-out),box-shadow .25s var(--ease-out)}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:2px;border-radius:inherit}
+/* A panel arrives like a material: blur and scale settle together, rather than a plain fade. */
+.preview{animation:materialize .5s var(--ease-out)}
+@keyframes materialize{from{opacity:0;transform:translateY(10px) scale(.985);filter:blur(10px)}}
+.page{animation:page-in .4s var(--ease-out)}
+@keyframes page-in{from{opacity:0;transform:translateY(8px)}}
+html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text-3) 40%,transparent) transparent}
+/* Accessibility: three independent signals, each with its own gentler answer. */
+@media (prefers-reduced-transparency:reduce){
+  .glass,.sheet,.maplibregl-ctrl-group{background:var(--surface)!important;backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+@media (prefers-contrast:more){
+  .glass,.sheet,.card{border-color:var(--text-2)}
+  .t-3{color:var(--text-2)}
+}
+@media (prefers-reduced-motion:reduce){
+  .preview,.page{animation:none}
+}
+

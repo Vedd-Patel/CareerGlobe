@@ -35,7 +35,8 @@
 <style>
 	.app-nav {
 		position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; height: 76px; padding: 8px 6px calc(10px + env(safe-area-inset-bottom));
-		background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center;
+		background: color-mix(in srgb, var(--surface) 72%, transparent); backdrop-filter: blur(24px) saturate(180%);
+		border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent); display: flex; justify-content: space-around; align-items: center;
 	}
 	.brand, .foot { display: none; }
 	.tab:hover { color: var(--text); }
