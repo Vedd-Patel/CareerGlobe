@@ -61,6 +61,9 @@ func (s *Server) updateProfile(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+	if in.Confirm {
+		s.rematch(account(r).UserID)
+	}
 	return ok(w, profileJSON(p))
 }
 
@@ -187,6 +190,7 @@ func (s *Server) updatePreferences(w http.ResponseWriter, r *http.Request) error
 	if err != nil {
 		return err
 	}
+	s.rematch(account(r).UserID)
 	return ok(w, prefsJSON(p))
 }
 

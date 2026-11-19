@@ -113,6 +113,31 @@ func Match(ctx context.Context, pool *pgxpool.Pool, now time.Time) (int, int, er
 	return len(users), kept, nil
 }
 
+// MatchOne rebuilds one user's matches (used right after they save their
+// profile or preferences, so they need not wait for the nightly run). It does
+// nothing for a user who has no confirmed profile and preferences yet.
+func MatchOne(ctx context.Context, pool *pgxpool.Pool, userID int64, now time.Time) (int, error) {
+	q := db.New(pool)
+	states, err := q.CityStates(ctx)
+	if err != nil {
+		return 0, err
+	}
+	stateOf := map[string]string{}
+	for _, s := range states {
+		stateOf[strings.ToLower(*s.City)] = *s.State
+	}
+	users, err := q.UsersToMatch(ctx)
+	if err != nil {
+		return 0, err
+	}
+	for _, u := range users {
+		if u.ID == userID {
+			return matchUser(ctx, pool, q, u, func(c string) string { return stateOf[strings.ToLower(c)] }, now)
+		}
+	}
+	return 0, nil
+}
+
 func matchUser(ctx context.Context, pool *pgxpool.Pool, q *db.Queries, u db.UsersToMatchRow,
 	stateOf func(string) string, now time.Time) (int, error) {
 	user := match.User{Skills: u.Skills, Titles: u.Titles, YearsExp: u.YearsExp, Categories: u.Categories,

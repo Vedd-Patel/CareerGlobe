@@ -13,6 +13,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -46,11 +47,12 @@ type Config struct {
 
 // Server is the API.
 type Server struct {
-	cfg     Config
-	q       *db.Queries
-	limit   *limiter // every request, per client IP
-	uploads *limiter // resume uploads, per member
-	reports *limiter // "report a problem", per member
+	cfg        Config
+	q          *db.Queries
+	limit      *limiter // every request, per client IP
+	uploads    *limiter // resume uploads, per member
+	reports    *limiter // "report a problem", per member
+	rematching sync.Map // user id -> *sync.Mutex: one rematch at a time per member
 }
 
 // New returns the API's root handler.
