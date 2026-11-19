@@ -318,7 +318,8 @@ func (q *Queries) SavedCompanyNewJobs(ctx context.Context, firstSeen time.Time) 
 }
 
 const setJobClassification = `-- name: SetJobClassification :exec
-UPDATE jobs SET category = $2, category_2 = $3, seniority = $4, skills = $5, classified_hash = $6 WHERE id = $1
+UPDATE jobs SET category = $2, category_2 = $3, seniority = $4, skills = $5, classified_hash = $6,
+                employment_type = $7, years_min = $8, years_max = $9 WHERE id = $1
 `
 
 type SetJobClassificationParams struct {
@@ -328,6 +329,9 @@ type SetJobClassificationParams struct {
 	Seniority      *string  `json:"seniority"`
 	Skills         []string `json:"skills"`
 	ClassifiedHash *string  `json:"classified_hash"`
+	EmploymentType *string  `json:"employment_type"`
+	YearsMin       *int16   `json:"years_min"`
+	YearsMax       *int16   `json:"years_max"`
 }
 
 func (q *Queries) SetJobClassification(ctx context.Context, arg SetJobClassificationParams) error {
@@ -338,6 +342,9 @@ func (q *Queries) SetJobClassification(ctx context.Context, arg SetJobClassifica
 		arg.Seniority,
 		arg.Skills,
 		arg.ClassifiedHash,
+		arg.EmploymentType,
+		arg.YearsMin,
+		arg.YearsMax,
 	)
 	return err
 }

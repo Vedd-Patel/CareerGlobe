@@ -25,6 +25,7 @@ func (s *Server) matches(w http.ResponseWriter, r *http.Request) error {
 	rows, err := s.q.ListMatches(r.Context(), db.ListMatchesParams{
 		UserID: account(r).UserID, MinScore: int32(queryInt(r, "min_score", MatchThreshold, 0, 100)),
 		Category: f.Category, RemoteOnly: f.RemoteOnly, CompanyType: f.CompanyType, City: optString(q.Get("city")),
+		Employment: f.Employment, ExpMin: f.ExpMin, ExpMax: f.ExpMax, MinSalary: f.MinSalary,
 		SortNewest: q.Get("sort") == "newest", MaxRows: int32(queryInt(r, "limit", 30, 1, 100)),
 		Skip: int32(queryInt(r, "offset", 0, 0, 10_000)),
 	})

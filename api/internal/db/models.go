@@ -176,6 +176,9 @@ type Job struct {
 	SourceUpdated  *string    `json:"source_updated"`
 	Skills         []string   `json:"skills"`
 	ClassifiedHash *string    `json:"classified_hash"`
+	EmploymentType *string    `json:"employment_type"`
+	YearsMin       *int16     `json:"years_min"`
+	YearsMax       *int16     `json:"years_max"`
 }
 
 type Match struct {

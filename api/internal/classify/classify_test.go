@@ -76,3 +76,54 @@ func TestBandForYears(t *testing.T) {
 		}
 	}
 }
+
+func TestEmployment(t *testing.T) {
+	for _, c := range []struct{ title, desc, want string }{
+		{"Software Engineering Intern", "", "intern"},
+		{"Graduate Trainee", "", "intern"},
+		{"Data Analyst (Contract)", "", "contract"},
+		{"Associate Contract Manager", "", "full_time"},
+		{"Consultant - Cloud", "", "full_time"}, // a consulting job title, not a contract
+		{"Support Associate - Part Time", "", "part_time"},
+		{"Backend Engineer", "Employment type: Contract. Work with us.", "contract"},
+		{"Backend Engineer", "We run an internship programme and hire full time.", "full_time"},
+		{"Backend Engineer", "", "full_time"},
+	} {
+		if got := Employment(c.title, c.desc); got != c.want {
+			t.Errorf("%q / %q: got %s, want %s", c.title, c.desc, got, c.want)
+		}
+	}
+}
+
+func TestYearsRange(t *testing.T) {
+	i := func(n int16) *int16 { return &n }
+	for _, c := range []struct {
+		title, desc string
+		min, max    *int16
+	}{
+		{"Engineer", "Requires 3-5 years of experience in Go.", i(3), i(5)},
+		{"Engineer", "3 to 5 yrs experience", i(3), i(5)},
+		{"Engineer", "You bring 5+ years of relevant experience.", i(5), nil},
+		{"Engineer", "Minimum 2 years experience with SQL", i(2), nil},
+		{"Engineer", "Experience: 4 years", i(4), nil},
+		{"Engineer", "We were founded 10 years ago and love pizza.", nil, nil},
+		{"Engineer", "Salary range 40-60 lakhs", nil, nil},
+		{"Engineer", "Freshers are welcome to apply", i(0), i(1)},
+		{"Software Intern", "", i(0), i(1)},
+		{"Engineer", "", nil, nil},
+	} {
+		min, max := YearsRange(c.title, c.desc)
+		if !same(min, c.min) || !same(max, c.max) {
+			t.Errorf("%q / %q: got %v-%v, want %v-%v", c.title, c.desc, show(min), show(max), show(c.min), show(c.max))
+		}
+	}
+}
+
+func same(a, b *int16) bool { return (a == nil && b == nil) || (a != nil && b != nil && *a == *b) }
+
+func show(p *int16) any {
+	if p == nil {
+		return "nil"
+	}
+	return *p
+}

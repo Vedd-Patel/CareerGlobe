@@ -6,6 +6,7 @@ package classify
 import (
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -218,4 +219,92 @@ func BandIndex(band string) int {
 		}
 	}
 	return -1
+}
+
+var (
+	reContractTitle = regexp.MustCompile(`\b(contract|contractor|contractual|fixed[- ]term|freelance)\b`)
+	reContractRole  = regexp.MustCompile(`\bcontracts? (manager|management|specialist|analyst|administrator|admin|counsel|lead|negotiator|coordinator)\b`)
+	rePartTimeTitle = regexp.MustCompile(`\bpart[- ]?time\b`)
+	reTypeLine      = regexp.MustCompile(`(?:employment|job|position|work) type\s*[:\-]\s*(full[- ]?time|part[- ]?time|contract(?:or|ual)?|intern(?:ship)?|permanent)`)
+)
+
+// Employment reads the kind of job: intern, contract, part_time or full_time. The title
+// decides; a line such as "Employment type: contract" in the description decides when the
+// title is silent. Everything else is full time.
+func Employment(title, description string) string {
+	t := strings.ToLower(title)
+	switch {
+	case reIntern.MatchString(t):
+		return "intern"
+	case reContractTitle.MatchString(reContractRole.ReplaceAllString(t, "")):
+		return "contract"
+	case rePartTimeTitle.MatchString(t):
+		return "part_time"
+	}
+	d := strings.ToLower(description)
+	if len(d) > 4000 {
+		d = d[:4000]
+	}
+	if m := reTypeLine.FindStringSubmatch(d); m != nil {
+		switch {
+		case strings.HasPrefix(m[1], "part"):
+			return "part_time"
+		case strings.HasPrefix(m[1], "contract"):
+			return "contract"
+		case strings.HasPrefix(m[1], "intern"):
+			return "intern"
+		}
+	}
+	return "full_time"
+}
+
+var (
+	reYearsRange = regexp.MustCompile(`(\d{1,2})\s*(?:-|–|—|to)\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?)`)
+	reYearsPlus  = regexp.MustCompile(`(\d{1,2})\s*\+\s*(?:years?|yrs?)`)
+	reYearsLeast = regexp.MustCompile(`(?:at least|minimum(?: of)?|min\.?|over|more than)\s*(\d{1,2})\s*(?:years?|yrs?)`)
+	reYearsPlain = regexp.MustCompile(`(\d{1,2})\s*(?:years?|yrs?)`)
+	reExperience = regexp.MustCompile(`experience|\bexp\b|expertise|background`)
+	reNoExp      = regexp.MustCompile(`\b(freshers?|fresh graduates?|entry[- ]level|no experience (?:required|needed))\b`)
+)
+
+// YearsRange reads the years of experience a posting asks for: (min, max), where a nil max
+// means "min or more", and (nil, nil) when it says nothing. A number counts only when the
+// word "experience" is close by, so "founded 10 years ago" is ignored.
+func YearsRange(title, description string) (*int16, *int16) {
+	text := strings.ToLower(title + "\n" + description)
+	if len(text) > 8000 {
+		text = text[:8000]
+	}
+	near := func(start, end int) bool {
+		lo, hi := start-60, end+60
+		if lo < 0 {
+			lo = 0
+		}
+		if hi > len(text) {
+			hi = len(text)
+		}
+		return reExperience.MatchString(text[lo:hi])
+	}
+	num := func(v string) int16 {
+		n, _ := strconv.Atoi(v)
+		return int16(n)
+	}
+	for _, m := range reYearsRange.FindAllStringSubmatchIndex(text, -1) {
+		lo, hi := num(text[m[2]:m[3]]), num(text[m[4]:m[5]])
+		if near(m[0], m[1]) && lo <= hi && hi <= 40 {
+			return &lo, &hi
+		}
+	}
+	for _, re := range []*regexp.Regexp{reYearsPlus, reYearsLeast, reYearsPlain} {
+		for _, m := range re.FindAllStringSubmatchIndex(text, -1) {
+			if n := num(text[m[2]:m[3]]); near(m[0], m[1]) && n <= 40 {
+				return &n, nil
+			}
+		}
+	}
+	if reNoExp.MatchString(text) || reIntern.MatchString(strings.ToLower(title)) {
+		zero, one := int16(0), int16(1)
+		return &zero, &one
+	}
+	return nil, nil
 }

@@ -63,6 +63,9 @@ func Classify(ctx context.Context, pool *pgxpool.Pool) (int, error) {
 			for _, j := range jobs {
 				first, second := cl.Category(j.Title)
 				seniority := classify.Seniority(j.Title)
+				body := plain(j.Description)
+				employment := classify.Employment(j.Title, body)
+				yearsMin, yearsMax := classify.YearsRange(j.Title, body)
 				sk := ext.Extract(j.Title + "\n" + plain(j.Description))
 				if sk == nil {
 					sk = []string{}
@@ -70,6 +73,7 @@ func Classify(ctx context.Context, pool *pgxpool.Pool) (int, error) {
 				if err := qt.SetJobClassification(ctx, db.SetJobClassificationParams{
 					ID: j.ID, Category: &first, Category2: optional(second), Seniority: &seniority,
 					Skills: sk, ClassifiedHash: &j.TextHash,
+					EmploymentType: &employment, YearsMin: yearsMin, YearsMax: yearsMax,
 				}); err != nil {
 					return err
 				}

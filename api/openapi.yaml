@@ -160,6 +160,10 @@ paths:
         - { name: zoom, in: query, schema: { type: number } }
         - $ref: "#/components/parameters/Category"
         - $ref: "#/components/parameters/Remote"
+        - $ref: "#/components/parameters/Employment"
+        - $ref: "#/components/parameters/ExpMin"
+        - $ref: "#/components/parameters/ExpMax"
+        - $ref: "#/components/parameters/MinSalary"
         - $ref: "#/components/parameters/CompanyType"
         - $ref: "#/components/parameters/Posted"
         - { name: hiring, in: query, schema: { type: boolean }, description: Only companies with open jobs }
@@ -315,6 +319,10 @@ paths:
         - { name: sort, in: query, schema: { type: string, enum: [best, newest], default: best } }
         - $ref: "#/components/parameters/Category"
         - $ref: "#/components/parameters/Remote"
+        - $ref: "#/components/parameters/Employment"
+        - $ref: "#/components/parameters/ExpMin"
+        - $ref: "#/components/parameters/ExpMax"
+        - $ref: "#/components/parameters/MinSalary"
         - $ref: "#/components/parameters/CompanyType"
         - { name: city, in: query, schema: { type: string } }
         - { name: min_score, in: query, schema: { type: integer, minimum: 0, maximum: 100, default: 60 } }
@@ -1055,6 +1063,10 @@ components:
     Remote: { name: remote, in: query, schema: { type: boolean } }
     CompanyType: { name: type, in: query, schema: { type: string, enum: [product, service] } }
     Posted: { name: posted, in: query, schema: { type: string, enum: [24h, 7d, 30d] } }
+    Employment: { name: employment, in: query, description: "Comma list of job types: intern, full_time, part_time, contract", schema: { type: string } }
+    ExpMin: { name: exp_min, in: query, description: "With exp_max: years of experience; jobs whose asked-for range meets it (or states none) pass", schema: { type: integer, minimum: 0, maximum: 60 } }
+    ExpMax: { name: exp_max, in: query, schema: { type: integer, minimum: 0, maximum: 60 } }
+    MinSalary: { name: min_salary, in: query, description: "Yearly rupees; only jobs that list a salary at least this high pass", schema: { type: integer, minimum: 0 } }
     Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
     Offset: { name: offset, in: query, schema: { type: integer, minimum: 0 } }
 

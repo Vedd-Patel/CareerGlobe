@@ -10,6 +10,9 @@ JOIN companies c ON c.id = j.company_id
 WHERE m.user_id = sqlc.arg(user_id)::bigint AND j.status = 'open' AND m.score >= sqlc.arg(min_score)::int
   AND (sqlc.narg(category)::text IS NULL OR j.category = sqlc.narg(category) OR j.category_2 = sqlc.narg(category))
   AND (NOT sqlc.arg(remote_only)::bool OR j.work_mode = 'remote')
+  AND (sqlc.narg(employment)::text[] IS NULL OR j.employment_type = ANY(sqlc.narg(employment)::text[]))
+  AND (sqlc.narg(exp_min)::int IS NULL OR (COALESCE(j.years_min, 0) <= sqlc.narg(exp_max)::int AND COALESCE(j.years_max, 99) >= sqlc.narg(exp_min)::int))
+  AND (sqlc.narg(min_salary)::int IS NULL OR j.salary_max >= sqlc.narg(min_salary)::int)
   AND (sqlc.narg(company_type)::text IS NULL OR c.type = sqlc.narg(company_type) OR c.type = 'both')
   AND (sqlc.narg(city)::text IS NULL OR sqlc.narg(city) = ANY(j.cities))
 ORDER BY

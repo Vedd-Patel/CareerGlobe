@@ -20,6 +20,9 @@ WITH job_cities AS (
     AND ($3::text IS NULL OR j.category = $3 OR j.category_2 = $3)
     AND (NOT $4::bool OR j.work_mode = 'remote')
     AND ($5::timestamptz IS NULL OR j.first_seen >= $5)
+    AND ($6::text[] IS NULL OR j.employment_type = ANY($6::text[]))
+    AND ($7::int IS NULL OR (COALESCE(j.years_min, 0) <= $8::int AND COALESCE(j.years_max, 99) >= $7::int))
+    AND ($9::int IS NULL OR j.salary_max >= $9::int)
 ), placed AS (
   -- Each job counts at the company location in its own city; one with no city, or
   -- in a city that has no pin, counts at the company's headquarters.
@@ -36,7 +39,7 @@ WITH job_cities AS (
          count(*)::int AS open_jobs,
          count(*) FILTER (WHERE m.score >= 60)::int AS matches
   FROM placed p
-  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = $6::bigint
+  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = $10::bigint
   WHERE p.location_id IS NOT NULL
   GROUP BY p.location_id
 ), pins AS (
@@ -46,12 +49,12 @@ WITH job_cities AS (
   JOIN companies c ON c.id = l.company_id
   LEFT JOIN filtered f ON f.location_id = l.id
   WHERE l.geo IS NOT NULL
-    AND l.geo::geometry && ST_MakeEnvelope($7::float8, $8::float8,
-                                           $9::float8, $10::float8, 4326)
-    AND ($11::text IS NULL OR c.type = $11 OR c.type = 'both')
-    AND (NOT $12::bool OR f.open_jobs > 0)
-    AND (NOT $13::bool OR f.matches > 0)
-    AND (NOT $14::bool OR f.open_jobs > 0)
+    AND l.geo::geometry && ST_MakeEnvelope($11::float8, $12::float8,
+                                           $13::float8, $14::float8, 4326)
+    AND ($15::text IS NULL OR c.type = $15 OR c.type = 'both')
+    AND (NOT $16::bool OR f.open_jobs > 0)
+    AND (NOT $17::bool OR f.matches > 0)
+    AND (NOT $18::bool OR f.open_jobs > 0)
 )
 SELECT ST_Y(ST_Centroid(ST_Collect(g)))::float8 AS lat,
        ST_X(ST_Centroid(ST_Collect(g)))::float8 AS lon,
@@ -71,6 +74,10 @@ type ClustersInViewParams struct {
 	Category    *string    `json:"category"`
 	RemoteOnly  bool       `json:"remote_only"`
 	PostedSince *time.Time `json:"posted_since"`
+	Employment  []string   `json:"employment"`
+	ExpMin      *int32     `json:"exp_min"`
+	ExpMax      *int32     `json:"exp_max"`
+	MinSalary   *int32     `json:"min_salary"`
 	UserID      int64      `json:"user_id"`
 	West        float64    `json:"west"`
 	South       float64    `json:"south"`
@@ -99,6 +106,10 @@ func (q *Queries) ClustersInView(ctx context.Context, arg ClustersInViewParams) 
 		arg.Category,
 		arg.RemoteOnly,
 		arg.PostedSince,
+		arg.Employment,
+		arg.ExpMin,
+		arg.ExpMax,
+		arg.MinSalary,
 		arg.UserID,
 		arg.West,
 		arg.South,
@@ -284,6 +295,9 @@ WITH job_cities AS (
     AND ($10::text IS NULL OR j.category = $10 OR j.category_2 = $10)
     AND (NOT $11::bool OR j.work_mode = 'remote')
     AND ($12::timestamptz IS NULL OR j.first_seen >= $12)
+    AND ($13::text[] IS NULL OR j.employment_type = ANY($13::text[]))
+    AND ($14::int IS NULL OR (COALESCE(j.years_min, 0) <= $15::int AND COALESCE(j.years_max, 99) >= $14::int))
+    AND ($16::int IS NULL OR j.salary_max >= $16::int)
 ), placed AS (
   -- Each job counts at the company location in its own city; one with no city, or
   -- in a city that has no pin, counts at the company's headquarters.
@@ -300,7 +314,7 @@ WITH job_cities AS (
          count(*)::int AS open_jobs,
          count(*) FILTER (WHERE m.score >= 60)::int AS matches
   FROM placed p
-  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = $13::bigint
+  LEFT JOIN matches m ON m.job_id = p.job_id AND m.user_id = $17::bigint
   WHERE p.location_id IS NOT NULL
   GROUP BY p.location_id
 )
@@ -335,6 +349,10 @@ type PinsInViewParams struct {
 	Category    *string    `json:"category"`
 	RemoteOnly  bool       `json:"remote_only"`
 	PostedSince *time.Time `json:"posted_since"`
+	Employment  []string   `json:"employment"`
+	ExpMin      *int32     `json:"exp_min"`
+	ExpMax      *int32     `json:"exp_max"`
+	MinSalary   *int32     `json:"min_salary"`
 	UserID      int64      `json:"user_id"`
 }
 
@@ -372,6 +390,10 @@ func (q *Queries) PinsInView(ctx context.Context, arg PinsInViewParams) ([]PinsI
 		arg.Category,
 		arg.RemoteOnly,
 		arg.PostedSince,
+		arg.Employment,
+		arg.ExpMin,
+		arg.ExpMax,
+		arg.MinSalary,
 		arg.UserID,
 	)
 	if err != nil {

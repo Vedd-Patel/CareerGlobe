@@ -34,24 +34,31 @@ JOIN companies c ON c.id = j.company_id
 WHERE m.user_id = $1::bigint AND j.status = 'open' AND m.score >= $2::int
   AND ($3::text IS NULL OR j.category = $3 OR j.category_2 = $3)
   AND (NOT $4::bool OR j.work_mode = 'remote')
-  AND ($5::text IS NULL OR c.type = $5 OR c.type = 'both')
-  AND ($6::text IS NULL OR $6 = ANY(j.cities))
+  AND ($5::text[] IS NULL OR j.employment_type = ANY($5::text[]))
+  AND ($6::int IS NULL OR (COALESCE(j.years_min, 0) <= $7::int AND COALESCE(j.years_max, 99) >= $6::int))
+  AND ($8::int IS NULL OR j.salary_max >= $8::int)
+  AND ($9::text IS NULL OR c.type = $9 OR c.type = 'both')
+  AND ($10::text IS NULL OR $10 = ANY(j.cities))
 ORDER BY
-  CASE WHEN $7::bool THEN extract(epoch FROM j.first_seen) ELSE m.score END DESC,
+  CASE WHEN $11::bool THEN extract(epoch FROM j.first_seen) ELSE m.score END DESC,
   m.score DESC, j.first_seen DESC, j.id
-LIMIT $9::int OFFSET $8::int
+LIMIT $13::int OFFSET $12::int
 `
 
 type ListMatchesParams struct {
-	UserID      int64   `json:"user_id"`
-	MinScore    int32   `json:"min_score"`
-	Category    *string `json:"category"`
-	RemoteOnly  bool    `json:"remote_only"`
-	CompanyType *string `json:"company_type"`
-	City        *string `json:"city"`
-	SortNewest  bool    `json:"sort_newest"`
-	Skip        int32   `json:"skip"`
-	MaxRows     int32   `json:"max_rows"`
+	UserID      int64    `json:"user_id"`
+	MinScore    int32    `json:"min_score"`
+	Category    *string  `json:"category"`
+	RemoteOnly  bool     `json:"remote_only"`
+	Employment  []string `json:"employment"`
+	ExpMin      *int32   `json:"exp_min"`
+	ExpMax      *int32   `json:"exp_max"`
+	MinSalary   *int32   `json:"min_salary"`
+	CompanyType *string  `json:"company_type"`
+	City        *string  `json:"city"`
+	SortNewest  bool     `json:"sort_newest"`
+	Skip        int32    `json:"skip"`
+	MaxRows     int32    `json:"max_rows"`
 }
 
 type ListMatchesRow struct {
@@ -80,6 +87,10 @@ func (q *Queries) ListMatches(ctx context.Context, arg ListMatchesParams) ([]Lis
 		arg.MinScore,
 		arg.Category,
 		arg.RemoteOnly,
+		arg.Employment,
+		arg.ExpMin,
+		arg.ExpMax,
+		arg.MinSalary,
 		arg.CompanyType,
 		arg.City,
 		arg.SortNewest,

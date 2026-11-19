@@ -785,3 +785,45 @@ func TestCORS(t *testing.T) {
 		t.Fatal("unknown origin allowed")
 	}
 }
+
+func TestJobTypeExperienceAndSalaryFilters(t *testing.T) {
+	e := newEnv(t)
+	e.join("tok-alice")
+	e.seed() // Acme (Bengaluru) with a backend job and a designer job; Beta (Pune) with a QA job
+	e.exec(`UPDATE jobs SET employment_type = 'full_time', years_min = 3, years_max = 5 WHERE job_key = 'k1'`)
+	e.exec(`UPDATE jobs SET employment_type = 'intern', years_min = 0, years_max = 1, salary_max = 600000 WHERE job_key = 'k2'`)
+	e.exec(`UPDATE jobs SET employment_type = 'full_time', years_min = 8, salary_max = 4000000 WHERE job_key = 'k3'`)
+	india := "/v1/globe?west=68&south=6&east=98&north=36&zoom=9"
+	count := func(query string) int {
+		t.Helper()
+		r := e.do("GET", india+query, "tok-alice", nil)
+		if r.Status != 200 {
+			t.Fatalf("%s: %s", query, r.Raw)
+		}
+		n := 0
+		for _, it := range r.Body["items"].([]any) {
+			n += int(it.(map[string]any)["open_jobs"].(float64))
+		}
+		return n
+	}
+	for _, c := range []struct {
+		query string
+		jobs  int
+	}{
+		{"", 3},
+		{"&employment=intern", 1},
+		{"&employment=full_time", 2},
+		{"&employment=intern,full_time", 3},
+		{"&employment=bogus", 3},    // unknown types are ignored
+		{"&exp_min=0&exp_max=1", 1}, // fresher: only the intern role
+		{"&exp_min=4&exp_max=4", 1}, // 4 years: only the 3-5 year role
+		{"&exp_min=5&exp_max=9", 2}, // 5-9 years: the 3-5 role and the 8+ role
+		{"&min_salary=1000000", 1},  // only listed salaries of 10 lakh or more
+		{"&min_salary=100000", 2},   // both jobs that list a salary
+		{"&employment=intern&exp_min=3&exp_max=5", 0},
+	} {
+		if got := count(c.query); got != c.jobs {
+			t.Errorf("%q: got %d jobs, want %d", c.query, got, c.jobs)
+		}
+	}
+}

@@ -12,6 +12,9 @@ WITH job_cities AS (
     AND (sqlc.narg(category)::text IS NULL OR j.category = sqlc.narg(category) OR j.category_2 = sqlc.narg(category))
     AND (NOT sqlc.arg(remote_only)::bool OR j.work_mode = 'remote')
     AND (sqlc.narg(posted_since)::timestamptz IS NULL OR j.first_seen >= sqlc.narg(posted_since))
+    AND (sqlc.narg(employment)::text[] IS NULL OR j.employment_type = ANY(sqlc.narg(employment)::text[]))
+    AND (sqlc.narg(exp_min)::int IS NULL OR (COALESCE(j.years_min, 0) <= sqlc.narg(exp_max)::int AND COALESCE(j.years_max, 99) >= sqlc.narg(exp_min)::int))
+    AND (sqlc.narg(min_salary)::int IS NULL OR j.salary_max >= sqlc.narg(min_salary)::int)
 ), placed AS (
   -- Each job counts at the company location in its own city; one with no city, or
   -- in a city that has no pin, counts at the company's headquarters.
@@ -60,6 +63,9 @@ WITH job_cities AS (
     AND (sqlc.narg(category)::text IS NULL OR j.category = sqlc.narg(category) OR j.category_2 = sqlc.narg(category))
     AND (NOT sqlc.arg(remote_only)::bool OR j.work_mode = 'remote')
     AND (sqlc.narg(posted_since)::timestamptz IS NULL OR j.first_seen >= sqlc.narg(posted_since))
+    AND (sqlc.narg(employment)::text[] IS NULL OR j.employment_type = ANY(sqlc.narg(employment)::text[]))
+    AND (sqlc.narg(exp_min)::int IS NULL OR (COALESCE(j.years_min, 0) <= sqlc.narg(exp_max)::int AND COALESCE(j.years_max, 99) >= sqlc.narg(exp_min)::int))
+    AND (sqlc.narg(min_salary)::int IS NULL OR j.salary_max >= sqlc.narg(min_salary)::int)
 ), placed AS (
   -- Each job counts at the company location in its own city; one with no city, or
   -- in a city that has no pin, counts at the company's headquarters.

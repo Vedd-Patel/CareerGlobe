@@ -8,7 +8,8 @@ ORDER BY id
 LIMIT $1;
 
 -- name: SetJobClassification :exec
-UPDATE jobs SET category = $2, category_2 = $3, seniority = $4, skills = $5, classified_hash = $6 WHERE id = $1;
+UPDATE jobs SET category = $2, category_2 = $3, seniority = $4, skills = $5, classified_hash = $6,
+                employment_type = $7, years_min = $8, years_max = $9 WHERE id = $1;
 
 -- name: UsersToMatch :many
 -- Users with a confirmed profile (matching stays off until a resume is confirmed).

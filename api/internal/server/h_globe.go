@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -28,9 +29,27 @@ type jobFilters struct {
 	PostedSince *time.Time
 	HiringOnly  bool
 	MatchesOnly bool
+	Employment  []string // intern, full_time, part_time, contract; nil = any
+	ExpMin      *int32   // years of experience a job may ask for: a job passes when its range meets [ExpMin, ExpMax]
+	ExpMax      *int32
+	MinSalary   *int32 // yearly, in rupees; only jobs that list a salary at least this high pass
 }
 
-func (f jobFilters) any() bool { return f.Category != nil || f.RemoteOnly || f.PostedSince != nil }
+func (f jobFilters) any() bool {
+	return f.Category != nil || f.RemoteOnly || f.PostedSince != nil || f.Employment != nil || f.ExpMin != nil || f.MinSalary != nil
+}
+
+var employmentTypes = []string{"intern", "full_time", "part_time", "contract"}
+
+// queryInt32 is nil when the parameter is missing or not a whole number; otherwise clamped.
+func queryInt32(r *http.Request, name string, min, max int) *int32 {
+	v, err := strconv.Atoi(r.URL.Query().Get(name))
+	if err != nil {
+		return nil
+	}
+	n := int32(clamp(v, min, max))
+	return &n
+}
 
 func filtersFrom(r *http.Request) jobFilters {
 	q := r.URL.Query()
@@ -40,6 +59,18 @@ func filtersFrom(r *http.Request) jobFilters {
 		HiringOnly:  queryBool(r, "hiring"),
 		MatchesOnly: queryBool(r, "matches"),
 	}
+	for _, e := range strings.Split(q.Get("employment"), ",") {
+		if e = strings.TrimSpace(e); slices.Contains(employmentTypes, e) && !slices.Contains(f.Employment, e) {
+			f.Employment = append(f.Employment, e)
+		}
+	}
+	if lo, hi := queryInt32(r, "exp_min", 0, 60), queryInt32(r, "exp_max", 0, 60); lo != nil {
+		if hi == nil || *hi < *lo {
+			hi = lo
+		}
+		f.ExpMin, f.ExpMax = lo, hi
+	}
+	f.MinSalary = queryInt32(r, "min_salary", 0, 100_000_000)
 	if t := q.Get("type"); t == "product" || t == "service" {
 		f.CompanyType = &t
 	}
@@ -88,6 +119,7 @@ func (s *Server) globe(w http.ResponseWriter, r *http.Request) error {
 			UserID: uid, Category: f.Category, RemoteOnly: f.RemoteOnly, PostedSince: f.PostedSince,
 			West: b.west, South: b.south, East: b.east, North: b.north, CompanyType: f.CompanyType,
 			HiringOnly: f.HiringOnly, MatchesOnly: f.MatchesOnly, JobFilters: f.any(), Cell: cell, MaxPins: maxPins,
+			Employment: f.Employment, ExpMin: f.ExpMin, ExpMax: f.ExpMax, MinSalary: f.MinSalary,
 		})
 		if err != nil {
 			return err
@@ -98,6 +130,7 @@ func (s *Server) globe(w http.ResponseWriter, r *http.Request) error {
 		UserID: uid, Category: f.Category, RemoteOnly: f.RemoteOnly, PostedSince: f.PostedSince,
 		West: b.west, South: b.south, East: b.east, North: b.north, CompanyType: f.CompanyType,
 		HiringOnly: f.HiringOnly, MatchesOnly: f.MatchesOnly, JobFilters: f.any(), MaxPins: maxPins,
+		Employment: f.Employment, ExpMin: f.ExpMin, ExpMax: f.ExpMax, MinSalary: f.MinSalary,
 	})
 	if err != nil {
 		return err
