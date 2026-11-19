@@ -17,7 +17,10 @@ sw.addEventListener('install', (event) => {
 
 sw.addEventListener('activate', (event) => {
 	event.waitUntil(
-		caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== SHELL && k !== DATA).map((k) => caches.delete(k))))
+		caches
+			.keys()
+			.then((keys) => Promise.all(keys.filter((k) => k !== SHELL && k !== DATA).map((k) => caches.delete(k))))
+			.then(() => sw.clients.claim())
 	);
 });
 
@@ -26,7 +29,15 @@ sw.addEventListener('fetch', (event) => {
 	if (req.method !== 'GET') return;
 	const url = new URL(req.url);
 	if (url.origin === sw.location.origin) {
-		// App shell: cache first; any route falls back to index.html (single-page app).
+		// A page load goes to the network first, so a new release shows on the next
+		// reload instead of the one after; offline it falls back to the cached shell.
+		if (req.mode === 'navigate') {
+			event.respondWith(
+				fetch(req).catch(async () => (await caches.match(req)) ?? ((await caches.match('/index.html')) as Response))
+			);
+			return;
+		}
+		// Built files (named by their content) and static files: cache first.
 		event.respondWith(
 			caches.match(req).then((hit) => hit ?? fetch(req).catch(() => caches.match('/index.html') as Promise<Response>))
 		);
