@@ -353,6 +353,29 @@ async def test_locations_get_city_centre_pins(db, env):
     assert await geocode.pin_locations(db) == (0, [])  # already pinned
 
 
+async def test_job_cities_become_locations_once(db, env):
+    import geocode
+
+    path, _, _ = env
+    await seeds.load(db, path)
+    cur = await db.execute("SELECT id FROM companies ORDER BY id LIMIT 1")
+    company_id = (await cur.fetchone())[0]
+    for n, cities in enumerate((["Bengaluru", "Hyderabad"], ["hyderabad", "Maneja"], [])):
+        await db.execute(
+            "INSERT INTO jobs (company_id, job_key, title, apply_url, cities) VALUES (%s, %s, 'Engineer', 'https://x.test/j', %s)",
+            (company_id, f"k{n}", cities),
+        )
+    added = await geocode.add_job_cities(db)
+    cur = await db.execute("SELECT city FROM company_locations WHERE company_id = %s ORDER BY city", (company_id,))
+    cities = [c for (c,) in await cur.fetchall()]
+    lower = [c.lower() for c in cities]
+    assert "hyderabad" in lower and "maneja" not in lower  # unknown places are skipped
+    assert lower.count("hyderabad") == 1 and added >= 1  # spelled two ways, stored once
+    assert await geocode.add_job_cities(db) == 0  # nothing new the second time
+    pinned, _ = await geocode.pin_locations(db)
+    assert pinned >= 1
+
+
 def test_geocode_aliases():
     import geocode
 

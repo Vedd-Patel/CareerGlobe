@@ -32,6 +32,34 @@ def lookup(coords: dict[str, tuple[float, float]], city: str | None) -> tuple[fl
     return coords.get((city or "").strip().lower()) if city else None
 
 
+async def add_job_cities(conn, coords: dict[str, tuple[float, float]] | None = None) -> int:
+    """Give a company a location for every known city it has open jobs in.
+
+    The seed file names one city per company, but its jobs sit in many. With a
+    location per job city the map shows each opening where it is, not all of
+    them at the headquarters. Cities that are not in seeds/india_cities.csv
+    (a street, a plant name) are skipped: there is no pin to draw. Returns the
+    number of locations added; run pin_locations afterwards to give them a pin.
+    """
+    coords = coords or load()
+    cur = await conn.execute(
+        "SELECT DISTINCT j.company_id, c FROM jobs j, unnest(j.cities) AS c WHERE j.status = 'open'"
+    )
+    added = 0
+    for company_id, city in await cur.fetchall():
+        if lookup(coords, city) is None:
+            continue
+        res = await conn.execute(
+            """INSERT INTO company_locations (company_id, city, is_hq)
+               SELECT %(c)s, %(city)s, false
+               WHERE NOT EXISTS (SELECT 1 FROM company_locations
+                                 WHERE company_id = %(c)s AND lower(city) = lower(%(city)s))""",
+            {"c": company_id, "city": city},
+        )
+        added += res.rowcount
+    return added
+
+
 async def pin_locations(conn, coords: dict[str, tuple[float, float]] | None = None) -> tuple[int, list[str]]:
     """Set geo for every location that has none. Returns (pinned, cities not found)."""
     coords = coords or load()

@@ -199,6 +199,11 @@ async def main(argv=None) -> int:
                 await beat.fail(f"crawl crashed: {type(e).__name__}")
             raise
 
+        added = await geocode.add_job_cities(conn)
+        if added:
+            pinned, _ = await geocode.pin_locations(conn)
+            log.info("%d new job cities for the map (%d pinned)", added, pinned)
+
         if tally.not_started:
             log.warning("run budget reached at %s IST: %d companies not started; run is left open for --resume",
                         settings.stop_at_ist, tally.not_started)
