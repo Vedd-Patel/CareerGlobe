@@ -259,9 +259,20 @@
 		card.className = 'addr-card glass';
 		const name = document.createElement('b');
 		name.textContent = p.name ?? '';
+		const head = document.createElement('div');
+		head.className = 'addr-head';
+		if (p.logo_url) {
+			const img = document.createElement('img');
+			img.src = p.logo_url;
+			img.alt = '';
+			img.referrerPolicy = 'no-referrer';
+			img.onerror = () => img.remove(); // no logo: just the name
+			head.append(img);
+		}
+		head.append(name);
 		const sub = document.createElement('span');
 		sub.textContent = `${p.open_jobs ?? 0} open · ${approx ? 'city centre' : 'office'}`;
-		card.append(name, sub);
+		card.append(head, sub);
 		const tip = document.createElement('div');
 		tip.className = 'addr-tip';
 		el.append(card, tip);
@@ -683,6 +694,8 @@
 	.openings > p { padding-bottom: 4px; letter-spacing: 0.06em; }
 	:global(.addr) { display: flex; flex-direction: column; align-items: center; pointer-events: none; animation: addr-in 0.45s cubic-bezier(0.2, 0.9, 0.25, 1); }
 	:global(.addr-card) { display: flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 14px; font: 600 13px/16px var(--font); white-space: nowrap; }
+	:global(.addr-head) { display: flex; align-items: center; gap: 6px; }
+	:global(.addr-head img) { width: 20px; height: 20px; border-radius: 5px; object-fit: contain; background: #fff; }
 	:global(.addr-card span) { color: var(--text-2); font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
 	:global(.addr-tip) { width: 22px; height: 22px; margin-top: 2px; background: var(--pin-match); border: 3px solid var(--pin-stroke); border-radius: 50% 50% 50% 0; transform: rotate(-45deg) translate(2px, -2px); box-shadow: 0 3px 8px rgba(27, 31, 28, 0.35); }
 	:global(.addr.approx .addr-tip) { background: var(--pin-hiring); }
