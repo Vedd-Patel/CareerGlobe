@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 
 import config
 import geocode
+import locate
 import seeds
 import store
 from heartbeat import Heartbeat
@@ -135,6 +136,21 @@ async def crawl(conn, client: PoliteClient, settings: config.Settings, run, sour
     return tally
 
 
+async def place_on_map(conn, client) -> None:
+    """After a crawl: a location per job city, pins for them, then exact offices where OpenStreetMap has them.
+    The map is a nice-to-have, so a failure here never fails the night."""
+    try:
+        added = await geocode.add_job_cities(conn)
+        if added:
+            pinned, _ = await geocode.pin_locations(conn)
+            log.info("%d new job cities for the map (%d pinned)", added, pinned)
+        checked, found = await locate.run(conn, client)
+        if checked:
+            log.info("office lookups: %d checked, %d moved to an exact office", checked, found)
+    except Exception:
+        log.exception("placing companies on the map failed; the crawl itself is unaffected")
+
+
 async def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     mode = p.add_mutually_exclusive_group()
@@ -194,15 +210,11 @@ async def main(argv=None) -> int:
                     for src in todo:
                         src.etag = src.last_modified = None
                 tally = await crawl(conn, client, settings, run, todo, deadline)
+                await place_on_map(conn, client)
         except BaseException as e:
             if beat:
                 await beat.fail(f"crawl crashed: {type(e).__name__}")
             raise
-
-        added = await geocode.add_job_cities(conn)
-        if added:
-            pinned, _ = await geocode.pin_locations(conn)
-            log.info("%d new job cities for the map (%d pinned)", added, pinned)
 
         if tally.not_started:
             log.warning("run budget reached at %s IST: %d companies not started; run is left open for --resume",

@@ -376,6 +376,32 @@ async def test_job_cities_become_locations_once(db, env):
     assert pinned >= 1
 
 
+async def test_office_lookup_moves_the_pin_and_is_not_repeated(db, env):
+    import geocode
+    import locate
+
+    path, _, _ = env
+    await seeds.load(db, path)
+    await geocode.pin_locations(db)
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.path)
+        if request.url.path == "/robots.txt":
+            return httpx.Response(404)
+        data = {"elements": [{"type": "node", "lat": 12.99, "lon": 77.60, "tags": {"name": "Gamma Labs HQ", "office": "company"}}]}
+        return httpx.Response(200, json=data)
+
+    async with PoliteClient("Bot/1", "Bot", 0, 0, backoff=0, max_attempts=1, transport=httpx.MockTransport(handler)) as c:
+        checked, found = await locate.run(db, c, endpoint="https://overpass.test/api/interpreter")
+        again = await locate.run(db, c, endpoint="https://overpass.test/api/interpreter")
+    assert checked == 2 and again == (0, 0)  # each location is looked at once a month
+    cur = await db.execute("""SELECT count(*) FILTER (WHERE NOT geo_approximate), count(*) FILTER (WHERE geo_checked_at IS NOT NULL)
+                              FROM company_locations""")
+    exact, stamped = await cur.fetchone()
+    assert stamped == 2 and exact == found
+
+
 def test_geocode_aliases():
     import geocode
 
