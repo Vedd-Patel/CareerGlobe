@@ -1,6 +1,9 @@
 """Load seeds/companies.csv into Postgres (companies, locations, careers sources).
 
-Columns: name,website,careers_url,city,state,type,ats[,note]
+Columns: name,website,careers_url,city,state,type,ats[,note][,lat,lon]
+lat and lon are optional: the office's exact position (decimal degrees, inside
+India). With them the map points at the office itself; without them the pin is
+the city centre and is marked approximate.
 careers_url is an ATS board (detected from the URL), a SuccessFactors site
 (ats=successfactors), or any other careers page, read for JSON-LD JobPostings.
 
@@ -36,6 +39,28 @@ class SeedRow:
     ats: str | None
     ats_slug: str | None
     do_not_crawl: bool = False
+    lat: float | None = None
+    lon: float | None = None
+
+
+INDIA_BOX = (6.0, 38.0, 67.0, 98.0)  # south, north, west, east
+
+
+def coordinates(row: dict, line: int) -> tuple[float | None, float | None]:
+    """The optional lat/lon columns; both must be present, numeric and inside India."""
+    raw_lat, raw_lon = (row.get("lat") or "").strip(), (row.get("lon") or "").strip()
+    if not raw_lat and not raw_lon:
+        return None, None
+    try:
+        lat, lon = float(raw_lat), float(raw_lon)
+    except ValueError:
+        log.warning("seeds line %d: lat and lon must both be numbers; location left approximate", line)
+        return None, None
+    south, north, west, east = INDIA_BOX
+    if not (south <= lat <= north and west <= lon <= east):
+        log.warning("seeds line %d: %s,%s is outside India; location left approximate", line, lat, lon)
+        return None, None
+    return lat, lon
 
 
 def slugify(name: str) -> str:
@@ -69,11 +94,12 @@ def read(path: Path) -> list[SeedRow]:
             do_not_crawl = given == DO_NOT_CRAWL
             ats, ats_slug = (None, None) if do_not_crawl else source_for(url, given)
 
+            lat, lon = coordinates(r, n)
             rows.append(SeedRow(
                 name=name, slug=slug, website=(r.get("website") or "").strip() or None,
                 careers_url=url, city=(r.get("city") or "").strip() or None,
                 state=(r.get("state") or "").strip() or None, type=ctype, ats=ats, ats_slug=ats_slug,
-                do_not_crawl=do_not_crawl,
+                do_not_crawl=do_not_crawl, lat=lat, lon=lon,
             ))
     return rows
 
@@ -98,6 +124,14 @@ async def load(conn: psycopg.AsyncConnection, path: Path) -> int:
                        VALUES (%s, %s, %s, true) ON CONFLICT DO NOTHING""",
                     (company_id, s.city, s.state),
                 )
+                if s.lat is not None and s.lon is not None:
+                    # An exact position from the seed file replaces the city-centre pin.
+                    await conn.execute(
+                        """UPDATE company_locations
+                           SET geo = ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography, geo_approximate = false
+                           WHERE company_id = %s AND city IS NOT DISTINCT FROM %s AND state IS NOT DISTINCT FROM %s""",
+                        (s.lon, s.lat, company_id, s.city, s.state),
+                    )
             cur = await conn.execute(
                 """INSERT INTO careers_sources (company_id, careers_url, ats_type, ats_slug, status)
                    VALUES (%(c)s, %(u)s, %(a)s, %(s)s, CASE WHEN %(off)s THEN 'disabled' ELSE 'active' END)
