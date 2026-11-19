@@ -11,6 +11,8 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import Banner from '$lib/components/Banner.svelte';
+	import ScoreRing from '$lib/components/ScoreRing.svelte';
+	import { ago } from '$lib/format';
 
 	type Pin = Schemas['Pin'];
 	type Row = NonNullable<Schemas['CompanyListResponse']['items']>[number];
@@ -30,6 +32,15 @@
 	let error = $state('');
 	let q = $state('');
 	let results = $state<SearchResults | null>(null);
+	type Detail = {
+		careers_url?: string | null;
+		locations: { city?: string | null; lat?: number; lon?: number; geo_approximate?: boolean }[];
+		open_jobs: { id: number; title: string; cities?: string[]; work_mode?: string | null; first_seen?: string; score?: number | null }[];
+	};
+	let detail = $state<Detail | null>(null);
+	let pageEl: HTMLDivElement;
+	let panelEl: HTMLElement;
+	let snap = $state(0); // bottom sheet on phones: 0 peek, 1 half, 2 full
 	let firstVisit = $state(false);
 	let clusterList = $state<Pin[] | null>(null);
 	let liveCount = $state<number | null>(null);
@@ -37,6 +48,7 @@
 	const CATEGORIES = ['Software Engineering', 'Hardware & Semiconductor', 'Design', 'Product', 'Data & AI', 'QA & Testing',
 		'DevOps & IT', 'Sales', 'Marketing', 'Operations', 'Finance', 'Customer Support'];
 
+	const cleanups: (() => void)[] = [];
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	function refresh() {
 		clearTimeout(timer);
@@ -103,6 +115,7 @@
 		const byKey = new Map(pins.map((p) => [keyOf(p), p]));
 		const screen = new Map<string, ClusterPoint>();
 		for (const p of pins) {
+			if (p.company_id === selected?.company_id) continue; // drawn as the address pin
 			const s = map.project([p.lon ?? 0, p.lat ?? 0]);
 			screen.set(keyOf(p), { key: keyOf(p), x: s.x, y: s.y, open: p.open_jobs ?? 0, matches: p.matches ?? 0 });
 		}
@@ -190,23 +203,121 @@
 			// Many companies at one address: show them as a short list (S15).
 			clusterList = [...m].sort((a, b) => (b.matches ?? 0) - (a.matches ?? 0) || (b.open_jobs ?? 0) - (a.open_jobs ?? 0));
 			selected = null;
+			detail = null;
 			sheet = 'list';
+			if (snap === 0) settle(1);
 			return;
 		}
 		map.fitBounds([[w, so], [ea, n]], { padding: 110, maxZoom: 15, duration: 650 });
 	}
 
-	function select(p: Pin) {
+	async function select(p: Pin) {
 		clusterList = null;
 		selected = p;
+		detail = null;
 		sheet = 'list';
-		refresh();
+		if (snap === 0) settle(1);
+		map?.flyTo({
+			center: [p.lon ?? 0, p.lat ?? 0], zoom: Math.max(map.getZoom(), 16), padding: sheetPadding(),
+			duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1200, essential: true
+		});
+		try {
+			const d = await api.get<Detail>(`/v1/companies/${p.company_id}`);
+			if (selected?.company_id === p.company_id) detail = d;
+		} catch {
+			/* the counts above still show */
+		}
 	}
 
+	function closePreview() {
+		selected = null;
+		detail = null;
+		map?.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 400 });
+	}
+
+	// The exact address: a pin whose tip is the office position, with a small
+	// label above it. When only the city centre is known the pin says so.
+	let addr: maplibregl.Marker | null = null;
 	$effect(() => {
-		void selected?.company_id;
-		schedule();
+		const p = selected, d = detail;
+		addr?.remove();
+		addr = null;
+		if (!p || !map) return;
+		const loc = d?.locations?.find((l) => l.lat != null) ?? null;
+		const approx = loc ? loc.geo_approximate !== false : true;
+		const el = document.createElement('div');
+		el.className = `addr${approx ? ' approx' : ''}`;
+		const card = document.createElement('div');
+		card.className = 'addr-card glass';
+		const name = document.createElement('b');
+		name.textContent = p.name ?? '';
+		const sub = document.createElement('span');
+		sub.textContent = `${p.open_jobs ?? 0} open · ${approx ? 'city centre' : 'office'}`;
+		card.append(name, sub);
+		const tip = document.createElement('div');
+		tip.className = 'addr-tip';
+		el.append(card, tip);
+		addr = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([loc?.lon ?? p.lon ?? 0, loc?.lat ?? p.lat ?? 0]).addTo(map);
 	});
+
+	// Bottom sheet (phones). It follows the finger 1:1, resists past its ends,
+	// and on release lands on the snap point nearest where the flick was heading.
+	const mobile = () => matchMedia('(max-width: 899px)').matches;
+	const visibleAt = (i: number) => [112, pageEl.clientHeight * 0.46, pageEl.clientHeight * 0.88][i];
+	const yFor = (i: number) => panelEl.offsetHeight - visibleAt(i);
+	const currentY = () => new DOMMatrixReadOnly(getComputedStyle(panelEl).transform).m42;
+	const project = (v: number, rate = 0.998) => ((v / 1000) * rate) / (1 - rate);
+	const rubber = (over: number, dim: number, c = 0.55) => (over * dim * c) / (dim + c * Math.abs(over));
+	let sheetAnim: Animation | null = null;
+	let drag: { id: number; y0: number; start: number; trail: { t: number; y: number }[] } | null = null;
+
+	function sheetPadding() {
+		return mobile() && panelEl ? { top: 150, left: 0, right: 0, bottom: Math.min(visibleAt(1), pageEl.clientHeight * 0.5) } : { top: 0, bottom: 0, left: 0, right: 0 };
+	}
+
+	function settle(i: number, instant = false) {
+		if (!panelEl || !mobile()) return;
+		snap = i;
+		const from = currentY(), to = yFor(i);
+		sheetAnim?.cancel();
+		panelEl.style.transform = `translateY(${to}px)`;
+		if (instant || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		sheetAnim = panelEl.animate([{ transform: `translateY(${from}px)` }, { transform: `translateY(${to}px)` }], {
+			duration: 460, easing: 'cubic-bezier(0.2, 0.9, 0.25, 1)'
+		});
+	}
+
+	function grab(e: PointerEvent) {
+		if (!mobile()) return;
+		const y = currentY(); // the live, on-screen position, even mid-animation
+		sheetAnim?.cancel();
+		panelEl.style.transform = `translateY(${y}px)`;
+		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		drag = { id: e.pointerId, y0: e.clientY, start: y, trail: [{ t: e.timeStamp, y: e.clientY }] };
+	}
+
+	function move(e: PointerEvent) {
+		if (!drag || e.pointerId !== drag.id) return;
+		drag.trail.push({ t: e.timeStamp, y: e.clientY });
+		if (drag.trail.length > 6) drag.trail.shift();
+		let y = drag.start + (e.clientY - drag.y0);
+		const top = yFor(2), bottom = yFor(0);
+		if (y < top) y = top + rubber(y - top, panelEl.offsetHeight);
+		else if (y > bottom) y = bottom + rubber(y - bottom, panelEl.offsetHeight);
+		panelEl.style.transform = `translateY(${y}px)`;
+	}
+
+	function release(e: PointerEvent) {
+		if (!drag || e.pointerId !== drag.id) return;
+		const a = drag.trail[0], b = drag.trail[drag.trail.length - 1];
+		const v = b.t > a.t ? ((b.y - a.y) / (b.t - a.t)) * 1000 : 0; // px/s, down is positive
+		const moved = Math.abs(e.clientY - drag.y0) > 6;
+		drag = null;
+		if (!moved) return settle(snap === 2 ? 1 : snap === 1 ? 2 : 1); // a tap steps the sheet up
+		const target = currentY() + project(v);
+		const best = [0, 1, 2].reduce((m, i) => (Math.abs(yFor(i) - target) < Math.abs(yFor(m) - target) ? i : m), 0);
+		settle(best);
+	}
 
 	let savedIds = $state<number[]>([]);
 	async function toggleSave(id: number) {
@@ -281,12 +392,16 @@
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 		// Start with all of India in view, whatever the screen shape.
 		map = new maplibregl.Map({
-			container, style: mapStyle(), bounds: [[67, 6], [98, 37]],
+			container, style: mapStyle(), maxZoom: 19, bounds: [[67, 6], [98, 37]],
 			fitBoundsOptions: { padding: { top: 150, bottom: 24, left: 24, right: 24 } }, attributionControl: { compact: true }
 		});
 		map.on('style.load', () => map?.setProjection({ type: 'globe' }));
 		map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 		map.on('load', load);
+		const fit = () => (mobile() ? settle(snap, true) : (panelEl.style.transform = ''));
+		fit();
+		addEventListener('resize', fit);
+		cleanups.push(() => removeEventListener('resize', fit));
 		map.on('moveend', refresh);
 		map.on('move', schedule);
 		if (!reduced) {
@@ -311,6 +426,8 @@
 		clearTimeout(timer);
 		clearTimeout(searchTimer);
 		cancelAnimationFrame(raf);
+		cleanups.forEach((c) => c());
+		addr?.remove();
 		map?.remove();
 	});
 
@@ -331,7 +448,7 @@
 
 <svelte:head><title>Globe · CareerGlobe</title></svelte:head>
 
-<div class="globe-page">
+<div class="globe-page" bind:this={pageEl}>
 	<div class="map-wrap space">
 		<div class="map" bind:this={container}></div>
 		<div class="top">
@@ -360,7 +477,12 @@
 		{/if}
 	</div>
 
-	<aside class="panel">
+	<aside class="panel" bind:this={panelEl} class:raised={snap > 0}>
+		<div class="grab" role="button" tabindex="0" aria-label="Resize the list: drag or press Enter" onpointerdown={grab} onpointermove={move} onpointerup={release} onpointercancel={release}
+			onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && settle((snap + 1) % 3)}>
+			<span class="grabber"></span>
+			<span class="t-caption t-2">{selected ? selected.name : `${inView.length} ${inView.length === 1 ? 'company' : 'companies'} in view`}</span>
+		</div>
 		{#if selected}
 			<section class="preview" aria-label="Company preview">
 				<div style="display: flex; gap: 14px; align-items: center">
@@ -369,12 +491,37 @@
 						<h2 class="t-title">{selected.name}</h2>
 						<div class="meta">{#if selected.type}<span class="pill p-saved">{selected.type}</span>{/if}<span>{selected.city ?? ''}</span></div>
 					</div>
-					<button class="icon-btn" aria-label="Close preview" onclick={() => { selected = null; refresh(); }}><Icon name="x" /></button>
+					<button class="icon-btn" aria-label="Close preview" onclick={closePreview}><Icon name="x" /></button>
 				</div>
 				<div style="display: flex; gap: 28px">
 					<div><p class="num" style="font-size: 24px">{selected.open_jobs}</p><p class="t-caption t-3">open jobs</p></div>
 					<div><p class="num t-accent" style="font-size: 24px">{selected.matches}</p><p class="t-caption t-3">your matches</p></div>
 				</div>
+				{#if detail}
+					{@const loc = detail.locations.find((l) => l.lat != null)}
+					<p class="t-caption t-3 where">
+						{loc?.geo_approximate === false
+							? 'Pinned at the office.'
+							: `Pinned at the centre of ${loc?.city ?? 'the city'}: the exact office address is not on file yet.`}
+					</p>
+					<div class="openings" aria-label="Openings">
+						<p class="t-caption t-2">OPENINGS</p>
+						{#each detail.open_jobs.slice(0, 6) as j (j.id)}
+							<a class="list-row plain" href="/jobs/{j.id}">
+								<ScoreRing score={j.score} size="sm" />
+								<span style="flex: 1; min-width: 0; text-align: left">
+									<b class="t-heading" style="font-size: 15px; display: block">{j.title}</b>
+									<span class="t-caption t-3">{[...(j.cities ?? []).slice(0, 2), ago(j.first_seen)].filter(Boolean).join(' · ')}</span>
+								</span>
+							</a>
+						{:else}
+							<p class="t-body t-2">No open roles right now.</p>
+						{/each}
+						{#if detail.open_jobs.length > 6}<a class="btn btn-text" href="/companies/{selected.company_id}">See all {detail.open_jobs.length} openings</a>{/if}
+					</div>
+				{:else}
+					<div class="sk" style="height: 120px"></div>
+				{/if}
 				<div style="display: flex; gap: 10px">
 					<button class="btn btn-secondary" style="flex: 1" aria-pressed={savedIds.includes(selected.company_id ?? 0)}
 						onclick={() => selected && toggleSave(selected.company_id ?? 0)}>
@@ -485,8 +632,8 @@
 </div>
 
 <style>
-	.globe-page { display: flex; flex-direction: column; height: calc(100vh - 76px); }
-	.map-wrap { position: relative; flex: 1; min-height: 52vh; }
+	.globe-page { position: relative; display: flex; flex-direction: column; height: calc(100vh - 76px); overflow: hidden; }
+	.map-wrap { position: absolute; inset: 0 0 112px 0; }
 	.map { position: absolute; inset: 0; }
 	.top { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px; z-index: 2; pointer-events: none; }
 	.top > * { pointer-events: auto; }
@@ -498,7 +645,24 @@
 	.updated { align-self: flex-start; color: var(--text-2); }
 	.err { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 3; }
 	.hint { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); width: min(340px, 90%); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; text-align: center; z-index: 4; }
-	.panel { background: var(--surface); border-top: 1px solid var(--line); max-height: 45vh; overflow-y: auto; }
+	.panel {
+		position: absolute; left: 0; right: 0; bottom: 0; height: 88%; z-index: 5; overflow-y: auto; overscroll-behavior: contain;
+		background: color-mix(in srgb, var(--surface) 78%, transparent); backdrop-filter: blur(28px) saturate(180%);
+		border-top: 1px solid color-mix(in srgb, #fff 60%, var(--line)); border-radius: 22px 22px 0 0;
+		box-shadow: 0 -10px 40px rgba(27, 31, 28, 0.14); transform: translateY(calc(100% - 112px)); will-change: transform;
+	}
+	.grab { position: sticky; top: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 20px 12px; cursor: grab; touch-action: none; user-select: none; background: inherit; }
+	.grab:active { cursor: grabbing; }
+	.grabber { width: 38px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--text-3) 45%, transparent); }
+	.where { margin-top: -6px; }
+	.openings { display: flex; flex-direction: column; }
+	.openings > p { padding-bottom: 4px; letter-spacing: 0.06em; }
+	:global(.addr) { display: flex; flex-direction: column; align-items: center; pointer-events: none; animation: addr-in 0.45s cubic-bezier(0.2, 0.9, 0.25, 1); }
+	:global(.addr-card) { display: flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 14px; font: 600 13px/16px var(--font); white-space: nowrap; }
+	:global(.addr-card span) { color: var(--text-2); font-size: 11px; font-weight: 600; letter-spacing: 0.01em; }
+	:global(.addr-tip) { width: 22px; height: 22px; margin-top: 2px; background: var(--pin-match); border: 3px solid var(--pin-stroke); border-radius: 50% 50% 50% 0; transform: rotate(-45deg) translate(2px, -2px); box-shadow: 0 3px 8px rgba(27, 31, 28, 0.35); }
+	:global(.addr.approx .addr-tip) { background: var(--pin-hiring); }
+	@keyframes addr-in { from { opacity: 0; transform: translateY(-14px) scale(0.92); } }
 	:global(.maplibregl-ctrl-group) { border-radius: var(--r-md); box-shadow: var(--shadow-raised); }
 	.preview, .sheet-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 	.preview { border-bottom: 1px solid var(--line); }
@@ -517,6 +681,8 @@
 	}
 	@media (min-width: 900px) {
 		.globe-page { flex-direction: row; height: 100vh; }
-		.panel { width: 440px; max-height: none; border-top: 0; border-left: 1px solid var(--line); }
+		.map-wrap { position: relative; inset: auto; flex: 1; }
+		.panel { position: relative; height: auto; width: 440px; border-top: 0; border-left: 1px solid var(--line); border-radius: 0; box-shadow: none; transform: none !important; background: var(--surface); backdrop-filter: none; }
+		.grab { display: none; }
 	}
 </style>
