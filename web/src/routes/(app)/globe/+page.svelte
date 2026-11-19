@@ -24,6 +24,7 @@
 
 	let container: HTMLDivElement;
 	let map: maplibregl.Map | null = null;
+	let geolocate: maplibregl.GeolocateControl | null = null;
 	let filters = $state<Filters>(emptyFilters());
 	let inView = $state<Row[]>([]);
 	let updated = $state<string | null>(null);
@@ -404,6 +405,18 @@
 		});
 		map.on('style.load', () => map?.setProjection({ type: 'globe' }));
 		map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+		// The browser's own position (GPS, Wi-Fi or network), asked only when the button is pressed.
+		geolocate = new maplibregl.GeolocateControl({
+			positionOptions: { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 },
+			trackUserLocation: true, showAccuracyCircle: true, fitBoundsOptions: { maxZoom: 15, padding: sheetPadding() }
+		});
+		geolocate.on('error', (e: GeolocationPositionError) => {
+			error = e.code === 1
+				? 'Location is blocked for this site. Allow it from the lock icon in the address bar, then try again.'
+				: e.code === 3 ? 'Finding your location took too long. Try again.' : 'Your browser could not find your location.';
+		});
+		geolocate.on('geolocate', () => (error = ''));
+		map.addControl(geolocate, 'bottom-right');
 		map.on('load', load);
 		const fit = () => (mobile() ? settle(snap, true) : (panelEl.style.transform = ''));
 		fit();
@@ -464,6 +477,7 @@
 				<button class="icon-btn glass" aria-label="Filters, {activeCount(filters)} on" onclick={() => (sheet = 'filters')}><Icon name="filter" /></button>
 			</div>
 			<div class="chips nowrap">
+				<button class="chip glass" onclick={() => geolocate?.trigger()}><Icon name="globe" size={16} />Near me</button>
 				<button class="chip {filters.matches ? 'on' : 'glass'}" aria-pressed={filters.matches} onclick={() => toggle('matches')}>Matches only</button>
 				<button class="chip {filters.remote ? 'on' : 'glass'}" aria-pressed={filters.remote} onclick={() => toggle('remote')}>Remote</button>
 				<button class="chip {filters.category === 'Software Engineering' ? 'on' : 'glass'}"
