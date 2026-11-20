@@ -79,6 +79,32 @@ function liftStops(stops: unknown, boost = 0): unknown {
 	return Array.isArray(stops) ? stops.map((s) => (Array.isArray(s) ? [s[0], liftValue(s[1], boost)] : s)) : stops;
 }
 
+// Fixed colours for the features that must read apart at a glance: land, water, parks,
+// buildings and each road class. Anything not listed keeps its lifted colour.
+const DARK_PAINT: Record<string, Record<string, string>> = {
+	background: { 'background-color': '#3a3632' },
+	landuse_residential: { 'fill-color': '#413c37' },
+	landcover_wood: { 'fill-color': '#35493a' },
+	landuse_park: { 'fill-color': '#3b5640' },
+	water: { 'fill-color': '#2c5f8a' },
+	waterway: { 'line-color': '#3a77a8' },
+	building: { 'fill-color': '#4d4741' },
+	highway_path: { 'line-color': '#6d655c' },
+	highway_minor: { 'line-color': '#7b736a' },
+	highway_major_casing: { 'line-color': '#2b2825' },
+	highway_major_inner: { 'line-color': '#a39a8e' },
+	highway_major_subtle: { 'line-color': '#8c8478' },
+	highway_motorway_casing: { 'line-color': '#2b2825' },
+	highway_motorway_inner: { 'line-color': '#d9a35b' },
+	highway_motorway_subtle: { 'line-color': '#9a7a4a' },
+	railway: { 'line-color': '#6a6259' },
+	boundary_state: { 'line-color': '#8a8176' },
+	'boundary_country_z0-4': { 'line-color': '#a39a8e' },
+	'boundary_country_z5-': { 'line-color': '#a39a8e' }
+};
+
+const LABEL_TEXT = '#d8d2c8';
+
 /** The style with every fill, line and background colour lifted (see above). */
 export function liftStyle(style: StyleSpecification): StyleSpecification {
 	return {
