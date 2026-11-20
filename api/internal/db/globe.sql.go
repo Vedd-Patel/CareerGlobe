@@ -146,46 +146,74 @@ func (q *Queries) ClustersInView(ctx context.Context, arg ClustersInViewParams) 
 }
 
 const companiesInView = `-- name: CompaniesInView :many
+WITH fj AS (
+  SELECT j.company_id,
+         count(*)::int AS open_jobs,
+         count(*) FILTER (WHERE m.score >= 60)::int AS matches
+  FROM jobs j
+  LEFT JOIN matches m ON m.job_id = j.id AND m.user_id = $14::bigint
+  WHERE j.status = 'open'
+    AND ($15::text IS NULL OR j.category = $15 OR j.category_2 = $15)
+    AND (NOT $16::bool OR j.work_mode = 'remote')
+    AND ($17::timestamptz IS NULL OR j.first_seen >= $17)
+    AND ($18::text[] IS NULL OR j.employment_type = ANY($18::text[]))
+    AND ($19::int IS NULL OR (COALESCE(j.years_min, 0) <= $20::int AND COALESCE(j.years_max, 99) >= $19::int))
+    AND ($21::int IS NULL OR j.salary_max >= $21::int)
+  GROUP BY j.company_id
+)
 SELECT t.id, t.name, t.slug, t.type, t.logo_url, t.city, t.address, t.open_jobs, t.matches FROM (
   SELECT c.id, c.name, c.slug, c.type, c.logo_url,
          (SELECT l2.city FROM company_locations l2 WHERE l2.company_id = c.id ORDER BY l2.is_hq DESC LIMIT 1) AS city,
          (SELECT l2.address FROM company_locations l2 WHERE l2.company_id = c.id AND l2.address IS NOT NULL
             ORDER BY l2.is_hq DESC LIMIT 1) AS address,
-         (SELECT count(*) FROM jobs j WHERE j.company_id = c.id AND j.status = 'open')::int AS open_jobs,
-         (SELECT count(*) FROM matches m JOIN jobs j ON j.id = m.job_id
-          WHERE j.company_id = c.id AND j.status = 'open' AND m.user_id = $1::bigint AND m.score >= 60)::int AS matches,
+         COALESCE(fj.open_jobs, 0)::int AS open_jobs,
+         COALESCE(fj.matches, 0)::int AS matches,
          d.km AS km
   FROM companies c
+  LEFT JOIN fj ON fj.company_id = c.id
   LEFT JOIN LATERAL (
-    SELECT min(ST_Distance(l3.geo, ST_SetSRID(ST_MakePoint($2::float8, $3::float8), 4326)::geography))
+    SELECT min(ST_Distance(l3.geo, ST_SetSRID(ST_MakePoint($1::float8, $2::float8), 4326)::geography))
              / 1000.0 AS km
     FROM company_locations l3
     WHERE l3.company_id = c.id AND l3.geo IS NOT NULL
-      AND $3::float8 IS NOT NULL AND $2::float8 IS NOT NULL
+      AND $2::float8 IS NOT NULL AND $1::float8 IS NOT NULL
   ) d ON true
   WHERE EXISTS (
     SELECT 1 FROM company_locations l
     WHERE l.company_id = c.id AND l.geo IS NOT NULL
-      AND l.geo::geometry && ST_MakeEnvelope($4::float8, $5::float8,
-                                             $6::float8, $7::float8, 4326))
-    AND ($8::text IS NULL OR c.type = $8 OR c.type = 'both')
+      AND l.geo::geometry && ST_MakeEnvelope($3::float8, $4::float8,
+                                             $5::float8, $6::float8, 4326))
+    AND ($7::text IS NULL OR c.type = $7 OR c.type = 'both')
+    AND (NOT $8::bool OR COALESCE(fj.open_jobs, 0) > 0)
+    AND (NOT $9::bool OR COALESCE(fj.open_jobs, 0) > 0)
+    AND (NOT $10::bool OR COALESCE(fj.matches, 0) > 0)
 ) t
-ORDER BY CASE WHEN $9::bool THEN t.km END ASC NULLS LAST, t.matches DESC, t.open_jobs DESC, t.name
-LIMIT $11::int OFFSET $10::int
+ORDER BY CASE WHEN $11::bool THEN t.km END ASC NULLS LAST, t.matches DESC, t.open_jobs DESC, t.name
+LIMIT $13::int OFFSET $12::int
 `
 
 type CompaniesInViewParams struct {
-	UserID      int64    `json:"user_id"`
-	NearLon     *float64 `json:"near_lon"`
-	NearLat     *float64 `json:"near_lat"`
-	West        float64  `json:"west"`
-	South       float64  `json:"south"`
-	East        float64  `json:"east"`
-	North       float64  `json:"north"`
-	CompanyType *string  `json:"company_type"`
-	Nearest     bool     `json:"nearest"`
-	Skip        int32    `json:"skip"`
-	MaxRows     int32    `json:"max_rows"`
+	NearLon     *float64   `json:"near_lon"`
+	NearLat     *float64   `json:"near_lat"`
+	West        float64    `json:"west"`
+	South       float64    `json:"south"`
+	East        float64    `json:"east"`
+	North       float64    `json:"north"`
+	CompanyType *string    `json:"company_type"`
+	JobFilters  bool       `json:"job_filters"`
+	HiringOnly  bool       `json:"hiring_only"`
+	MatchesOnly bool       `json:"matches_only"`
+	Nearest     bool       `json:"nearest"`
+	Skip        int32      `json:"skip"`
+	MaxRows     int32      `json:"max_rows"`
+	UserID      int64      `json:"user_id"`
+	Category    *string    `json:"category"`
+	RemoteOnly  bool       `json:"remote_only"`
+	PostedSince *time.Time `json:"posted_since"`
+	Employment  []string   `json:"employment"`
+	ExpMin      *int32     `json:"exp_min"`
+	ExpMax      *int32     `json:"exp_max"`
+	MinSalary   *int32     `json:"min_salary"`
 }
 
 type CompaniesInViewRow struct {
@@ -201,10 +229,11 @@ type CompaniesInViewRow struct {
 }
 
 // The "Companies in view" list beside the globe: best matches first, or nearest first
-// to a point (the map centre or the member's position) when `nearest` is set.
+// to a point (the map centre or the member's position) when `nearest` is set. Counts
+// are of the jobs that pass the job filters, and with job filters on, a company with
+// no such job is left out.
 func (q *Queries) CompaniesInView(ctx context.Context, arg CompaniesInViewParams) ([]CompaniesInViewRow, error) {
 	rows, err := q.db.Query(ctx, companiesInView,
-		arg.UserID,
 		arg.NearLon,
 		arg.NearLat,
 		arg.West,
@@ -212,9 +241,20 @@ func (q *Queries) CompaniesInView(ctx context.Context, arg CompaniesInViewParams
 		arg.East,
 		arg.North,
 		arg.CompanyType,
+		arg.JobFilters,
+		arg.HiringOnly,
+		arg.MatchesOnly,
 		arg.Nearest,
 		arg.Skip,
 		arg.MaxRows,
+		arg.UserID,
+		arg.Category,
+		arg.RemoteOnly,
+		arg.PostedSince,
+		arg.Employment,
+		arg.ExpMin,
+		arg.ExpMax,
+		arg.MinSalary,
 	)
 	if err != nil {
 		return nil, err

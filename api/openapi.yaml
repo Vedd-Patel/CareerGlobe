@@ -211,8 +211,17 @@ paths:
     get:
       operationId: getCompaniesById
       tags: [companies]
-      summary: Company detail with offices and open roles (S18)
-      parameters: [{ $ref: "#/components/parameters/Id" }]
+      summary: Company detail with offices and open roles (S18); the job filters narrow the open roles
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - $ref: "#/components/parameters/Category"
+        - $ref: "#/components/parameters/Remote"
+        - $ref: "#/components/parameters/Posted"
+        - $ref: "#/components/parameters/Employment"
+        - $ref: "#/components/parameters/ExpMin"
+        - $ref: "#/components/parameters/ExpMax"
+        - $ref: "#/components/parameters/MinSalary"
+        - { name: city, in: query, description: Only roles in this city, schema: { type: string } }
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CompanyDetail" } } } }
         default: { $ref: "#/components/responses/Error" }
@@ -1256,7 +1265,13 @@ components:
               work_mode: { $ref: "#/components/schemas/WorkMode" }
               posted_at: { type: [string, "null"], format: date-time }
               first_seen: { type: string, format: date-time }
+              employment_type: { type: [string, "null"], enum: [intern, full_time, part_time, contract, null] }
+              years_min: { type: [integer, "null"] }
+              years_max: { type: [integer, "null"] }
+              salary_min: { type: [integer, "null"] }
+              salary_max: { type: [integer, "null"] }
               score: { type: [integer, "null"] }
+        open_total: { type: integer, description: "All open roles, whatever the filters" }
     JobRef:
       type: object
       properties:

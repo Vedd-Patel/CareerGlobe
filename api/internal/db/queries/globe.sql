@@ -112,17 +112,34 @@ LIMIT sqlc.arg(max_pins)::int;
 
 -- name: CompaniesInView :many
 -- The "Companies in view" list beside the globe: best matches first, or nearest first
--- to a point (the map centre or the member's position) when `nearest` is set.
+-- to a point (the map centre or the member's position) when `nearest` is set. Counts
+-- are of the jobs that pass the job filters, and with job filters on, a company with
+-- no such job is left out.
+WITH fj AS (
+  SELECT j.company_id,
+         count(*)::int AS open_jobs,
+         count(*) FILTER (WHERE m.score >= 60)::int AS matches
+  FROM jobs j
+  LEFT JOIN matches m ON m.job_id = j.id AND m.user_id = sqlc.arg(user_id)::bigint
+  WHERE j.status = 'open'
+    AND (sqlc.narg(category)::text IS NULL OR j.category = sqlc.narg(category) OR j.category_2 = sqlc.narg(category))
+    AND (NOT sqlc.arg(remote_only)::bool OR j.work_mode = 'remote')
+    AND (sqlc.narg(posted_since)::timestamptz IS NULL OR j.first_seen >= sqlc.narg(posted_since))
+    AND (sqlc.narg(employment)::text[] IS NULL OR j.employment_type = ANY(sqlc.narg(employment)::text[]))
+    AND (sqlc.narg(exp_min)::int IS NULL OR (COALESCE(j.years_min, 0) <= sqlc.narg(exp_max)::int AND COALESCE(j.years_max, 99) >= sqlc.narg(exp_min)::int))
+    AND (sqlc.narg(min_salary)::int IS NULL OR j.salary_max >= sqlc.narg(min_salary)::int)
+  GROUP BY j.company_id
+)
 SELECT t.id, t.name, t.slug, t.type, t.logo_url, t.city, t.address, t.open_jobs, t.matches FROM (
   SELECT c.id, c.name, c.slug, c.type, c.logo_url,
          (SELECT l2.city FROM company_locations l2 WHERE l2.company_id = c.id ORDER BY l2.is_hq DESC LIMIT 1) AS city,
          (SELECT l2.address FROM company_locations l2 WHERE l2.company_id = c.id AND l2.address IS NOT NULL
             ORDER BY l2.is_hq DESC LIMIT 1) AS address,
-         (SELECT count(*) FROM jobs j WHERE j.company_id = c.id AND j.status = 'open')::int AS open_jobs,
-         (SELECT count(*) FROM matches m JOIN jobs j ON j.id = m.job_id
-          WHERE j.company_id = c.id AND j.status = 'open' AND m.user_id = sqlc.arg(user_id)::bigint AND m.score >= 60)::int AS matches,
+         COALESCE(fj.open_jobs, 0)::int AS open_jobs,
+         COALESCE(fj.matches, 0)::int AS matches,
          d.km AS km
   FROM companies c
+  LEFT JOIN fj ON fj.company_id = c.id
   LEFT JOIN LATERAL (
     SELECT min(ST_Distance(l3.geo, ST_SetSRID(ST_MakePoint(sqlc.narg(near_lon)::float8, sqlc.narg(near_lat)::float8), 4326)::geography))
              / 1000.0 AS km
@@ -136,6 +153,9 @@ SELECT t.id, t.name, t.slug, t.type, t.logo_url, t.city, t.address, t.open_jobs,
       AND l.geo::geometry && ST_MakeEnvelope(sqlc.arg(west)::float8, sqlc.arg(south)::float8,
                                              sqlc.arg(east)::float8, sqlc.arg(north)::float8, 4326))
     AND (sqlc.narg(company_type)::text IS NULL OR c.type = sqlc.narg(company_type) OR c.type = 'both')
+    AND (NOT sqlc.arg(job_filters)::bool OR COALESCE(fj.open_jobs, 0) > 0)
+    AND (NOT sqlc.arg(hiring_only)::bool OR COALESCE(fj.open_jobs, 0) > 0)
+    AND (NOT sqlc.arg(matches_only)::bool OR COALESCE(fj.matches, 0) > 0)
 ) t
 ORDER BY CASE WHEN sqlc.arg(nearest)::bool THEN t.km END ASC NULLS LAST, t.matches DESC, t.open_jobs DESC, t.name
 LIMIT sqlc.arg(max_rows)::int OFFSET sqlc.arg(skip)::int;

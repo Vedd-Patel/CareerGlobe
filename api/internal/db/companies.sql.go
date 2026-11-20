@@ -61,34 +61,67 @@ func (q *Queries) CompanyLocations(ctx context.Context, companyID int64) ([]Comp
 
 const companyOpenJobs = `-- name: CompanyOpenJobs :many
 SELECT j.id, j.title, j.category, j.category_2, j.seniority, j.cities, j.work_mode, j.posted_at, j.first_seen,
+       j.employment_type, j.years_min, j.years_max, j.salary_min, j.salary_max,
        m.score
 FROM jobs j
 LEFT JOIN matches m ON m.job_id = j.id AND m.user_id = $1::bigint
 WHERE j.company_id = $2::bigint AND j.status = 'open'
+  AND ($3::text IS NULL OR j.category = $3 OR j.category_2 = $3)
+  AND (NOT $4::bool OR j.work_mode = 'remote')
+  AND ($5::timestamptz IS NULL OR j.first_seen >= $5)
+  AND ($6::text[] IS NULL OR j.employment_type = ANY($6::text[]))
+  AND ($7::int IS NULL OR (COALESCE(j.years_min, 0) <= $8::int AND COALESCE(j.years_max, 99) >= $7::int))
+  AND ($9::int IS NULL OR j.salary_max >= $9::int)
+  AND ($10::text IS NULL OR EXISTS (SELECT 1 FROM unnest(j.cities) c WHERE lower(c) = lower($10)))
 ORDER BY j.category NULLS LAST, m.score DESC NULLS LAST, j.first_seen DESC
 LIMIT 500
 `
 
 type CompanyOpenJobsParams struct {
-	UserID    int64 `json:"user_id"`
-	CompanyID int64 `json:"company_id"`
+	UserID      int64      `json:"user_id"`
+	CompanyID   int64      `json:"company_id"`
+	Category    *string    `json:"category"`
+	RemoteOnly  bool       `json:"remote_only"`
+	PostedSince *time.Time `json:"posted_since"`
+	Employment  []string   `json:"employment"`
+	ExpMin      *int32     `json:"exp_min"`
+	ExpMax      *int32     `json:"exp_max"`
+	MinSalary   *int32     `json:"min_salary"`
+	City        *string    `json:"city"`
 }
 
 type CompanyOpenJobsRow struct {
-	ID        int64      `json:"id"`
-	Title     string     `json:"title"`
-	Category  *string    `json:"category"`
-	Category2 *string    `json:"category_2"`
-	Seniority *string    `json:"seniority"`
-	Cities    []string   `json:"cities"`
-	WorkMode  *string    `json:"work_mode"`
-	PostedAt  *time.Time `json:"posted_at"`
-	FirstSeen time.Time  `json:"first_seen"`
-	Score     *int16     `json:"score"`
+	ID             int64      `json:"id"`
+	Title          string     `json:"title"`
+	Category       *string    `json:"category"`
+	Category2      *string    `json:"category_2"`
+	Seniority      *string    `json:"seniority"`
+	Cities         []string   `json:"cities"`
+	WorkMode       *string    `json:"work_mode"`
+	PostedAt       *time.Time `json:"posted_at"`
+	FirstSeen      time.Time  `json:"first_seen"`
+	EmploymentType *string    `json:"employment_type"`
+	YearsMin       *int16     `json:"years_min"`
+	YearsMax       *int16     `json:"years_max"`
+	SalaryMin      *int32     `json:"salary_min"`
+	SalaryMax      *int32     `json:"salary_max"`
+	Score          *int16     `json:"score"`
 }
 
+// A company's open jobs that pass the job filters (and the city, when one is given).
 func (q *Queries) CompanyOpenJobs(ctx context.Context, arg CompanyOpenJobsParams) ([]CompanyOpenJobsRow, error) {
-	rows, err := q.db.Query(ctx, companyOpenJobs, arg.UserID, arg.CompanyID)
+	rows, err := q.db.Query(ctx, companyOpenJobs,
+		arg.UserID,
+		arg.CompanyID,
+		arg.Category,
+		arg.RemoteOnly,
+		arg.PostedSince,
+		arg.Employment,
+		arg.ExpMin,
+		arg.ExpMax,
+		arg.MinSalary,
+		arg.City,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -106,6 +139,11 @@ func (q *Queries) CompanyOpenJobs(ctx context.Context, arg CompanyOpenJobsParams
 			&i.WorkMode,
 			&i.PostedAt,
 			&i.FirstSeen,
+			&i.EmploymentType,
+			&i.YearsMin,
+			&i.YearsMax,
+			&i.SalaryMin,
+			&i.SalaryMax,
 			&i.Score,
 		); err != nil {
 			return nil, err
@@ -116,6 +154,17 @@ func (q *Queries) CompanyOpenJobs(ctx context.Context, arg CompanyOpenJobsParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const countCompanyOpenJobs = `-- name: CountCompanyOpenJobs :one
+SELECT count(*)::int FROM jobs WHERE company_id = $1 AND status = 'open'
+`
+
+func (q *Queries) CountCompanyOpenJobs(ctx context.Context, companyID int64) (int32, error) {
+	row := q.db.QueryRow(ctx, countCompanyOpenJobs, companyID)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const createReport = `-- name: CreateReport :exec

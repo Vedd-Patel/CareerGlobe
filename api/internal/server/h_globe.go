@@ -163,6 +163,9 @@ func (s *Server) companiesInView(w http.ResponseWriter, r *http.Request) error {
 	rows, err := s.q.CompaniesInView(r.Context(), db.CompaniesInViewParams{
 		UserID: account(r).UserID, West: b.west, South: b.south, East: b.east, North: b.north,
 		CompanyType: f.CompanyType, MaxRows: int32(limit), Skip: int32(queryInt(r, "offset", 0, 0, 10_000)),
+		Category: f.Category, RemoteOnly: f.RemoteOnly, PostedSince: f.PostedSince, Employment: f.Employment,
+		ExpMin: f.ExpMin, ExpMax: f.ExpMax, MinSalary: f.MinSalary,
+		JobFilters: f.any(), HiringOnly: f.HiringOnly, MatchesOnly: f.MatchesOnly,
 		NearLat: nearLat, NearLon: nearLon, Nearest: nearLat != nil && r.URL.Query().Get("sort") == "nearest",
 	})
 	if err != nil {
@@ -212,7 +215,15 @@ func (s *Server) company(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	jobs, err := s.q.CompanyOpenJobs(r.Context(), db.CompanyOpenJobsParams{UserID: uid, CompanyID: id})
+	f := filtersFrom(r)
+	jobs, err := s.q.CompanyOpenJobs(r.Context(), db.CompanyOpenJobsParams{
+		UserID: uid, CompanyID: id, Category: f.Category, RemoteOnly: f.RemoteOnly, PostedSince: f.PostedSince,
+		Employment: f.Employment, ExpMin: f.ExpMin, ExpMax: f.ExpMax, MinSalary: f.MinSalary, City: optString(r.URL.Query().Get("city")),
+	})
+	if err != nil {
+		return err
+	}
+	total, err := s.q.CountCompanyOpenJobs(r.Context(), id)
 	if err != nil {
 		return err
 	}
@@ -220,7 +231,7 @@ func (s *Server) company(w http.ResponseWriter, r *http.Request) error {
 		"id": c.ID, "name": c.Name, "slug": c.Slug, "website": c.Website, "logo_url": c.LogoUrl, "type": c.Type,
 		"stage": c.Stage, "size_band": c.SizeBand, "industry": c.Industry, "description": c.Description,
 		"careers_url": c.CareersUrl, "last_checked_at": c.LastCheckedAt, "saved": c.Saved,
-		"locations": locs, "open_jobs": jobs,
+		"locations": locs, "open_jobs": jobs, "open_total": total,
 	})
 }
 

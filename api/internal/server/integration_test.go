@@ -789,7 +789,7 @@ func TestCORS(t *testing.T) {
 func TestJobTypeExperienceAndSalaryFilters(t *testing.T) {
 	e := newEnv(t)
 	e.join("tok-alice")
-	e.seed() // Acme (Bengaluru) with a backend job and a designer job; Beta (Pune) with a QA job
+	acme, _, _, _ := e.seed() // Acme (Bengaluru) with a backend job and a designer job; Beta (Pune) with a QA job
 	e.exec(`UPDATE jobs SET employment_type = 'full_time', years_min = 3, years_max = 5 WHERE job_key = 'k1'`)
 	e.exec(`UPDATE jobs SET employment_type = 'intern', years_min = 0, years_max = 1, salary_max = 600000 WHERE job_key = 'k2'`)
 	e.exec(`UPDATE jobs SET employment_type = 'full_time', years_min = 8, salary_max = 4000000 WHERE job_key = 'k3'`)
@@ -825,5 +825,19 @@ func TestJobTypeExperienceAndSalaryFilters(t *testing.T) {
 		if got := count(c.query); got != c.jobs {
 			t.Errorf("%q: got %d jobs, want %d", c.query, got, c.jobs)
 		}
+	}
+
+	// The company page and the in-view list follow the same filters.
+	r := e.do("GET", fmt.Sprintf("/v1/companies/%d?employment=intern", acme), "tok-alice", nil)
+	if jobs := r.Body["open_jobs"].([]any); r.Status != 200 || len(jobs) != 1 || r.Body["open_total"] != float64(2) {
+		t.Fatalf("company with filter: %s", r.Raw)
+	}
+	if r := e.do("GET", fmt.Sprintf("/v1/companies/%d?city=Pune", acme), "tok-alice", nil); len(r.Body["open_jobs"].([]any)) != 0 {
+		t.Fatalf("company city filter: %s", r.Raw)
+	}
+	r = e.do("GET", "/v1/companies/in-view?west=68&south=6&east=98&north=36&employment=intern", "tok-alice", nil)
+	items := r.Body["items"].([]any)
+	if len(items) != 1 || items[0].(map[string]any)["open_jobs"] != float64(1) {
+		t.Fatalf("in view with filter: %s", r.Raw)
 	}
 }
