@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { activeCount, clusterSize, emptyFilters, filtersToQuery, jobTypeQuery, pinKind } from './globe';
-import { salary, scoreBand, updatedLabel, initials, logoClass } from './format';
+import { employmentLabel, salary, scoreBand, updatedLabel, yearsLabel, initials, logoClass } from './format';
 
 describe('globe helpers', () => {
 	it('sizes clusters and colours pins', () => {
@@ -32,6 +32,10 @@ describe('format', () => {
 		expect(salary(1800000, 2400000)).toBe('₹18–24 LPA');
 		expect(salary(null, null)).toBe('');
 		expect(salary(2550000, null)).toBe('From ₹25.5 LPA');
+	});
+	it('labels job type and years like a card shows them', () => {
+		expect([employmentLabel('intern'), employmentLabel('full_time'), employmentLabel('full_time', true), employmentLabel(null)]).toEqual(['Internship', '', 'Full-time', '']);
+		expect([yearsLabel(0, 1), yearsLabel(3, 5), yearsLabel(5, null), yearsLabel(2, 2), yearsLabel(null, null)]).toEqual(['Fresher', '3–5 yrs', '5+ yrs', '2 yrs', '']);
 	});
 	it('labels freshness', () => {
 		const now = new Date('2026-10-26T10:00:00+05:30');

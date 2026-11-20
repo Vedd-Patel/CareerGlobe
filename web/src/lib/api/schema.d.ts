@@ -1081,6 +1081,12 @@ export interface components {
             company_id?: number;
             company_name?: string;
             logo_url?: string | null;
+            /** @enum {string|null} */
+            employment_type?: "intern" | "full_time" | "part_time" | "contract" | null;
+            years_min?: number | null;
+            years_max?: number | null;
+            salary_min?: number | null;
+            salary_max?: number | null;
             score?: number;
             reasons?: components["schemas"]["MatchReasons"];
             new?: boolean;

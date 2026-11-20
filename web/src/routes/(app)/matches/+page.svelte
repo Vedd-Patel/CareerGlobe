@@ -63,6 +63,7 @@
 <svelte:head><title>Matches · CareerGlobe</title></svelte:head>
 
 <main class="page">
+	<header class="stick">
 	<div class="page-head">
 		<h1 class="t-title" style="flex: 1">Your matches</h1>
 		<button class="icon-btn refresh" aria-label="Refresh" onclick={() => load()}><Icon name="refresh" size={18} /></button>
@@ -71,7 +72,7 @@
 			<button class="seg {sort === 'newest' ? 'on' : ''}" onclick={() => (sort = 'newest')}>Newest</button>
 		</div>
 	</div>
-	<div class="chips">
+	<div class="chips scroll-row">
 		<button class="chip {remote ? 'on' : ''}" aria-pressed={remote} onclick={() => (remote = !remote)}>Remote</button>
 		<button class="chip {type === 'product' ? 'on' : ''}" onclick={() => (type = type === 'product' ? '' : 'product')}>Product</button>
 		<button class="chip {type === 'service' ? 'on' : ''}" onclick={() => (type = type === 'service' ? '' : 'service')}>Service</button>
@@ -92,6 +93,7 @@
 			{#each categories as c (c)}<option value={c}>{c}</option>{/each}
 		</select>
 	</div>
+	</header>
 
 	{#if error}
 		<Banner kind="err">{error}</Banner>

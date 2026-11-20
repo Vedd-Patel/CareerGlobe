@@ -1,6 +1,7 @@
 -- name: ListMatches :many
 -- Ranked matches (score >= min_score) on open jobs, with optional filters.
 SELECT j.id AS job_id, j.title, j.category, j.cities, j.work_mode, j.posted_at, j.first_seen, j.status,
+       j.employment_type, j.years_min, j.years_max, j.salary_min, j.salary_max,
        c.id AS company_id, c.name AS company_name, c.logo_url,
        m.score, m.reasons, m.seen, m.computed_at,
        EXISTS (SELECT 1 FROM applications a WHERE a.user_id = m.user_id AND a.job_id = j.id) AS saved

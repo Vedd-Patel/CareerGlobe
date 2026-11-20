@@ -68,6 +68,8 @@ h1,h2,h3,p{margin:0}
 /* cards */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;display:flex;gap:14px;box-shadow:var(--shadow)}
 .logo{width:44px;height:44px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font:800 17px var(--font);color:#fff}
+.logo.xs{width:22px;height:22px;border-radius:6px;font-size:10px}
+.logo.xs{padding:2px}
 .logo.sm{width:36px;height:36px;border-radius:10px;font-size:14px}
 .logo.lg{width:64px;height:64px;border-radius:18px;font-size:24px}
 .l1{background:#4B5BD8}.l2{background:#0F8A6E}.l3{background:#C2410C}.l4{background:#7C3AED}.l5{background:#0E7490}.l6{background:#B91C1C}.l7{background:#1D4ED8}.l8{background:#15803D}
@@ -203,4 +205,20 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text-3) 40%,tr
 /* Map zoom and locate buttons: light icons on the dark surface. */
 :root[data-theme='dark'] .maplibregl-ctrl-group button .maplibregl-ctrl-icon{filter:invert(1)}
 @media (prefers-color-scheme:dark){:root:not([data-theme='light']) .maplibregl-ctrl-group button .maplibregl-ctrl-icon{filter:invert(1)}}
+/* Sticky page header: title and filters stay in reach, as a translucent layer the list scrolls under. */
+.stick{position:sticky;top:0;z-index:5;display:flex;flex-direction:column;gap:12px;margin:-24px -16px 0;padding:24px 16px 12px;
+  background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
+  border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+@media(min-width:900px){.stick{margin:-40px -32px 0;padding:40px 32px 14px}}
+/* One line of chips that scrolls sideways instead of wrapping into rows. */
+.scroll-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;-webkit-overflow-scrolling:touch;
+  mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.scroll-row::-webkit-scrollbar{display:none}
+.scroll-row>*{flex:none}
+/* List cards rise in one after another. */
+.stack>.card,.stack>article{animation:rise .5s var(--ease-out) both}
+.stack>:nth-child(2){animation-delay:.04s}.stack>:nth-child(3){animation-delay:.08s}.stack>:nth-child(4){animation-delay:.12s}
+.stack>:nth-child(5){animation-delay:.16s}.stack>:nth-child(n+6){animation-delay:.2s}
+@keyframes rise{from{opacity:0;transform:translateY(12px) scale(.992)}}
+@media(prefers-reduced-motion:reduce){.stack>.card,.stack>article{animation:none}}
 

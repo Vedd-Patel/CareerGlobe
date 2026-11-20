@@ -1349,6 +1349,11 @@ components:
         company_id: { type: integer, format: int64 }
         company_name: { type: string }
         logo_url: { type: [string, "null"] }
+        employment_type: { type: [string, "null"], enum: [intern, full_time, part_time, contract, null] }
+        years_min: { type: [integer, "null"] }
+        years_max: { type: [integer, "null"] }
+        salary_min: { type: [integer, "null"] }
+        salary_max: { type: [integer, "null"] }
         score: { type: integer }
         reasons: { $ref: "#/components/schemas/MatchReasons" }
         new: { type: boolean }

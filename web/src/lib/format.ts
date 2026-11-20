@@ -70,3 +70,20 @@ export function deviceId(): string {
 		return 'unknown';
 	}
 }
+
+const EMPLOYMENT_LABEL: Record<string, string> = { intern: 'Internship', full_time: 'Full-time', part_time: 'Part-time', contract: 'Contract' };
+
+/** "Internship", "Contract"...; full-time is the norm, so it is only shown when asked for. */
+export function employmentLabel(type: string | null | undefined, includeFullTime = false): string {
+	if (!type || (type === 'full_time' && !includeFullTime)) return '';
+	return EMPLOYMENT_LABEL[type] ?? '';
+}
+
+/** The years of experience a posting asks for: "Fresher", "3–5 yrs", "5+ yrs", or '' when it says nothing. */
+export function yearsLabel(min: number | null | undefined, max: number | null | undefined): string {
+	if (min == null) return '';
+	if (max != null && max <= 1 && min === 0) return 'Fresher';
+	if (max == null) return `${min}+ yrs`;
+	return min === max ? `${min} yrs` : `${min}–${max} yrs`;
+}
+

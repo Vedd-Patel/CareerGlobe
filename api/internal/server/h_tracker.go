@@ -38,6 +38,8 @@ func (s *Server) matches(w http.ResponseWriter, r *http.Request) error {
 			"job_id": m.JobID, "title": m.Title, "category": m.Category, "cities": m.Cities, "work_mode": m.WorkMode,
 			"posted_at": m.PostedAt, "first_seen": m.FirstSeen, "company_id": m.CompanyID,
 			"company_name": m.CompanyName, "logo_url": m.LogoUrl, "score": m.Score,
+			"employment_type": m.EmploymentType, "years_min": m.YearsMin, "years_max": m.YearsMax,
+			"salary_min": m.SalaryMin, "salary_max": m.SalaryMax,
 			"reasons": json.RawMessage(m.Reasons), "new": !m.Seen, "saved": m.Saved,
 		})
 	}

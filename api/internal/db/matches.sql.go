@@ -25,6 +25,7 @@ func (q *Queries) CountNewMatches(ctx context.Context, userID int64) (int32, err
 
 const listMatches = `-- name: ListMatches :many
 SELECT j.id AS job_id, j.title, j.category, j.cities, j.work_mode, j.posted_at, j.first_seen, j.status,
+       j.employment_type, j.years_min, j.years_max, j.salary_min, j.salary_max,
        c.id AS company_id, c.name AS company_name, c.logo_url,
        m.score, m.reasons, m.seen, m.computed_at,
        EXISTS (SELECT 1 FROM applications a WHERE a.user_id = m.user_id AND a.job_id = j.id) AS saved
@@ -62,22 +63,27 @@ type ListMatchesParams struct {
 }
 
 type ListMatchesRow struct {
-	JobID       int64           `json:"job_id"`
-	Title       string          `json:"title"`
-	Category    *string         `json:"category"`
-	Cities      []string        `json:"cities"`
-	WorkMode    *string         `json:"work_mode"`
-	PostedAt    *time.Time      `json:"posted_at"`
-	FirstSeen   time.Time       `json:"first_seen"`
-	Status      string          `json:"status"`
-	CompanyID   int64           `json:"company_id"`
-	CompanyName string          `json:"company_name"`
-	LogoUrl     *string         `json:"logo_url"`
-	Score       int16           `json:"score"`
-	Reasons     json.RawMessage `json:"reasons"`
-	Seen        bool            `json:"seen"`
-	ComputedAt  time.Time       `json:"computed_at"`
-	Saved       bool            `json:"saved"`
+	JobID          int64           `json:"job_id"`
+	Title          string          `json:"title"`
+	Category       *string         `json:"category"`
+	Cities         []string        `json:"cities"`
+	WorkMode       *string         `json:"work_mode"`
+	PostedAt       *time.Time      `json:"posted_at"`
+	FirstSeen      time.Time       `json:"first_seen"`
+	Status         string          `json:"status"`
+	EmploymentType *string         `json:"employment_type"`
+	YearsMin       *int16          `json:"years_min"`
+	YearsMax       *int16          `json:"years_max"`
+	SalaryMin      *int32          `json:"salary_min"`
+	SalaryMax      *int32          `json:"salary_max"`
+	CompanyID      int64           `json:"company_id"`
+	CompanyName    string          `json:"company_name"`
+	LogoUrl        *string         `json:"logo_url"`
+	Score          int16           `json:"score"`
+	Reasons        json.RawMessage `json:"reasons"`
+	Seen           bool            `json:"seen"`
+	ComputedAt     time.Time       `json:"computed_at"`
+	Saved          bool            `json:"saved"`
 }
 
 // Ranked matches (score >= min_score) on open jobs, with optional filters.
@@ -113,6 +119,11 @@ func (q *Queries) ListMatches(ctx context.Context, arg ListMatchesParams) ([]Lis
 			&i.PostedAt,
 			&i.FirstSeen,
 			&i.Status,
+			&i.EmploymentType,
+			&i.YearsMin,
+			&i.YearsMax,
+			&i.SalaryMin,
+			&i.SalaryMax,
 			&i.CompanyID,
 			&i.CompanyName,
 			&i.LogoUrl,
