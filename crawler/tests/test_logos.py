@@ -82,3 +82,21 @@ def test_board_logos_come_from_the_board_not_its_vendor_icons():
 def test_vendor_hosts_and_standard_icon_places():
     assert logos.is_vendor("acme.keka.com") and logos.is_vendor("nvidia.wd5.myworkdayjobs.com") and not logos.is_vendor("acme.in")
     assert logos.standard_icons("https://acme.in/jobs/x") == ["https://acme.in/apple-touch-icon.png", "https://acme.in/favicon.ico"]
+
+
+@pytest.mark.anyio
+async def test_keka_logo_is_trusted_without_fetching_the_image():
+    seen = []
+
+    def handler(request):
+        seen.append(request.url.path)
+        if request.url.path == "/robots.txt":
+            return httpx.Response(200, text="User-agent: *\nDisallow: /\nAllow: /careers\n")
+        if request.url.path == "/careers/":
+            return httpx.Response(200, text=KEKA)
+        return httpx.Response(500)
+
+    async with PoliteClient("Bot/1", "Bot", 0, 0, backoff=0, max_attempts=1, transport=httpx.MockTransport(handler)) as c:
+        got = await logos._logo_from_page(c, "https://acme.keka.com/careers/")
+    assert got == "https://acme.keka.com/ats/documents/abc/orglogo/logo123.png"
+    assert "/ats/documents/abc/orglogo/logo123.png" not in seen  # robots.txt only allows /careers

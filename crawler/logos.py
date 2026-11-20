@@ -132,8 +132,11 @@ async def _logo_from_page(client, url: str) -> str | None:
     host = (urlparse(final).hostname or "").lower()
     if is_vendor(host):
         logo = board_logo(html, final)
-        if logo and (urlparse(logo).hostname in LOGO_HOSTS):
-            return logo  # served by the vendor's logo store: trusted as is
+        logo_host = (urlparse(logo).hostname or "") if logo else ""
+        if logo and (logo_host in LOGO_HOSTS or (logo_host.endswith(".keka.com") and "/orglogo/" in logo)):
+            # Named by the board page itself and served by the vendor's own store. Keka's robots.txt
+            # allows only /careers, so the image is not fetched here; the member's browser loads it.
+            return logo
         return logo if logo and await _first_image(client, [logo]) else None
     found = candidates(html, final)
     return await _first_image(client, found or standard_icons(final))
