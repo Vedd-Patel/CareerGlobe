@@ -1,10 +1,15 @@
-"""Company logos: the icon each company's own website names for itself.
+"""Company logos: the icon each company names for itself.
 
-The home page (the seed file's website column) is read once, politely (robots.txt,
-1-2 s gap, honest user agent), for its <link rel="apple-touch-icon"> and
-<link rel="icon">. The best candidate that really is an image is stored as a
-link, never the image itself: the app shows it straight from the company's site.
-A company without one keeps the lettered badge and is looked at again in a month.
+1. The home page (the seed file's website column) is read once, politely (robots.txt,
+   1-2 s gap, honest user agent), for its <link rel="apple-touch-icon"> and
+   <link rel="icon">; failing that, the standard /apple-touch-icon.png and /favicon.ico.
+2. Failing that, the company's own careers page from the seed file: a Keka board shows
+   the company's logo, a Lever board's og:image is its logo, an Ashby board's og:image is
+   its logo. A board's own favicon is the job board's, not the company's, so it is never used.
+   A careers page on the company's own site is read like a home page.
+The best candidate that really is an image is stored as a link, never the image itself:
+the app shows it straight from where it is hosted. A company without one keeps the
+lettered badge and is looked at again in a month.
 """
 
 import logging
@@ -51,6 +56,53 @@ def candidates(html: str, base_url: str) -> list[str]:
     return out
 
 
+# Job-board and recruiting-software domains: their icons are the vendor's, never a company's.
+VENDOR_HOSTS = ("keka.com", "lever.co", "greenhouse.io", "ashbyhq.com", "workable.com", "myworkdayjobs.com",
+                "myworkdaysite.com", "oraclecloud.com", "successfactors.com", "successfactors.eu", "eightfold.ai",
+                "smartrecruiters.com", "icims.com", "taleo.net", "recruitee.com", "darwinbox.in", "zohorecruit.com")
+# Where a vendor serves company logos from, so one is trusted without fetching it again.
+LOGO_HOSTS = ("lever-client-logos.s3.us-west-2.amazonaws.com", "app.ashbyhq.com")
+
+
+def is_vendor(host: str) -> bool:
+    host = host.lower()
+    return any(host == v or host.endswith("." + v) for v in VENDOR_HOSTS)
+
+
+def board_logo(html: str, page_url: str) -> str | None:
+    """The company's logo from a Keka, Lever or Ashby board page, or None."""
+    host = (urlparse(page_url).hostname or "").lower()
+    tree = LexborHTMLParser(html)
+    url = None
+    if host.endswith(".keka.com"):
+        for img in tree.css("img.org-logo[src]"):
+            src = (img.attributes.get("src") or "").strip()
+            if "/orglogo/" in src:
+                url = urljoin(page_url, src)
+                break
+    elif host == "jobs.lever.co" or host == "jobs.eu.lever.co":
+        meta = tree.css_first('meta[property="og:image"]')
+        url = (meta.attributes.get("content") or "").strip() if meta else None
+        if url and urlparse(url).hostname not in LOGO_HOSTS:
+            url = None
+    elif host == "jobs.ashbyhq.com":
+        meta = tree.css_first('meta[property="og:image"]')
+        url = (meta.attributes.get("content") or "").strip() if meta else None
+        if url and "/org-theme-logo/" not in url:
+            url = None
+    if not url:
+        return None
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or is_private_host(parsed.hostname):
+        return None
+    return url
+
+
+def standard_icons(base_url: str) -> list[str]:
+    """The conventional icon locations, tried when a page names none."""
+    return [urljoin(base_url, "/apple-touch-icon.png"), urljoin(base_url, "/favicon.ico")]
+
+
 def looks_like_image(data: bytes) -> bool:
     """PNG, JPEG, GIF, WebP, ICO or SVG, by their first bytes (the fetcher does not expose content types)."""
     if not data or len(data) > MAX_BYTES:
@@ -61,31 +113,54 @@ def looks_like_image(data: bytes) -> bool:
             or b"<svg" in head.lower())
 
 
+async def _first_image(client, urls: list[str]) -> str | None:
+    for url in urls[:TRIES]:
+        try:
+            icon = await client.get(url)
+        except FetchError:
+            continue
+        if looks_like_image(icon.content):
+            return url
+    return None
+
+
+async def _logo_from_page(client, url: str) -> str | None:
+    """A logo for one page: its board logo (Keka, Lever, Ashby), or its icons when it is on the company's own site."""
+    page = await client.get(url)
+    html = page.content.decode("utf-8", "replace")
+    final = page.url or url
+    host = (urlparse(final).hostname or "").lower()
+    if is_vendor(host):
+        logo = board_logo(html, final)
+        if logo and (urlparse(logo).hostname in LOGO_HOSTS):
+            return logo  # served by the vendor's logo store: trusted as is
+        return logo if logo and await _first_image(client, [logo]) else None
+    found = candidates(html, final)
+    return await _first_image(client, found or standard_icons(final))
+
+
 async def run(conn, client, limit: int = PER_RUN) -> tuple[int, int]:
     """Look up to `limit` companies without a logo. Returns (looked at, logos found)."""
     cur = await conn.execute(
-        """SELECT id, website FROM companies
-           WHERE logo_url IS NULL AND website IS NOT NULL AND website <> ''
-             AND (logo_checked_at IS NULL OR logo_checked_at < now() - make_interval(days => %s))
-           ORDER BY id LIMIT %s""",
+        """SELECT c.id, c.website,
+                  (SELECT s.careers_url FROM careers_sources s WHERE s.company_id = c.id AND s.status <> 'disabled'
+                   ORDER BY s.id LIMIT 1)
+           FROM companies c
+           WHERE c.logo_url IS NULL
+             AND (c.logo_checked_at IS NULL OR c.logo_checked_at < now() - make_interval(days => %s))
+           ORDER BY c.id LIMIT %s""",
         (RECHECK_DAYS, limit),
     )
     checked = found = 0
-    for company_id, website in await cur.fetchall():
+    for company_id, website, careers_url in await cur.fetchall():
         logo = None
-        try:
-            page = await client.get(website)
-            html = page.content.decode("utf-8", "replace")
-            for url in candidates(html, page.url or website)[:TRIES]:
-                try:
-                    icon = await client.get(url)
-                except FetchError:
-                    continue
-                if looks_like_image(icon.content):
-                    logo = url
-                    break
-        except FetchError as e:
-            log.info("no logo for %s: %s", website, e)
+        for url in [u for u in (website, careers_url) if u]:
+            try:
+                logo = await _logo_from_page(client, url)
+            except FetchError as e:
+                log.info("no logo from %s: %s", url, e)
+            if logo:
+                break
         checked += 1
         found += logo is not None
         await conn.execute("UPDATE companies SET logo_url = %s, logo_checked_at = now() WHERE id = %s", (logo, company_id))

@@ -5,6 +5,7 @@ import pytest
 
 import logos
 from fetcher import PoliteClient
+from fetcher import FetchError  # noqa: F401
 
 PAGE = """<html><head>
 <link rel="icon" href="/favicon.ico" sizes="16x16">
@@ -54,9 +55,30 @@ async def test_run_keeps_the_first_candidate_that_is_an_image():
 
             class Cur:
                 async def fetchall(self):
-                    return [(7, "https://acme.in/")]
+                    return [(7, "https://acme.in/", None)]
             return Cur()
 
     async with PoliteClient("Bot/1", "Bot", 0, 0, backoff=0, max_attempts=1, transport=httpx.MockTransport(handler)) as c:
         assert await logos.run(Conn(), c) == (1, 1)
     assert updates == [("https://acme.in/touch-120.png", 7)]
+
+
+KEKA = """<html><body><img class="org-logo w-50" alt="Keka Hire" src="/ats/documents/abc/orglogo/logo123.png">
+<img width="50" src="https://cdn.keka.com/careers/Keka_Logo_Black_Text.svg"></body></html>"""
+LEVER = """<meta property="og:image" content="https://lever-client-logos.s3.us-west-2.amazonaws.com/x-1.png" />"""
+LEVER_OTHER = """<meta property="og:image" content="https://evil.example/banner.png" />"""
+ASHBY = """<link rel="icon" href="https://cdn.ashbyprd.com/favicon.svg"><meta property="og:image" content="https://app.ashbyhq.com/api/images/org-theme-logo/a/b/c.png" />"""
+
+
+def test_board_logos_come_from_the_board_not_its_vendor_icons():
+    assert logos.board_logo(KEKA, "https://acme.keka.com/careers/") == "https://acme.keka.com/ats/documents/abc/orglogo/logo123.png"
+    assert logos.board_logo(LEVER, "https://jobs.lever.co/acme").endswith("x-1.png")
+    assert logos.board_logo(LEVER_OTHER, "https://jobs.lever.co/acme") is None
+    assert logos.board_logo(ASHBY, "https://jobs.ashbyhq.com/acme").endswith("/org-theme-logo/a/b/c.png")
+    assert logos.board_logo("<html></html>", "https://acme.keka.com/careers/") is None
+    assert logos.board_logo(KEKA, "https://careers.acme.in/") is None  # only vendor boards use these rules
+
+
+def test_vendor_hosts_and_standard_icon_places():
+    assert logos.is_vendor("acme.keka.com") and logos.is_vendor("nvidia.wd5.myworkdayjobs.com") and not logos.is_vendor("acme.in")
+    assert logos.standard_icons("https://acme.in/jobs/x") == ["https://acme.in/apple-touch-icon.png", "https://acme.in/favicon.ico"]
