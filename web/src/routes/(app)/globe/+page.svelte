@@ -1,10 +1,10 @@
 <script lang="ts">
 	// S14 Globe home, S15 company preview, S16 filters sheet, S17 search.
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { api, ApiError, type Schemas } from '$lib/api/client';
-	import { mapStyle } from '$lib/map/style';
+	import { isDarkTheme, mapStyle } from '$lib/map/style';
 	import { clusterPoints, compact, type ClusterPoint } from '$lib/cluster';
 	import {
 		activeCount, clusterSize, emptyFilters, EMPLOYMENT, EXPERIENCE, filtersToQuery, pinKind, SALARY_LPA, type Filters
@@ -36,6 +36,7 @@
 	let q = $state('');
 	let results = $state<SearchResults | null>(null);
 	type Detail = {
+		open_total?: number;
 		careers_url?: string | null;
 		locations: { id?: number; city?: string | null; address?: string | null; lat?: number; lon?: number; geo_approximate?: boolean }[];
 		open_jobs: { id: number; title: string; cities?: string[]; work_mode?: string | null; first_seen?: string; score?: number | null }[];
@@ -95,7 +96,7 @@
 					...wide, zoom: 14, ...filtersToQuery(filters)
 				}),
 				api.get<Schemas['CompanyListResponse']>('/v1/companies/in-view', {
-					...bounds, type: filters.type, limit: 40, ...nearParams()
+					...bounds, ...filtersToQuery(filters), limit: 40, ...nearParams()
 				})
 			]);
 			error = '';
@@ -234,19 +235,38 @@
 			center: [p.lon ?? 0, p.lat ?? 0], zoom: Math.max(map.getZoom(), 16), padding: sheetPadding(),
 			duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1200, essential: true
 		});
+		await loadDetail(p, filters);
+	}
+
+	// The company's openings that pass the active filters (the server applies them).
+	let detailRequest = 0;
+	async function loadDetail(p: Pin, f: Filters) {
+		const mine = ++detailRequest;
 		try {
-			const d = await api.get<Detail>(`/v1/companies/${p.company_id}`);
-			if (selected?.company_id === p.company_id) detail = d;
+			const d = await api.get<Detail>(`/v1/companies/${p.company_id}`, filtersToQuery(f));
+			if (mine === detailRequest && selected?.company_id === p.company_id) detail = d;
 		} catch {
 			/* the counts above still show */
 		}
 	}
 
-	// The company's openings in the picked pin's city (a job with no city belongs to headquarters).
+	// Changing a filter while a company is open refreshes its openings.
+	$effect(() => {
+		const f = $state.snapshot(filters) as Filters; // the only thing this effect reacts to
+		untrack(() => {
+			if (selected) loadDetail(selected, f);
+		});
+	});
+
+	// The openings in the picked pin's city. A job with no city, or in a city that has no pin
+	// of its own, belongs to headquarters. With filters on, an empty list means none match.
 	function openingsHere(d: Detail, p: Pin) {
 		const city = (p.city ?? '').toLowerCase();
-		const here = d.open_jobs.filter((j) => (j.cities ?? []).some((c) => c.toLowerCase() === city) || (!j.cities?.length && p.is_hq));
-		return here.length ? here : d.open_jobs;
+		const pinned = new Set(d.locations.map((l) => (l.city ?? '').toLowerCase()));
+		return d.open_jobs.filter((j) => {
+			const cities = (j.cities ?? []).map((c) => c.toLowerCase());
+			return cities.includes(city) || (!!p.is_hq && (cities.length === 0 || !cities.some((c) => pinned.has(c))));
+		});
 	}
 
 	const km = (d: number) => (d < 1 ? `${Math.round(d * 1000)} m` : d < 10 ? `${d.toFixed(1)} km` : `${Math.round(d)} km`);
@@ -425,10 +445,23 @@
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 		// Start with all of India in view, whatever the screen shape.
 		map = new maplibregl.Map({
-			container, style: mapStyle(), maxZoom: 19, bounds: [[67, 6], [98, 37]],
+			container, style: mapStyle(isDarkTheme()), maxZoom: 19, bounds: [[67, 6], [98, 37]],
 			fitBoundsOptions: { padding: { top: 150, bottom: 24, left: 24, right: 24 } }, attributionControl: { compact: true }
 		});
 		map.on('style.load', () => map?.setProjection({ type: 'globe' }));
+		// Follow the theme: the dark map when the page is dark, switching as the toggle flips.
+		let dark = isDarkTheme();
+		const syncStyle = () => {
+			if (isDarkTheme() !== dark) {
+				dark = isDarkTheme();
+				map?.setStyle(mapStyle(dark));
+			}
+		};
+		const watcher = new MutationObserver(syncStyle);
+		watcher.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+		const scheme = matchMedia('(prefers-color-scheme: dark)');
+		scheme.addEventListener('change', syncStyle);
+		cleanups.push(() => (watcher.disconnect(), scheme.removeEventListener('change', syncStyle)));
 		map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 		// The browser's own position (GPS, Wi-Fi or network), asked only when the button is pressed.
 		geolocate = new maplibregl.GeolocateControl({
@@ -552,8 +585,8 @@
 					<button class="icon-btn" aria-label="Close preview" onclick={closePreview}><Icon name="x" /></button>
 				</div>
 				<div style="display: flex; gap: 28px">
-					<div><p class="num" style="font-size: 24px">{selected.open_jobs}</p><p class="t-caption t-3">open jobs</p></div>
-					<div><p class="num t-accent" style="font-size: 24px">{selected.matches}</p><p class="t-caption t-3">your matches</p></div>
+					<div><p class="num" style="font-size: 24px">{detail ? openingsHere(detail, selected).length : selected.open_jobs}</p><p class="t-caption t-3">{activeCount(filters) ? 'matching jobs' : 'open jobs'}</p></div>
+					<div><p class="num t-accent" style="font-size: 24px">{detail ? openingsHere(detail, selected).filter((j) => (j.score ?? 0) >= 60).length : selected.matches}</p><p class="t-caption t-3">your matches</p></div>
 				</div>
 				{#if detail}
 					{@const loc = detail.locations.find((l) => l.id === selected?.location_id)}
@@ -575,10 +608,12 @@
 								</span>
 							</a>
 						{:else}
-							<p class="t-body t-2">No open roles right now.</p>
+							<p class="t-body t-2">{activeCount(filters) ? 'No openings here match your filters.' : 'No open roles right now.'}</p>
 						{/each}
-						{#if detail.open_jobs.length > Math.min(6, here.length) || here.length > 6}
-							<a class="btn btn-text" href="/companies/{selected.company_id}">See all {detail.open_jobs.length} openings at {selected.name}</a>
+						{#if here.length > 6 || (detail.open_total ?? 0) > here.length}
+							<a class="btn btn-text" href="/companies/{selected.company_id}">
+								{activeCount(filters) ? `See all ${detail.open_total} openings at ${selected.name}` : `See all ${here.length} openings at ${selected.name}`}
+							</a>
 						{/if}
 					</div>
 				{:else}
@@ -736,7 +771,7 @@
 	.panel {
 		position: absolute; left: 0; right: 0; bottom: 0; height: 88%; z-index: 5; overflow-y: auto; overscroll-behavior: contain;
 		background: color-mix(in srgb, var(--surface) 78%, transparent); backdrop-filter: blur(28px) saturate(180%);
-		border-top: 1px solid color-mix(in srgb, #fff 60%, var(--line)); border-radius: 22px 22px 0 0;
+		border-top: 1px solid var(--edge); border-radius: 22px 22px 0 0;
 		box-shadow: 0 -10px 40px rgba(27, 31, 28, 0.14); transform: translateY(calc(100% - 112px)); will-change: transform;
 	}
 	.grab { position: sticky; top: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 20px 12px; cursor: grab; touch-action: none; user-select: none; background: inherit; }

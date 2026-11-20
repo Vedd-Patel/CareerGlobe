@@ -153,7 +153,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Company detail with offices and open roles (S18) */
+        /** Company detail with offices and open roles (S18); the job filters narrow the open roles */
         get: operations["getCompaniesById"];
         put?: never;
         post?: never;
@@ -978,8 +978,16 @@ export interface components {
                 posted_at?: string | null;
                 /** Format: date-time */
                 first_seen?: string;
+                /** @enum {string|null} */
+                employment_type?: "intern" | "full_time" | "part_time" | "contract" | null;
+                years_min?: number | null;
+                years_max?: number | null;
+                salary_min?: number | null;
+                salary_max?: number | null;
                 score?: number | null;
             }[];
+            /** @description All open roles, whatever the filters */
+            open_total?: number;
         };
         JobRef: {
             /** Format: int64 */
@@ -1579,7 +1587,20 @@ export interface operations {
     };
     getCompaniesById: {
         parameters: {
-            query?: never;
+            query?: {
+                category?: components["parameters"]["Category"];
+                remote?: components["parameters"]["Remote"];
+                posted?: components["parameters"]["Posted"];
+                /** @description Comma list of job types: intern, full_time, part_time, contract */
+                employment?: components["parameters"]["Employment"];
+                /** @description With exp_max: years of experience; jobs whose asked-for range meets it (or states none) pass */
+                exp_min?: components["parameters"]["ExpMin"];
+                exp_max?: components["parameters"]["ExpMax"];
+                /** @description Yearly rupees; only jobs that list a salary at least this high pass */
+                min_salary?: components["parameters"]["MinSalary"];
+                /** @description Only roles in this city */
+                city?: string;
+            };
             header?: never;
             path: {
                 id: components["parameters"]["Id"];

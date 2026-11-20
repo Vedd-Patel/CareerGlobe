@@ -3,8 +3,9 @@
 	import { page } from '$app/state';
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { mapStyle } from '$lib/map/style';
-	import { pinKind } from '$lib/globe';
+	import { isDarkTheme, mapStyle } from '$lib/map/style';
+	import { EMPLOYMENT, EXPERIENCE, SALARY_LPA, jobTypeQuery, pinKind } from '$lib/globe';
+	import { untrack } from 'svelte';
 	import { api, ApiError, type Schemas } from '$lib/api/client';
 	import { ago } from '$lib/format';
 	import Icon from '$lib/components/Icon.svelte';
@@ -21,6 +22,21 @@
 	let report = $state('');
 	let reported = $state(false);
 	let showAll = $state(false);
+	// Filters for this company's open jobs, applied by the server.
+	let employment = $state<string[]>([]);
+	let exp = $state('');
+	let minSalaryLpa = $state(0);
+	let remote = $state(false);
+	let city = $state('');
+	let allCities = $state<string[]>([]);
+	const filtering = $derived(employment.length > 0 || !!exp || minSalaryLpa > 0 || remote || !!city);
+	function clearFilters() {
+		employment = [];
+		exp = '';
+		minSalaryLpa = 0;
+		remote = false;
+		city = '';
+	}
 
 	const id = $derived(Number(page.params.id));
 	const jobs = $derived(c?.open_jobs ?? []);
@@ -42,7 +58,7 @@
 		const b = new maplibregl.LngLatBounds(pts[0], pts[0]);
 		for (const pt of pts) b.extend(pt);
 		const map = new maplibregl.Map({
-			container: el, style: mapStyle(), interactive: false, attributionControl: false,
+			container: el, style: mapStyle(isDarkTheme()), interactive: false, attributionControl: false,
 			...(pts.length > 1 ? { bounds: b, fitBoundsOptions: { padding: 40, maxZoom: 7 } } : { center: pts[0], zoom: 3.4 })
 		});
 		for (const pt of pts) {
@@ -60,10 +76,29 @@
 		void id;
 		c = null;
 		error = '';
+		clearFilters();
 		api.get<Company>(`/v1/companies/${id}`).then(
-			(r) => (c = r),
+			(r) => {
+				c = r;
+				allCities = [...new Set((r.open_jobs ?? []).flatMap((j) => j.cities ?? []))].sort();
+			},
 			(e) => (error = e instanceof ApiError && e.status === 404 ? 'This company is not in CareerGlobe.' : 'Could not load the company.')
 		);
+	});
+
+	// Changing a filter asks the server for just the jobs that pass it.
+	$effect(() => {
+		const params = { ...jobTypeQuery({ employment, exp, minSalaryLpa }), remote: remote || undefined, city: city || undefined };
+		untrack(() => {
+			if (!c) return;
+			showAll = false;
+			api.get<Company>(`/v1/companies/${id}`, params).then((r) => {
+				if (c) {
+					c.open_jobs = r.open_jobs;
+					c.open_total = r.open_total;
+				}
+			});
+		});
 	});
 
 	async function toggleSave() {
@@ -122,15 +157,35 @@
 		{/if}
 
 		<section class="stack">
-			<h2 class="t-heading">Open jobs <span class="t-3">({jobs.length})</span></h2>
+			<h2 class="t-heading">Open jobs <span class="t-3">({filtering ? `${jobs.length} of ${c.open_total ?? jobs.length}` : jobs.length})</span></h2>
+			<div class="chips" aria-label="Filter these jobs">
+				{#each EMPLOYMENT as t (t.id)}
+					<button class="chip {employment.includes(t.id) ? 'on' : ''}" aria-pressed={employment.includes(t.id)}
+						onclick={() => (employment = employment.includes(t.id) ? employment.filter((x) => x !== t.id) : [...employment, t.id])}>{t.label}</button>
+				{/each}
+				<button class="chip {remote ? 'on' : ''}" aria-pressed={remote} onclick={() => (remote = !remote)}>Remote</button>
+				<select class="chip" bind:value={city} aria-label="Location">
+					<option value="">All locations</option>
+					{#each allCities as ct (ct)}<option value={ct}>{ct}</option>{/each}
+				</select>
+				<select class="chip" bind:value={exp} aria-label="Years of experience">
+					<option value="">Any experience</option>
+					{#each EXPERIENCE as b (b.id)}<option value={b.id}>{b.label}</option>{/each}
+				</select>
+				<select class="chip" bind:value={minSalaryLpa} aria-label="Minimum salary">
+					<option value={0}>Any salary</option>
+					{#each SALARY_LPA as n (n)}<option value={n}>₹{n}+ LPA</option>{/each}
+				</select>
+				{#if filtering}<button class="chip" onclick={clearFilters}>Clear filters</button>{/if}
+			</div>
 			{#each groups as [cat, list] (cat)}
 				<h3 class="t-caption t-2">{cat.toUpperCase()} · {list.length}</h3>
 				{#each list as j (j.id)}
 					<JobCard job={{ ...j, job_id: j.id ?? 0, title: j.title ?? '', first_seen: j.posted_at ?? j.first_seen }} />
 				{/each}
 			{:else}
-				<EmptyState icon="box" title="No open jobs right now">
-					<p class="t-body t-2">Save this company and we'll tell you when it posts something new.</p>
+				<EmptyState icon="box" title={filtering ? 'No jobs match these filters' : 'No open jobs right now'}>
+					<p class="t-body t-2">{filtering ? 'Try a different type, location or experience, or clear the filters.' : "Save this company and we'll tell you when it posts something new."}</p>
 				</EmptyState>
 			{/each}
 			{#if jobs.length > shown.length}
