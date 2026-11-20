@@ -82,13 +82,13 @@ function liftStops(stops: unknown, boost = 0): unknown {
 // Fixed colours for the features that must read apart at a glance: land, water, parks,
 // buildings and each road class. Anything not listed keeps its lifted colour.
 const DARK_PAINT: Record<string, Record<string, string>> = {
-	background: { 'background-color': '#3a3632' },
-	landuse_residential: { 'fill-color': '#413c37' },
+	background: { 'background-color': '#2e2b28' },
+	landuse_residential: { 'fill-color': '#35312d' },
 	landcover_wood: { 'fill-color': '#35493a' },
 	landuse_park: { 'fill-color': '#3b5640' },
-	water: { 'fill-color': '#2c5f8a' },
-	waterway: { 'line-color': '#3a77a8' },
-	building: { 'fill-color': '#4d4741' },
+	water: { 'fill-color': '#1f6fb8' },
+	waterway: { 'line-color': '#3d8fd6' },
+	building: { 'fill-color': '#47423c' },
 	highway_path: { 'line-color': '#6d655c' },
 	highway_minor: { 'line-color': '#7b736a' },
 	highway_major_casing: { 'line-color': '#2b2825' },
@@ -103,7 +103,13 @@ const DARK_PAINT: Record<string, Record<string, string>> = {
 	'boundary_country_z5-': { 'line-color': '#a39a8e' }
 };
 
-const LABEL_TEXT = '#d8d2c8';
+const LABEL_TEXT = '#f6f1e7';
+const LABEL_COLORS: [RegExp, string][] = [
+	[/^water/, '#7fd0ff'],
+	[/^highway_name/, '#e9c98f'],
+	[/^place_(state|country)/, '#ffd479'],
+	[/^place_(city|town)/, '#ffffff']
+];
 
 /** The style with every fill, line and background colour lifted (see above). */
 export function liftStyle(style: StyleSpecification): StyleSpecification {
