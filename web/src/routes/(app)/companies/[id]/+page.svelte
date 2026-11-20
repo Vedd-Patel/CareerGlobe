@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
-	import { isDarkTheme, mapStyle } from '$lib/map/style';
+	import { isDarkTheme, mapStyle, themedStyle } from '$lib/map/style';
 	import { EMPLOYMENT, EXPERIENCE, SALARY_LPA, jobTypeQuery, pinKind } from '$lib/globe';
 	import { untrack } from 'svelte';
 	import { api, ApiError, type Schemas } from '$lib/api/client';
@@ -61,6 +61,7 @@
 			container: el, style: mapStyle(isDarkTheme()), interactive: false, attributionControl: false,
 			...(pts.length > 1 ? { bounds: b, fitBoundsOptions: { padding: 40, maxZoom: 7 } } : { center: pts[0], zoom: 3.4 })
 		});
+		if (isDarkTheme()) themedStyle(true).then((st) => map.setStyle(st)); // the lifted dark map
 		for (const pt of pts) {
 			const m = document.createElement('span');
 			m.className = 'pin-hit';

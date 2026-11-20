@@ -43,3 +43,24 @@ describe('format', () => {
 		expect(logoClass('Groww')).toBe(logoClass('Groww'));
 	});
 });
+
+describe('dark map colours', () => {
+	it('lifts near-black into a visible warm grey and keeps hue for tinted colours', async () => {
+		const { parseColor, liftColor, liftStyle } = await import('./map/style');
+		const lifted = parseColor(liftColor('#000000'))!;
+		expect(lifted[2]).toBeGreaterThan(0.15); // no longer black
+		expect(lifted[0]).toBeGreaterThan(20); // warm, brownish
+		expect(lifted[0]).toBeLessThan(45);
+		const water = parseColor(liftColor('hsl(210, 60%, 12%)'))!;
+		expect(Math.round(water[0])).toBe(210); // water stays blue
+		expect(water[2]).toBeGreaterThan(0.2);
+		expect(liftColor('not a colour')).toBe('not a colour');
+		const style = liftStyle({
+			version: 8, sources: {},
+			layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#0a0a0a' } },
+				{ id: 'label', type: 'symbol', paint: { 'text-color': '#ffffff' } }]
+		} as never);
+		expect((style.layers[0] as unknown as { paint: Record<string, string> }).paint['background-color']).toMatch(/^hsla\(/);
+		expect((style.layers[1] as unknown as { paint: Record<string, string> }).paint['text-color']).toBe('#ffffff'); // labels untouched
+	});
+});

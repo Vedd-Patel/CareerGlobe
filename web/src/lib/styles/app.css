@@ -200,4 +200,7 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text-3) 40%,tr
 @media (prefers-reduced-motion:reduce){
   .preview,.page{animation:none}
 }
+/* Map zoom and locate buttons: light icons on the dark surface. */
+:root[data-theme='dark'] .maplibregl-ctrl-group button .maplibregl-ctrl-icon{filter:invert(1)}
+@media (prefers-color-scheme:dark){:root:not([data-theme='light']) .maplibregl-ctrl-group button .maplibregl-ctrl-icon{filter:invert(1)}}
 

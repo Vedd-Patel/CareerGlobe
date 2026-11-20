@@ -4,7 +4,7 @@
 	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { api, ApiError, type Schemas } from '$lib/api/client';
-	import { isDarkTheme, mapStyle } from '$lib/map/style';
+	import { isDarkTheme, themedStyle } from '$lib/map/style';
 	import { clusterPoints, compact, type ClusterPoint } from '$lib/cluster';
 	import {
 		activeCount, clusterSize, emptyFilters, EMPLOYMENT, EXPERIENCE, filtersToQuery, pinKind, SALARY_LPA, type Filters
@@ -431,7 +431,8 @@
 		refresh();
 	}
 
-	onMount(() => {
+	let gone = false; // the page was left before the map style arrived
+	onMount(async () => {
 		try {
 			recent = JSON.parse(localStorage.getItem(RECENT) ?? '[]');
 		} catch {
@@ -443,9 +444,11 @@
 			firstVisit = false;
 		}
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const style = await themedStyle(isDarkTheme());
+		if (gone) return;
 		// Start with all of India in view, whatever the screen shape.
 		map = new maplibregl.Map({
-			container, style: mapStyle(isDarkTheme()), maxZoom: 19, bounds: [[67, 6], [98, 37]],
+			container, style, maxZoom: 19, bounds: [[67, 6], [98, 37]],
 			fitBoundsOptions: { padding: { top: 150, bottom: 24, left: 24, right: 24 } }, attributionControl: { compact: true }
 		});
 		map.on('style.load', () => map?.setProjection({ type: 'globe' }));
@@ -454,7 +457,7 @@
 		const syncStyle = () => {
 			if (isDarkTheme() !== dark) {
 				dark = isDarkTheme();
-				map?.setStyle(mapStyle(dark));
+				themedStyle(dark).then((st) => map?.setStyle(st));
 			}
 		};
 		const watcher = new MutationObserver(syncStyle);
@@ -504,6 +507,7 @@
 	});
 
 	onDestroy(() => {
+		gone = true;
 		clearTimeout(timer);
 		clearTimeout(searchTimer);
 		cancelAnimationFrame(raf);
